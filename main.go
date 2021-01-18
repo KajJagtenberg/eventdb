@@ -1,13 +1,16 @@
 package main
 
 import (
-	"encoding/json"
+	"eventdb/middleware"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"eventdb/handlers"
+	"eventdb/store"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gorilla/mux"
@@ -32,37 +35,11 @@ func main() {
 	// 	return nil
 	// })
 
-	store := NewStore(db)
+	eventstore := store.NewStore(db)
 
 	router := mux.NewRouter()
-	router.HandleFunc("/streams/{stream}", func(rw http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		stream := vars["stream"]
-
-		if len(stream) == 0 {
-			http.Error(rw, "Stream name cannot be empty", http.StatusBadRequest)
-			return
-		}
-
-		version := 0
-		limit := 0
-
-		// Validate request
-
-		events, err := store.LoadFromStream(stream, version, limit)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
-		}
-
-		rw.Header().Set("Content-Type", "application/json;charset=utf-8")
-
-		if err := json.NewEncoder(rw).Encode(events); err != nil {
-			log.Println(err)
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-	})
+	router.Use(middleware.JSONMiddleWare())
+	router.HandleFunc("/streams/{stream}", handlers.LoadFromStream(eventstore)).Methods(http.MethodGet)
 
 	server := http.Server{
 		Addr:         ":5555", // TODO: Get from env var
