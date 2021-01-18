@@ -7,3 +7,6 @@ build:
 clean:
 	rm -f eventdb
 	rm -rf data
+
+docker:
+	docker build -t eventdb .
