@@ -83,6 +83,4 @@ func main() {
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	<-c
-
-	// TODO: Add an networked API
 }
