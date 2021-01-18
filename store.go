@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
-	"log"
 	"math/rand"
 	"time"
 
@@ -92,21 +91,19 @@ func (s *Store) LoadFromStream(stream string, version int, limit int) ([]Event, 
 	result := []Event{}
 
 	err := s.db.View(func(txn *badger.Txn) error {
-		streamKey := getStreamKey(stream, version)
+		for i := 0; len(result) < limit || limit == 0; i++ {
+			streamKey := getStreamKey(stream, version+i)
 
-		opts := badger.DefaultIteratorOptions
-		opts.PrefetchSize = 10
-		it := txn.NewIterator(opts)
-		defer it.Close()
-
-		prefix := streamKey[:len(streamKey)-4]
-
-		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			item := it.Item()
+			item, err := txn.Get(streamKey)
+			if err == badger.ErrKeyNotFound {
+				return nil
+			} else if err != nil {
+				return err
+			}
 
 			id, err := item.ValueCopy(nil)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 
 			item, err = txn.Get(append(PrefixEvent, id...))
