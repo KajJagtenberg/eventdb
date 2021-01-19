@@ -40,6 +40,7 @@ func main() {
 	router := mux.NewRouter()
 	router.Use(middleware.JSONMiddleWare())
 	router.HandleFunc("/streams/{stream}", handlers.LoadFromStream(eventstore)).Methods(http.MethodGet)
+	router.HandleFunc("/streams/{stream}/{version}", handlers.AppendToStream(eventstore)).Methods(http.MethodPost)
 
 	server := http.Server{
 		Addr:         ":5555", // TODO: Get from env var

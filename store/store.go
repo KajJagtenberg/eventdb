@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/google/uuid"
 	"github.com/oklog/ulid"
 )
 
@@ -22,15 +23,18 @@ type Store struct {
 	db *badger.DB
 }
 
-func (s *Store) AppendToStream(stream string, version int, events []AppendEvent) error {
+func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEvent) error {
 	return s.db.Update(func(txn *badger.Txn) error {
-		streamKey := getStreamKey(stream, version)
-
-		_, err := txn.Get(streamKey)
-		if err == nil {
-			return errors.New("Concurrent stream modification")
-		} else if err != badger.ErrKeyNotFound {
+		streamVersion, err := getStreamVersion(txn, stream)
+		if err != nil {
 			return err
+		}
+
+		if version < streamVersion {
+			return errors.New("Concurrent stream modification")
+		}
+		if version > streamVersion {
+			return errors.New("Version does not line up with stream version")
 		}
 
 		for i, insert := range events {
@@ -71,21 +75,17 @@ func (s *Store) AppendToStream(stream string, version int, events []AppendEvent)
 			if err := txn.Set(streamKey, marshalledID); err != nil {
 				return err
 			}
+
+			if err := setStreamVersion(txn, stream, version+i); err != nil {
+				return err
+			}
 		}
 
 		return nil
 	})
 }
 
-func getStreamKey(stream string, version int) []byte {
-	indexVersion := make([]byte, 4)
-	binary.BigEndian.PutUint32(indexVersion, uint32(version))
-	streamKey := append([]byte(stream), indexVersion...)
-	streamKey = append(PrefixStream, streamKey...)
-	return streamKey
-}
-
-func (s *Store) LoadFromStream(stream string, version int, limit int) ([]Event, error) {
+func (s *Store) LoadFromStream(stream uuid.UUID, version int, limit int) ([]Event, error) {
 	result := []Event{}
 
 	err := s.db.View(func(txn *badger.Txn) error {
@@ -134,4 +134,41 @@ func (s *Store) LoadFromStream(stream string, version int, limit int) ([]Event, 
 
 func NewStore(db *badger.DB) *Store {
 	return &Store{db}
+}
+
+func getStreamKey(stream uuid.UUID, version int) []byte {
+	indexVersion := make([]byte, 4)
+	binary.BigEndian.PutUint32(indexVersion, uint32(version))
+	streamKey := append([]byte(stream[:]), indexVersion...)
+	streamKey = append(PrefixStream, streamKey...)
+	return streamKey
+}
+
+func getStreamVersion(txn *badger.Txn, stream uuid.UUID) (int, error) {
+	key := append(PrefixStream, stream[:]...)
+
+	item, err := txn.Get(key)
+	if err == badger.ErrKeyNotFound {
+		return 0, nil
+	} else if err != nil {
+		return 0, err
+	}
+
+	value, err := item.ValueCopy(nil)
+	if err != nil {
+		return 0, err
+	}
+
+	version := binary.BigEndian.Uint32(value)
+
+	return int(version + 1), nil
+}
+
+func setStreamVersion(txn *badger.Txn, stream uuid.UUID, version int) error {
+	value := make([]byte, 4)
+	binary.LittleEndian.PutUint32(value, uint32(version))
+
+	key := append(PrefixStream, stream[:]...)
+
+	return txn.Set(key, value)
 }

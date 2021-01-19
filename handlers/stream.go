@@ -2,22 +2,31 @@ package handlers
 
 import (
 	"encoding/json"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
 
 	"eventdb/store"
 
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
-func LoadFromStream(eventstore *store.Store) func(rw http.ResponseWriter, r *http.Request) {
+func LoadFromStream(eventstore *store.Store) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		vars := mux.Vars(r)
-		stream := vars["stream"]
+		streamParam := vars["stream"]
 
-		if len(stream) == 0 {
-			http.Error(rw, "Stream name cannot be empty", http.StatusBadRequest)
+		if len(streamParam) == 0 {
+			http.Error(rw, "Stream cannot be empty", http.StatusBadRequest)
+			return
+		}
+
+		stream, err := uuid.Parse(streamParam)
+		if err != nil {
+			http.Error(rw, "Stream must be an UUID v4", http.StatusBadRequest)
 			return
 		}
 
@@ -43,10 +52,71 @@ func LoadFromStream(eventstore *store.Store) func(rw http.ResponseWriter, r *htt
 			return
 		}
 
+		if len(events) == 0 {
+			http.Error(rw, "Not Found", http.StatusNotFound)
+			return
+		}
+
 		if err := json.NewEncoder(rw).Encode(events); err != nil {
 			log.Println(err)
 			http.Error(rw, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func AppendToStream(eventstore *store.Store) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		streamParam := vars["stream"]
+		versionParam := vars["version"]
+
+		if len(streamParam) == 0 {
+			http.Error(rw, "Stream cannot be empty", http.StatusBadRequest)
+			return
+		}
+
+		stream, err := uuid.Parse(streamParam)
+		if err != nil {
+			http.Error(rw, "Stream must be an UUID v4", http.StatusBadRequest)
+			return
+		}
+
+		version, _ := strconv.Atoi(versionParam)
+
+		if version < 0 {
+			http.Error(rw, "Version cannot be negative", http.StatusBadRequest)
+			return
+		}
+
+		var events []store.AppendEvent
+
+		if err := json.NewDecoder(r.Body).Decode(&events); err != nil {
+			http.Error(rw, "Unable to decode body", http.StatusBadRequest)
+			return
+		}
+
+		if len(events) == 0 {
+			http.Error(rw, "Empty events", http.StatusBadRequest)
+			return
+		}
+
+		validate := validator.New()
+
+		for _, event := range events {
+			if err := validate.Struct(event); err != nil {
+				validationErrors := err.(validator.ValidationErrors)
+
+				http.Error(rw, validationErrors.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+
+		if err := eventstore.AppendToStream(stream, version, events); err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		io.WriteString(rw, "Events added")
 	}
 }
