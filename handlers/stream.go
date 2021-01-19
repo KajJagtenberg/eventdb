@@ -126,11 +126,13 @@ func GetStreams(eventstore *store.Store) http.HandlerFunc {
 		streams, err := eventstore.GetStreams(0, 10)
 
 		if err != nil {
+			log.Println(err)
 			http.Error(rw, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		if err := json.NewEncoder(rw).Encode(streams); err != nil {
+			log.Println(err)
 			http.Error(rw, "Internal server error", http.StatusInternalServerError)
 			return
 		}

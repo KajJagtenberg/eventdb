@@ -37,8 +37,11 @@ func main() {
 
 	eventstore := store.NewStore(db)
 
+	log.Println(db.Size())
+
 	router := mux.NewRouter()
 	router.Use(middleware.JSONMiddleWare())
+	router.Use(middleware.TimerMiddleWare())
 	router.HandleFunc("/streams/{stream}", handlers.LoadFromStream(eventstore)).Methods(http.MethodGet)
 	router.HandleFunc("/streams/{stream}/{version}", handlers.AppendToStream(eventstore)).Methods(http.MethodPost)
 	router.HandleFunc("/streams", handlers.GetStreams(eventstore)).Methods(http.MethodGet)

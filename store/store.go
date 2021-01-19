@@ -1,8 +1,6 @@
 package store
 
 import (
-	"encoding/binary"
-	"encoding/json"
 	"errors"
 	"math/rand"
 	"time"
@@ -10,12 +8,12 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"github.com/vmihailenco/msgpack"
 )
 
 var (
-	PrefixEvent         = []byte{0, 1}
-	PrefixStream        = []byte{0, 2}
-	PrefixStreamVersion = []byte{0, 3}
+	PrefixEvent  = []byte{0, 1}
+	PrefixStream = []byte{0, 2}
 
 	entropy = ulid.Monotonic(rand.New((rand.NewSource((int64(ulid.Now()))))), 0)
 )
@@ -26,10 +24,16 @@ type Store struct {
 
 func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEvent) error {
 	return s.db.Update(func(txn *badger.Txn) error {
-		streamVersion, err := getStreamVersion(txn, stream)
+		streamObj, err := getStream(txn, stream)
 		if err != nil {
 			return err
 		}
+
+		if streamObj == nil {
+			streamObj = &Stream{}
+		}
+
+		streamVersion := len(streamObj.Events)
 
 		if version < streamVersion {
 			return errors.New("Concurrent stream modification")
@@ -45,7 +49,7 @@ func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEve
 			}
 
 			event := Event{
-				ID:            id.String(),
+				ID:            id,
 				Stream:        stream,
 				Version:       version + i,
 				Type:          insert.Type,
@@ -63,7 +67,7 @@ func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEve
 
 			eventKey := append(PrefixEvent, marshalledID...)
 
-			value, err := json.Marshal(event)
+			value, err := msgpack.Marshal(event)
 			if err != nil {
 				return err
 			}
@@ -72,18 +76,10 @@ func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEve
 				return err
 			}
 
-			streamKey := getStreamKey(stream, version+i)
-
-			if err := txn.Set(streamKey, marshalledID); err != nil {
-				return err
-			}
-
-			if err := setStreamVersion(txn, stream, version+i); err != nil {
-				return err
-			}
+			streamObj.Events = append(streamObj.Events, id)
 		}
 
-		return nil
+		return setStream(txn, stream, streamObj)
 	})
 }
 
@@ -91,22 +87,23 @@ func (s *Store) LoadFromStream(stream uuid.UUID, version int, limit int) ([]Even
 	result := []Event{}
 
 	err := s.db.View(func(txn *badger.Txn) error {
-		for i := 0; len(result) < limit || limit == 0; i++ {
-			streamKey := getStreamKey(stream, version+i)
+		streamObj, err := getStream(txn, stream)
 
-			item, err := txn.Get(streamKey)
-			if err == badger.ErrKeyNotFound {
-				return nil
-			} else if err != nil {
-				return err
+		if err != nil {
+			return err
+		}
+
+		if streamObj == nil {
+			return nil
+		}
+
+		for _, ref := range streamObj.Events {
+			if version > 0 {
+				version--
+				continue
 			}
 
-			id, err := item.ValueCopy(nil)
-			if err != nil {
-				return err
-			}
-
-			item, err = txn.Get(append(PrefixEvent, id...))
+			item, err := txn.Get(append(PrefixEvent, ref[:]...))
 			if err != nil {
 				return err
 			}
@@ -117,12 +114,17 @@ func (s *Store) LoadFromStream(stream uuid.UUID, version int, limit int) ([]Even
 			}
 
 			var event Event
-			if err := json.Unmarshal(value, &event); err != nil {
+
+			if err := msgpack.Unmarshal(value, &event); err != nil {
 				return err
 			}
 
 			result = append(result, event)
 		}
+
+		// for i := 0; len(result) < limit || limit == 0; i++ {
+
+		// }
 
 		return nil
 	})
@@ -140,7 +142,7 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
 	err := s.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
-		prefix := PrefixStreamVersion
+		prefix := PrefixStream
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			key := item.Key()
@@ -170,39 +172,74 @@ func NewStore(db *badger.DB) *Store {
 	return &Store{db}
 }
 
-func getStreamKey(stream uuid.UUID, version int) []byte {
-	indexVersion := make([]byte, 4)
-	binary.BigEndian.PutUint32(indexVersion, uint32(version))
-	streamKey := append([]byte(stream[:]), indexVersion...)
-	streamKey = append(PrefixStream, streamKey...)
-	return streamKey
-}
-
-func getStreamVersion(txn *badger.Txn, stream uuid.UUID) (int, error) {
-	key := append(PrefixStreamVersion, stream[:]...)
+func getStream(txn *badger.Txn, stream uuid.UUID) (*Stream, error) {
+	key := append(PrefixStream, stream[:]...)
 
 	item, err := txn.Get(key)
 	if err == badger.ErrKeyNotFound {
-		return 0, nil
+		return nil, nil
 	} else if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	value, err := item.ValueCopy(nil)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	version := binary.BigEndian.Uint32(value)
+	var result *Stream
 
-	return int(version + 1), nil
+	if err := msgpack.Unmarshal(value, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-func setStreamVersion(txn *badger.Txn, stream uuid.UUID, version int) error {
-	value := make([]byte, 4)
-	binary.LittleEndian.PutUint32(value, uint32(version))
+func setStream(txn *badger.Txn, stream uuid.UUID, value *Stream) error {
+	key := append(PrefixStream, stream[:]...)
 
-	key := append(PrefixStreamVersion, stream[:]...)
+	data, err := msgpack.Marshal(value)
+	if err != nil {
+		return err
+	}
 
-	return txn.Set(key, value)
+	return txn.Set(key, data)
 }
+
+// func getStreamKey(stream uuid.UUID, version int) []byte {
+// 	indexVersion := make([]byte, 4)
+// 	binary.BigEndian.PutUint32(indexVersion, uint32(version))
+// 	streamKey := append([]byte(stream[:]), indexVersion...)
+// 	streamKey = append(PrefixStream, streamKey...)
+// 	return streamKey
+// }
+
+// func getStreamVersion(txn *badger.Txn, stream uuid.UUID) (int, error) {
+// 	key := append(PrefixStreamVersion, stream[:]...)
+
+// 	item, err := txn.Get(key)
+// 	if err == badger.ErrKeyNotFound {
+// 		return 0, nil
+// 	} else if err != nil {
+// 		return 0, err
+// 	}
+
+// 	value, err := item.ValueCopy(nil)
+// 	if err != nil {
+// 		return 0, err
+// 	}
+
+// 	version := binary.BigEndian.Uint32(value)
+
+// 	return int(version + 1), nil
+// }
+
+// func setStreamVersion(txn *badger.Txn, stream uuid.UUID, version int) error {
+// 	value := make([]byte, 4)
+// 	binary.LittleEndian.PutUint32(value, uint32(version))
+
+// 	key := append(PrefixStreamVersion, stream[:]...)
+
+// 	return txn.Set(key, value)
+// }
