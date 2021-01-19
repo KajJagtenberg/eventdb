@@ -12,6 +12,7 @@ type Event struct {
 	Version       int         `json:"version"`
 	Type          string      `json:"type"`
 	Data          interface{} `json:"data"`
+	Metadata      interface{} `json:"metadata"`
 	CausationID   string      `json:"causation_id"`
 	CorrelationID string      `json:"correlation_id"`
 	Timestamp     time.Time   `json:"ts"`
@@ -20,6 +21,7 @@ type Event struct {
 type AppendEvent struct {
 	Type          string      `json:"type" validate:"required,ascii"`
 	Data          interface{} `json:"data" validate:"required"`
+	Metadata      interface{} `json:"metadata"`
 	CausationID   string      `json:"causation_id" validate:"required,uuid"`
 	CorrelationID string      `json:"correlation_id" validate:"required,uuid"`
 }

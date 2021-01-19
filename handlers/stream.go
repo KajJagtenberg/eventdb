@@ -120,3 +120,19 @@ func AppendToStream(eventstore *store.Store) http.HandlerFunc {
 		io.WriteString(rw, "Events added")
 	}
 }
+
+func GetStreams(eventstore *store.Store) http.HandlerFunc {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		streams, err := eventstore.GetStreams(0, 10)
+
+		if err != nil {
+			http.Error(rw, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		if err := json.NewEncoder(rw).Encode(streams); err != nil {
+			http.Error(rw, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+	}
+}

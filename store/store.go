@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	PrefixEvent  = []byte{0, 1}
-	PrefixStream = []byte{0, 2}
+	PrefixEvent         = []byte{0, 1}
+	PrefixStream        = []byte{0, 2}
+	PrefixStreamVersion = []byte{0, 2}
 
 	entropy = ulid.Monotonic(rand.New((rand.NewSource((int64(ulid.Now()))))), 0)
 )
@@ -49,6 +50,7 @@ func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEve
 				Version:       version + i,
 				Type:          insert.Type,
 				Data:          insert.Data,
+				Metadata:      insert.Metadata,
 				CausationID:   insert.CausationID,
 				CorrelationID: insert.CorrelationID,
 				Timestamp:     time.Now(),
@@ -132,6 +134,38 @@ func (s *Store) LoadFromStream(stream uuid.UUID, version int, limit int) ([]Even
 	return result, nil
 }
 
+func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
+	result := []uuid.UUID{}
+
+	err := s.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		prefix := PrefixStreamVersion
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			key := item.Key()
+
+			if len(key) > 18 {
+				continue
+			}
+
+			stream, err := uuid.FromBytes(key[2:])
+			if err != nil {
+				return err
+			}
+
+			result = append(result, stream)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewStore(db *badger.DB) *Store {
 	return &Store{db}
 }
@@ -145,7 +179,7 @@ func getStreamKey(stream uuid.UUID, version int) []byte {
 }
 
 func getStreamVersion(txn *badger.Txn, stream uuid.UUID) (int, error) {
-	key := append(PrefixStream, stream[:]...)
+	key := append(PrefixStreamVersion, stream[:]...)
 
 	item, err := txn.Get(key)
 	if err == badger.ErrKeyNotFound {
@@ -168,7 +202,7 @@ func setStreamVersion(txn *badger.Txn, stream uuid.UUID, version int) error {
 	value := make([]byte, 4)
 	binary.LittleEndian.PutUint32(value, uint32(version))
 
-	key := append(PrefixStream, stream[:]...)
+	key := append(PrefixStreamVersion, stream[:]...)
 
 	return txn.Set(key, value)
 }

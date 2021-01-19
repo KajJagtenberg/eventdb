@@ -41,6 +41,7 @@ func main() {
 	router.Use(middleware.JSONMiddleWare())
 	router.HandleFunc("/streams/{stream}", handlers.LoadFromStream(eventstore)).Methods(http.MethodGet)
 	router.HandleFunc("/streams/{stream}/{version}", handlers.AppendToStream(eventstore)).Methods(http.MethodPost)
+	router.HandleFunc("/streams", handlers.GetStreams(eventstore)).Methods(http.MethodGet)
 
 	server := http.Server{
 		Addr:         ":5555", // TODO: Get from env var
