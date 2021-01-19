@@ -27,7 +27,15 @@ func LoadFromStream(eventstore *store.Store) func(rw http.ResponseWriter, r *htt
 		version, _ := strconv.Atoi(versionQuery)
 		limit, _ := strconv.Atoi(limitQuery)
 
-		// Validate request
+		if version < 0 {
+			http.Error(rw, "Version cannot be negative", http.StatusBadRequest)
+			return
+		}
+
+		if limit < 0 {
+			http.Error(rw, "Limit cannot be negative", http.StatusBadRequest)
+			return
+		}
 
 		events, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {

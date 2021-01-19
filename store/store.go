@@ -34,8 +34,6 @@ func (s *Store) AppendToStream(stream string, version int, events []AppendEvent)
 		}
 
 		for i, insert := range events {
-			// TODO: Check if the version already exists and return an error if it does
-
 			id, err := ulid.New(ulid.Now(), entropy)
 			if err != nil {
 				return err
