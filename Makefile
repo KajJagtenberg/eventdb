@@ -10,3 +10,6 @@ clean:
 
 docker:
 	docker build -t eventdb .
+
+compose_up:
+	docker-compose up -d
