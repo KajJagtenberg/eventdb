@@ -15,7 +15,7 @@ import (
 var (
 	PrefixEvent         = []byte{0, 1}
 	PrefixStream        = []byte{0, 2}
-	PrefixStreamVersion = []byte{0, 2}
+	PrefixStreamVersion = []byte{0, 3}
 
 	entropy = ulid.Monotonic(rand.New((rand.NewSource((int64(ulid.Now()))))), 0)
 )
