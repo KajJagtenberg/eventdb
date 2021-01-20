@@ -46,7 +46,7 @@ func LoadFromStream(eventstore *store.Store) http.HandlerFunc {
 			return
 		}
 
-		events, err := eventstore.LoadFromStream(stream, version, limit)
+		streamVersion, events, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadRequest)
 			return
@@ -57,7 +57,10 @@ func LoadFromStream(eventstore *store.Store) http.HandlerFunc {
 			return
 		}
 
-		if err := json.NewEncoder(rw).Encode(events); err != nil {
+		if err := json.NewEncoder(rw).Encode(struct {
+			Version int           `json:"version"`
+			Events  []store.Event `json:"events"`
+		}{streamVersion, events}); err != nil {
 			log.Println(err)
 			http.Error(rw, "Internal server error", http.StatusInternalServerError)
 			return

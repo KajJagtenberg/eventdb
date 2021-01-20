@@ -2,6 +2,7 @@ package store
 
 import (
 	"fmt"
+	"io"
 	"math/rand"
 	"time"
 
@@ -75,8 +76,9 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 	})
 }
 
-func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Event, error) {
+func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) (int, []Event, error) {
 	result := []Event{}
+	streamVersion := 0
 
 	err := s.db.View(func(txn *badger.Txn) error {
 		stream, err := getStream(txn, streamId)
@@ -84,6 +86,8 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 		if err != nil {
 			return err
 		}
+
+		streamVersion = stream.Version
 
 		for _, ref := range stream.Events {
 			if version > 0 {
@@ -114,10 +118,10 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 	})
 
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 
-	return result, nil
+	return streamVersion, result, nil
 }
 
 func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
@@ -163,6 +167,14 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
 	}
 
 	return result, nil
+}
+
+func (s *Store) Backup(dst io.Writer) error {
+	if _, err := s.db.Backup(dst, 0); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func NewStore(db *badger.DB) *Store {
