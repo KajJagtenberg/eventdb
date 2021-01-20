@@ -13,6 +13,7 @@ import (
 	"eventdb/store"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
 
@@ -23,21 +24,36 @@ func main() {
 	}
 	defer db.Close()
 
-	// db.View(func(txn *badger.Txn) error {
-	// 	opts := badger.DefaultIteratorOptions
-	// 	opts.PrefetchSize = 10
-	// 	it := txn.NewIterator(opts)
-	// 	defer it.Close()
-	// 	for it.Rewind(); it.Valid(); it.Next() {
-	// 		log.Println(it.Item().Key())
-	// 	}
-
-	// 	return nil
-	// })
-
 	eventstore := store.NewStore(db)
 
-	log.Println(db.Size())
+	count := 1000000
+
+	start := time.Now()
+
+	for i := 0; i < count; i++ {
+		cause := uuid.New().String()
+
+		event := store.AppendEvent{
+			Type:          "person_added",
+			CausationID:   cause,
+			CorrelationID: cause,
+			Data: struct {
+				Name string
+			}{
+				Name: "Kaj Jagtenberg",
+			},
+		}
+
+		stream := uuid.New()
+
+		if err := eventstore.AppendToStream(stream, 0, []store.AppendEvent{event}); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	passed := time.Now().Sub(start)
+
+	log.Println("Speed: ", count/int(passed.Seconds()))
 
 	router := mux.NewRouter()
 	router.Use(middleware.JSONMiddleWare())

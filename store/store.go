@@ -1,7 +1,7 @@
 package store
 
 import (
-	"errors"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -22,24 +22,15 @@ type Store struct {
 	db *badger.DB
 }
 
-func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEvent) error {
+func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendEvent) error {
 	return s.db.Update(func(txn *badger.Txn) error {
-		streamObj, err := getStream(txn, stream)
+		stream, err := getStream(txn, streamId)
 		if err != nil {
 			return err
 		}
 
-		if streamObj == nil {
-			streamObj = &Stream{}
-		}
-
-		streamVersion := len(streamObj.Events)
-
-		if version < streamVersion {
-			return errors.New("Concurrent stream modification")
-		}
-		if version > streamVersion {
-			return errors.New("Version does not line up with stream version")
+		if version != stream.Version {
+			return fmt.Errorf("Optimistic concurrency error: given = %d, current = %d", version, stream.Version)
 		}
 
 		for i, insert := range events {
@@ -50,7 +41,7 @@ func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEve
 
 			event := Event{
 				ID:            id,
-				Stream:        stream,
+				Stream:        streamId,
 				Version:       version + i,
 				Type:          insert.Type,
 				Data:          insert.Data,
@@ -76,28 +67,25 @@ func (s *Store) AppendToStream(stream uuid.UUID, version int, events []AppendEve
 				return err
 			}
 
-			streamObj.Events = append(streamObj.Events, id)
+			stream.Events = append(stream.Events, id)
+			stream.Version++
 		}
 
-		return setStream(txn, stream, streamObj)
+		return setStream(txn, streamId, stream)
 	})
 }
 
-func (s *Store) LoadFromStream(stream uuid.UUID, version int, limit int) ([]Event, error) {
+func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Event, error) {
 	result := []Event{}
 
 	err := s.db.View(func(txn *badger.Txn) error {
-		streamObj, err := getStream(txn, stream)
+		stream, err := getStream(txn, streamId)
 
 		if err != nil {
 			return err
 		}
 
-		if streamObj == nil {
-			return nil
-		}
-
-		for _, ref := range streamObj.Events {
+		for _, ref := range stream.Events {
 			if version > 0 {
 				version--
 				continue
@@ -122,10 +110,6 @@ func (s *Store) LoadFromStream(stream uuid.UUID, version int, limit int) ([]Even
 			result = append(result, event)
 		}
 
-		// for i := 0; len(result) < limit || limit == 0; i++ {
-
-		// }
-
 		return nil
 	})
 
@@ -139,6 +123,10 @@ func (s *Store) LoadFromStream(stream uuid.UUID, version int, limit int) ([]Even
 func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
 	result := []uuid.UUID{}
 
+	if limit > 100 {
+		limit = 100
+	}
+
 	err := s.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
@@ -149,6 +137,15 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
 
 			if len(key) > 18 {
 				continue
+			}
+
+			if offset > 0 {
+				offset--
+				continue
+			}
+
+			if len(result) >= limit {
+				return nil
 			}
 
 			stream, err := uuid.FromBytes(key[2:])
@@ -177,7 +174,7 @@ func getStream(txn *badger.Txn, stream uuid.UUID) (*Stream, error) {
 
 	item, err := txn.Get(key)
 	if err == badger.ErrKeyNotFound {
-		return nil, nil
+		return &Stream{}, nil
 	} else if err != nil {
 		return nil, err
 	}

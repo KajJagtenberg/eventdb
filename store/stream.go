@@ -5,5 +5,6 @@ import (
 )
 
 type Stream struct {
-	Events []ulid.ULID `json:"events"`
+	Version int
+	Events  []ulid.ULID
 }

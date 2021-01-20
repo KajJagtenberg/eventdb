@@ -123,7 +123,7 @@ func AppendToStream(eventstore *store.Store) http.HandlerFunc {
 
 func GetStreams(eventstore *store.Store) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		streams, err := eventstore.GetStreams(0, 10)
+		streams, err := eventstore.GetStreams(0, 1000)
 
 		if err != nil {
 			log.Println(err)
