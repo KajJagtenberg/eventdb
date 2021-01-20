@@ -45,6 +45,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
+	defer server.Shutdown(context.Background())
 
 	go func() {
 		log.Printf("EventDB HTTP API listening on %s\n", server.Addr)
@@ -55,8 +56,6 @@ func main() {
 	}()
 
 	AwaitShutdown()
-
-	server.Shutdown(context.Background())
 }
 
 func AwaitShutdown() {
