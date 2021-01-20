@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"eventdb/env"
 	"eventdb/middleware"
 	"log"
@@ -53,6 +54,12 @@ func main() {
 		}
 	}()
 
+	AwaitShutdown()
+
+	server.Shutdown(context.Background())
+}
+
+func AwaitShutdown() {
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 	<-c
