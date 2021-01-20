@@ -1,6 +1,7 @@
 package main
 
 import (
+	"eventdb/env"
 	"eventdb/middleware"
 	"log"
 	"net/http"
@@ -31,14 +32,13 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Use(middleware.JSONMiddleWare())
-	// router.Use(middleware.TimerMiddleWare())
 	router.HandleFunc("/streams/{stream}", handlers.LoadFromStream(eventstore)).Methods(http.MethodGet)
 	router.HandleFunc("/streams/{stream}/{version}", handlers.AppendToStream(eventstore)).Methods(http.MethodPost)
 	router.HandleFunc("/streams", handlers.GetStreams(eventstore)).Methods(http.MethodGet)
 	router.HandleFunc("/backup", handlers.Backup(eventstore)).Methods(http.MethodGet)
 
 	server := http.Server{
-		Addr:         ":5555", // TODO: Get from env var
+		Addr:         env.GetEnv("LISTENING_ADDRESS", ":5555"),
 		Handler:      router,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 10 * time.Second,
