@@ -19,9 +19,11 @@ func AddMockEvents(eventstore *store.Store, count int) float64 {
 			CausationID:   cause,
 			CorrelationID: cause,
 			Data: struct {
-				Name string
+				Name string `json:"name"`
+				Age  int    `json:"age"`
 			}{
 				Name: "Kaj Jagtenberg",
+				Age:  22,
 			},
 		}
 

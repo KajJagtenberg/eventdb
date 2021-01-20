@@ -1,6 +1,7 @@
 package store
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
@@ -8,15 +9,15 @@ import (
 )
 
 type Event struct {
-	ID            ulid.ULID   `json:"id"`
-	Stream        uuid.UUID   `json:"stream"`
-	Version       int         `json:"version"`
-	Type          string      `json:"type"`
-	Data          interface{} `json:"data"`
-	Metadata      interface{} `json:"metadata"`
-	CausationID   string      `json:"causation_id"`
-	CorrelationID string      `json:"correlation_id"`
-	Timestamp     time.Time   `json:"ts"`
+	ID            ulid.ULID       `json:"id"`
+	Stream        uuid.UUID       `json:"stream"`
+	Version       int             `json:"version"`
+	Type          string          `json:"type"`
+	Data          json.RawMessage `json:"data"`
+	Metadata      interface{}     `json:"metadata"`
+	CausationID   string          `json:"causation_id"`
+	CorrelationID string          `json:"correlation_id"`
+	Timestamp     time.Time       `json:"ts"`
 }
 
 type AppendEvent struct {

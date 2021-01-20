@@ -4,6 +4,7 @@ import (
 	"context"
 	"eventdb/env"
 	"eventdb/middleware"
+	"eventdb/util"
 	"log"
 	"net/http"
 	"os"
@@ -28,6 +29,8 @@ func main() {
 	defer db.Close()
 
 	eventstore := store.NewStore(db)
+
+	util.AddMockEvents(eventstore, 1000)
 
 	log.Println("EventDB initializing API layer")
 

@@ -1,6 +1,7 @@
 package store
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -40,12 +41,17 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 				return err
 			}
 
+			data, err := json.Marshal(insert.Data)
+			if err != nil {
+				return err
+			}
+
 			event := Event{
 				ID:            id,
 				Stream:        streamId,
 				Version:       version + i,
 				Type:          insert.Type,
-				Data:          insert.Data,
+				Data:          data,
 				Metadata:      insert.Metadata,
 				CausationID:   insert.CausationID,
 				CorrelationID: insert.CorrelationID,
