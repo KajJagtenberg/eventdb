@@ -4,7 +4,6 @@ WORKDIR /src
 
 RUN apk update
 RUN apk upgrade
-RUN apk add gcc g++
 
 COPY go.mod .
 COPY go.sum .
