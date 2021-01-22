@@ -6,7 +6,7 @@ build:
 
 clean:
 	rm -f eventdb
-	rm -rf data
+	rm -rf *.bolt
 
 docker:
 	docker build -t eventdb .
