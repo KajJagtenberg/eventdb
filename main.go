@@ -15,14 +15,14 @@ import (
 	"eventdb/handlers"
 	"eventdb/store"
 
-	"github.com/dgraph-io/badger/v3"
 	"github.com/gorilla/mux"
+	"go.etcd.io/bbolt"
 )
 
 func main() {
 	log.Println("EventDB initializing storage layer")
 
-	db, err := badger.Open(badger.DefaultOptions("data").WithLogger(nil))
+	db, err := bbolt.Open("data.bolt", 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
