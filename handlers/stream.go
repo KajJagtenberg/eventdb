@@ -124,7 +124,23 @@ func AppendToStream(eventstore *store.Store) http.HandlerFunc {
 
 func GetStreams(eventstore *store.Store) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		streams, err := eventstore.GetStreams(0, 1000) // TODO: Add offset and limit query params
+		offsetQuery := r.FormValue("offset")
+		limitQuery := r.FormValue("limit")
+
+		offset, _ := strconv.Atoi(offsetQuery)
+		limit, _ := strconv.Atoi(limitQuery)
+
+		if offset < 0 {
+			http.Error(rw, "Offset cannot be negative", http.StatusBadRequest)
+			return
+		}
+
+		if limit < 0 {
+			http.Error(rw, "Limit cannot be negative", http.StatusBadRequest)
+			return
+		}
+
+		streams, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
 			log.Println(err)
