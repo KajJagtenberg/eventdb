@@ -4,7 +4,6 @@ import (
 	"context"
 	"eventdb/env"
 	"eventdb/middleware"
-	"eventdb/util"
 	"log"
 	"net/http"
 	"os"
@@ -37,10 +36,11 @@ func main() {
 
 	router := mux.NewRouter()
 	router.Use(middleware.JSONMiddleWare())
+	router.HandleFunc("/", handlers.Home())
 	router.HandleFunc("/streams/{stream}", handlers.LoadFromStream(eventstore)).Methods(http.MethodGet)
 	router.HandleFunc("/streams/{stream}/{version}", handlers.AppendToStream(eventstore)).Methods(http.MethodPost)
 	router.HandleFunc("/streams", handlers.GetStreams(eventstore)).Methods(http.MethodGet)
-	router.HandleFunc("/count", handlers.GetEventCOunt(eventstore)).Methods(http.MethodGet)
+	router.HandleFunc("/count", handlers.GetEventCount(eventstore)).Methods(http.MethodGet)
 	router.HandleFunc("/backup", handlers.Backup(eventstore)).Methods(http.MethodGet)
 
 	server := http.Server{
@@ -58,10 +58,6 @@ func main() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
 		}
-	}()
-
-	go func() {
-		log.Println(util.AddMockEvents(eventstore, 1000000))
 	}()
 
 	AwaitShutdown()

@@ -92,7 +92,8 @@ func AppendToStream(eventstore *store.Store) http.HandlerFunc {
 		var events []store.AppendEvent
 
 		if err := json.NewDecoder(r.Body).Decode(&events); err != nil {
-			http.Error(rw, "Unable to decode body", http.StatusBadRequest)
+			log.Println(err)
+			http.Error(rw, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
@@ -123,7 +124,7 @@ func AppendToStream(eventstore *store.Store) http.HandlerFunc {
 
 func GetStreams(eventstore *store.Store) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
-		streams, err := eventstore.GetStreams(0, 1000)
+		streams, err := eventstore.GetStreams(0, 1000) // TODO: Add offset and limit query params
 
 		if err != nil {
 			log.Println(err)

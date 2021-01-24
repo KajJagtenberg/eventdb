@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func GetEventCOunt(eventstore *store.Store) http.HandlerFunc {
+func GetEventCount(eventstore *store.Store) http.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		count, err := eventstore.GetEventCount()
 		if err != nil {
