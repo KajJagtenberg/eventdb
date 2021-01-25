@@ -4,15 +4,20 @@ WORKDIR /src
 
 RUN apk update
 RUN apk upgrade
+RUN apk add util-linux
 
 COPY go.mod .
 COPY go.sum .
 
 RUN go mod download
 
+RUN go install github.com/br0xen/boltbrowser
+
+RUN whereis boltbrowser
+
 COPY . .
 
-RUN go build .
+RUN go install .
 
 FROM alpine
 
@@ -22,6 +27,6 @@ RUN apk add bash
 
 WORKDIR /var/lib/eventdb
 
-COPY --from=build /src/eventdb /bin/eventdb
+COPY --from=build /go/bin/* /bin/
 
 CMD [ "eventdb" ]
