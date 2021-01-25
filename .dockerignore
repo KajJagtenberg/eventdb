@@ -25,6 +25,8 @@ eventdb
 */.next
 */out
 
+webui
+
 # production
 build
 

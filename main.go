@@ -35,8 +35,6 @@ func setupRoutes(app *fiber.App, eventstore *store.Store) {
 	}))
 	// app.Use(etag.New()) Might not work with individual streams
 
-	app.Static("/", "./webui")
-
 	v1 := app.Group("/api/v1")
 
 	v1.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
