@@ -9,6 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/oklog/ulid"
 )
 
 func LoadFromStream(eventstore *store.Store) fiber.Handler {
@@ -94,6 +95,19 @@ func AppendToStream(eventstore *store.Store) fiber.Handler {
 		}
 
 		return c.SendString("Events added")
+	}
+}
+
+func Subscribe(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		offset := ulid.ULID{}
+
+		events, err := eventstore.Subscribe(offset, 0)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(events)
 	}
 }
 

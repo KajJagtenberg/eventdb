@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -22,6 +23,8 @@ var (
 )
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
+	app.Use(etag.New())
+
 	v1 := app.Group("/api/v1")
 
 	v1.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
@@ -34,6 +37,7 @@ func setupRoutes(app *fiber.App, eventstore *store.Store) {
 
 	v1.Get("/", handlers.Home(eventstore))
 	v1.Get("/streams", handlers.GetStreams(eventstore))
+	v1.Get("/streams/all", handlers.Subscribe(eventstore))
 	v1.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
 	v1.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))
 	v1.Get("/count", handlers.GetEventCount(eventstore))
@@ -58,7 +62,7 @@ func main() {
 
 	log.Println("EventDB initializing API layer")
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{})
 
 	setupRoutes(app, eventstore)
 

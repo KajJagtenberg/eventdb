@@ -121,6 +121,38 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 	return result, nil
 }
 
+func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
+	if limit == 0 {
+		limit = 100
+	}
+
+	result := []Event{}
+
+	err := s.db.View(func(txn *bbolt.Tx) error {
+		cur := txn.Bucket([]byte("events")).Cursor()
+
+		for k, v := cur.Seek(offset[:]); k != nil; k, v = cur.Next() {
+			serialized := v
+
+			var event Event
+
+			if err := msgpack.Unmarshal(serialized, &event); err != nil {
+				return err
+			}
+
+			result = append(result, event)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
 	if limit == 0 {
 		limit = 10
