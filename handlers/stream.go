@@ -127,12 +127,19 @@ func GetStreams(eventstore *store.Store) fiber.Handler {
 			return errors.New("Limit cannot be negative")
 		}
 
-		streams, err := eventstore.GetStreams(offset, limit)
+		streams, total, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
 			return err
 		}
 
-		return c.JSON(streams)
+		return c.JSON(struct {
+			Streams []uuid.UUID `json:"streams"`
+			Total   int         `json:"total"`
+			Offset  int         `json:"offset"`
+			Limit   int         `json:"limit"`
+		}{
+			streams, total, offset, limit,
+		})
 	}
 }
