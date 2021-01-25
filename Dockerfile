@@ -4,7 +4,6 @@ WORKDIR /src
 
 RUN apk update
 RUN apk upgrade
-RUN apk add util-linux
 
 COPY go.mod .
 COPY go.sum .
