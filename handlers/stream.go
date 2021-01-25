@@ -1,157 +1,124 @@
 package handlers
 
 import (
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
+	"errors"
 	"strconv"
 
 	"eventdb/store"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 )
 
-func LoadFromStream(eventstore *store.Store) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		streamParam := vars["stream"]
+func LoadFromStream(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		streamParam := c.Params("stream")
 
 		if len(streamParam) == 0 {
-			http.Error(rw, "Stream cannot be empty", http.StatusBadRequest)
-			return
+			return errors.New("Stream cannot be empty")
 		}
 
 		stream, err := uuid.Parse(streamParam)
 		if err != nil {
-			http.Error(rw, "Stream must be an UUID v4", http.StatusBadRequest)
-			return
+			return errors.New("Stream must be an UUID v4")
 		}
 
-		versionQuery := r.FormValue("version")
-		limitQuery := r.FormValue("limit")
+		versionQuery := c.Query("version")
+		limitQuery := c.Query("limit")
 
 		version, _ := strconv.Atoi(versionQuery)
 		limit, _ := strconv.Atoi(limitQuery)
 
 		if version < 0 {
-			http.Error(rw, "Version cannot be negative", http.StatusBadRequest)
-			return
+			return errors.New("Version cannot be negative")
 		}
 
 		if limit < 0 {
-			http.Error(rw, "Limit cannot be negative", http.StatusBadRequest)
-			return
+			return errors.New("Limit cannot be negative")
 		}
 
 		events, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
+			return err
 		}
 
 		if len(events) == 0 {
-			http.Error(rw, "Not Found", http.StatusNotFound)
-			return
+			return errors.New("Not Found")
 		}
 
-		if err := json.NewEncoder(rw).Encode(events); err != nil {
-			log.Println(err)
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-			return
-		}
+		return c.JSON(events)
 	}
 }
 
-func AppendToStream(eventstore *store.Store) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		streamParam := vars["stream"]
-		versionParam := vars["version"]
+func AppendToStream(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		streamParam := c.Params("stream")
+		versionParam := c.Params("version")
 
 		if len(streamParam) == 0 {
-			http.Error(rw, "Stream cannot be empty", http.StatusBadRequest)
-			return
+			return errors.New("Stream cannot be empty")
 		}
 
 		stream, err := uuid.Parse(streamParam)
 		if err != nil {
-			http.Error(rw, "Stream must be an UUID v4", http.StatusBadRequest)
-			return
+			return errors.New("Stream must be an UUID v4")
 		}
 
 		version, _ := strconv.Atoi(versionParam)
 
 		if version < 0 {
-			http.Error(rw, "Version cannot be negative", http.StatusBadRequest)
-			return
+			return errors.New("Version cannot be negative")
 		}
 
 		var events []store.AppendEvent
 
-		if err := json.NewDecoder(r.Body).Decode(&events); err != nil {
-			log.Println(err)
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-			return
+		if err := c.BodyParser(&events); err != nil {
+			return err
 		}
 
 		if len(events) == 0 {
-			http.Error(rw, "Empty events", http.StatusBadRequest)
-			return
+			return errors.New("Empty events")
 		}
 
 		validate := validator.New()
 
 		for _, event := range events {
 			if err := validate.Struct(event); err != nil {
-				validationErrors := err.(validator.ValidationErrors)
-
-				http.Error(rw, validationErrors.Error(), http.StatusBadRequest)
-				return
+				return err
 			}
 		}
 
 		if err := eventstore.AppendToStream(stream, version, events); err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-			return
+			return err
 		}
 
-		io.WriteString(rw, "Events added")
+		return c.SendString("Events added")
 	}
 }
 
-func GetStreams(eventstore *store.Store) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		offsetQuery := r.FormValue("offset")
-		limitQuery := r.FormValue("limit")
+func GetStreams(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		offsetQuery := c.Query("offset")
+		limitQuery := c.Query("limit")
 
 		offset, _ := strconv.Atoi(offsetQuery)
 		limit, _ := strconv.Atoi(limitQuery)
 
 		if offset < 0 {
-			http.Error(rw, "Offset cannot be negative", http.StatusBadRequest)
-			return
+			return errors.New("Offset cannot be negative")
 		}
 
 		if limit < 0 {
-			http.Error(rw, "Limit cannot be negative", http.StatusBadRequest)
-			return
+			return errors.New("Limit cannot be negative")
 		}
 
 		streams, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
-			log.Println(err)
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-			return
+			return err
 		}
 
-		if err := json.NewEncoder(rw).Encode(streams); err != nil {
-			log.Println(err)
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-			return
-		}
+		return c.JSON(streams)
 	}
 }

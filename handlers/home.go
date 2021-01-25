@@ -1,20 +1,16 @@
 package handlers
 
 import (
-	"encoding/json"
 	"eventdb/constants"
-	"log"
-	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
-func Home() http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		if err := json.NewEncoder(rw).Encode(struct {
+func Home() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		return c.JSON(struct {
 			Name    string `json:"name"`
 			Version string `json:"version"`
-		}{Name: constants.Name, Version: constants.Version}); err != nil {
-			log.Println(err)
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-		}
+		}{Name: constants.Name, Version: constants.Version})
 	}
 }

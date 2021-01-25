@@ -1,23 +1,20 @@
 package handlers
 
 import (
-	"encoding/json"
 	"eventdb/store"
-	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
-func GetEventCount(eventstore *store.Store) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
+func GetEventCount(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
 		count, err := eventstore.GetEventCount()
 		if err != nil {
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-			return
+			return err
 		}
 
-		if err := json.NewEncoder(rw).Encode(struct {
+		return c.JSON(struct {
 			Count int `json:"count"`
-		}{count}); err != nil {
-			http.Error(rw, "Internal server error", http.StatusInternalServerError)
-		}
+		}{count})
 	}
 }

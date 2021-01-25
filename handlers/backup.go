@@ -1,18 +1,15 @@
 package handlers
 
 import (
-	"compress/gzip"
 	"eventdb/store"
-	"net/http"
+
+	"github.com/gofiber/fiber/v2"
 )
 
-func Backup(eventstore *store.Store) http.HandlerFunc {
-	return func(rw http.ResponseWriter, r *http.Request) {
-		rw.Header().Set("Content-Type", "application/octet-stream")
-		rw.Header().Set("Content-Disposition", "attachment;filename=eventdb.bak")
+func Backup(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		c.Attachment("eventdb.bak")
 
-		if err := eventstore.Backup(gzip.NewWriter(rw)); err != nil {
-			http.Error(rw, "Internals erver error", http.StatusInternalServerError)
-		}
+		return eventstore.Backup(c.Response().BodyWriter())
 	}
 }
