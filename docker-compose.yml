@@ -3,6 +3,7 @@ version: "3"
 services:
   eventdb:
     image: eventdb
+    container_name: eventdb
     restart: unless-stopped
     ports:
       - 6543:6543
