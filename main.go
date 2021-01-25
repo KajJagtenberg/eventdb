@@ -23,7 +23,9 @@ func setupRoutes(app *fiber.App, eventstore *store.Store) {
 func main() {
 	log.Println("EventDB initializing storage layer")
 
-	db, err := bbolt.Open("data.bolt", 0600, nil)
+	file := env.GetEnv("DATABASE_FILE", "data.bolt")
+
+	db, err := bbolt.Open(file, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
