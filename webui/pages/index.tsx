@@ -8,6 +8,7 @@ import {
 } from '@chakra-ui/react';
 
 import Layout from '../components/Layout';
+import Navbar from '../components/Navbar';
 import { backend } from '../vars/backend';
 
 const fetchStreams = async (page: number, limit: number) => {
@@ -41,6 +42,8 @@ const Home = () => {
 
   return (
     <Layout title="EventDB">
+      <Navbar />
+
       <Flex
         direction="column"
         p={4}
