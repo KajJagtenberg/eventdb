@@ -34,7 +34,7 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	})
 
-	app.Get("/", handlers.Home())
+	app.Get("/", handlers.Home(eventstore))
 	app.Get("/streams", handlers.GetStreams(eventstore))
 	app.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
 	app.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))

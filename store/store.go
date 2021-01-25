@@ -172,6 +172,18 @@ func (s *Store) GetEventCount() (int, error) {
 	return count, nil
 }
 
+func (s *Store) GetDBSize() int64 {
+	var size int64
+
+	s.db.View(func(txn *bbolt.Tx) error {
+		size = txn.Size()
+
+		return nil
+	})
+
+	return size
+}
+
 func (s *Store) Backup(dst io.Writer) error {
 	return s.db.View(func(txn *bbolt.Tx) error {
 		_, err := txn.WriteTo(dst)
