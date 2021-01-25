@@ -6,3 +6,4 @@ services:
     restart: unless-stopped
     ports:
       - 5555:5555
+    volumes: ./data.bolt:/var/lib/eventdb/data.bolt

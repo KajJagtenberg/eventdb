@@ -12,8 +12,6 @@ RUN go mod download
 
 RUN go install github.com/br0xen/boltbrowser
 
-RUN whereis boltbrowser
-
 COPY . .
 
 RUN go install .
