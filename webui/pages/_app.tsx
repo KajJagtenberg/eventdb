@@ -1,5 +1,6 @@
-import { ChakraProvider } from "@chakra-ui/react";
-import { QueryClientProvider, QueryClient } from "react-query";
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+import { ChakraProvider } from '@chakra-ui/react';
 
 const queryClient = new QueryClient();
 
