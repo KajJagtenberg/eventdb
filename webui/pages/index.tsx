@@ -1,3 +1,4 @@
+import { Box } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { backend } from "../vars/backend";
 
@@ -11,9 +12,9 @@ const Home = () => {
   }, []);
 
   return (
-    <div>
+    <Box>
       <pre>{JSON.stringify(data, null, 2)}</pre>
-    </div>
+    </Box>
   );
 };
 
