@@ -3,7 +3,6 @@ package main
 import (
 	"eventdb/env"
 	"log"
-	"time"
 
 	"eventdb/handlers"
 	"eventdb/store"
@@ -37,11 +36,7 @@ func main() {
 
 	log.Println("EventDB initializing API layer")
 
-	app := fiber.New(fiber.Config{
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
-	})
+	app := fiber.New()
 
 	setupRoutes(app, eventstore)
 
