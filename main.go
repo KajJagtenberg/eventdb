@@ -9,7 +9,9 @@ import (
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
+	"github.com/gofiber/helmet/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -23,6 +25,8 @@ var (
 )
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
+	app.Use(helmet.New(helmet.Config{}))
+	app.Use(cors.New())
 	app.Use(etag.New())
 
 	v1 := app.Group("/api/v1")
