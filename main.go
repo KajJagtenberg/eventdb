@@ -29,6 +29,8 @@ func setupRoutes(app *fiber.App, eventstore *store.Store) {
 	app.Use(cors.New())
 	app.Use(etag.New())
 
+	app.Static("/", "./webui/out")
+
 	v1 := app.Group("/api/v1")
 
 	v1.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
