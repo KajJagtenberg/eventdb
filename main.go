@@ -22,15 +22,15 @@ var (
 )
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
-	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+	v1 := app.Group("/api/v1")
+
+	v1.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	app.Use(func(c *fiber.Ctx) error {
 		requestCounter.Inc()
 
 		return c.Next()
 	})
-
-	v1 := app.Group("/api/v1")
 
 	v1.Get("/", handlers.Home(eventstore))
 	v1.Get("/streams", handlers.GetStreams(eventstore))
