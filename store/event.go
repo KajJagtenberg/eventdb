@@ -5,10 +5,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/oklog/ulid"
 )
 
 type Event struct {
-	ID            uuid.UUID       `json:"id"`
+	ID            ulid.ULID       `json:"id"`
 	Stream        uuid.UUID       `json:"stream"`
 	Version       int             `json:"version"`
 	Type          string          `json:"type"`

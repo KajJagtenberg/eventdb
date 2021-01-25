@@ -39,7 +39,10 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 		}
 
 		for i, event := range events {
-			id := uuid.New()
+			id, err := ulid.New(ulid.Now(), entropy)
+			if err != nil {
+				return err
+			}
 
 			data, err := json.Marshal(event.Data)
 			if err != nil {
@@ -194,9 +197,15 @@ func (s *Store) Backup(dst io.Writer) error {
 
 func NewStore(db *bbolt.DB) (*Store, error) {
 	if err := db.Update(func(txn *bbolt.Tx) error {
-		if _, err := txn.CreateBucketIfNotExists([]byte("streams")); err != nil {
+		streams, err := txn.CreateBucketIfNotExists([]byte("streams"))
+		if err != nil {
 			return err
 		}
+
+		if _, err := streams.CreateBucketIfNotExists([]byte("$all")); err != nil {
+			return err
+		}
+
 		if _, err := txn.CreateBucketIfNotExists([]byte("events")); err != nil {
 			return err
 		}
