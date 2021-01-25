@@ -4,7 +4,7 @@ import { useQuery } from 'react-query';
 
 import {
     Box, Button, Flex, Link as UILink, Spinner, Table, TableCaption, Tbody, Td, Text, Tfoot, Th,
-    Thead, Tr
+    Thead, Tr, useToast
 } from '@chakra-ui/react';
 
 import Layout from '../components/Layout';
@@ -20,13 +20,24 @@ const fetchStreams = async (page: number, limit: number) => {
 const Home = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const { data } = useQuery(
+  const { data, isLoading } = useQuery(
     ['streams', page, limit],
     () => fetchStreams(page, limit),
-    { keepPreviousData: true }
+    {
+      keepPreviousData: true,
+      onError: (error: Error) => {
+        toast({
+          title: 'Oops',
+          description: error.message,
+          status: 'error',
+        });
+      },
+    }
   );
 
   const lastPage = data ? Math.floor(data.total / limit) + 1 : 1;
+
+  const toast = useToast();
 
   return (
     <Layout title="EventDB">
@@ -113,9 +124,14 @@ const Home = () => {
                   </Tr>
                 );
               })}
-            {!data && <Spinner color="teal.500" />}
           </Tbody>
         </Table>
+
+        {isLoading && (
+          <Flex w="full" justifyContent="center" my={8} color="teal.500">
+            <Spinner size="lg" />
+          </Flex>
+        )}
       </Flex>
     </Layout>
   );

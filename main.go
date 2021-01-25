@@ -29,7 +29,7 @@ func setupRoutes(app *fiber.App, eventstore *store.Store) {
 	app.Use(cors.New())
 	app.Use(etag.New())
 
-	app.Static("/", "./webui/out")
+	app.Static("/", "./webui")
 
 	v1 := app.Group("/api/v1")
 
