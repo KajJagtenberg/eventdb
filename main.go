@@ -45,9 +45,3 @@ func main() {
 
 	app.Listen(addr)
 }
-
-// func AwaitShutdown() {
-// 	c := make(chan os.Signal)
-// 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
-// 	<-c
-// }
