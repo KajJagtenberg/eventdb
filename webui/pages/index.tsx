@@ -92,7 +92,7 @@ const Home = () => {
         <Table variant="striped" size="sm">
           <Thead>
             <Tr>
-              <Th>Row</Th>
+              <Th>#</Th>
               <Th>Stream</Th>
             </Tr>
           </Thead>
@@ -102,7 +102,7 @@ const Home = () => {
               data.streams.map((stream: string, index: number) => {
                 return (
                   <Tr key={index}>
-                    <Td>{index + 1}</Td>
+                    <Td>{(page - 1) * limit + index + 1}</Td>
                     <Td>
                       <Link href={`${backend}/streams/${stream}`}>
                         <UILink textDecoration="underline" color="blue.600">
