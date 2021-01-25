@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/helmet/v2"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -25,8 +26,9 @@ var (
 )
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
-	app.Use(helmet.New(helmet.Config{}))
+	app.Use(helmet.New())
 	app.Use(cors.New())
+	app.Use(logger.New())
 	app.Use(etag.New())
 
 	app.Static("/", "./webui")
