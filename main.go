@@ -12,6 +12,15 @@ import (
 	"go.etcd.io/bbolt"
 )
 
+func setupRoutes(app *fiber.App, eventstore *store.Store) {
+	app.Get("/", handlers.Home(eventstore))
+	app.Get("/streams", handlers.GetStreams(eventstore))
+	app.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
+	app.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))
+	app.Get("/count", handlers.GetEventCount(eventstore))
+	app.Get("/backup", handlers.Backup(eventstore))
+}
+
 func main() {
 	log.Println("EventDB initializing storage layer")
 
@@ -34,12 +43,7 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	})
 
-	app.Get("/", handlers.Home(eventstore))
-	app.Get("/streams", handlers.GetStreams(eventstore))
-	app.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
-	app.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))
-	app.Get("/count", handlers.GetEventCount(eventstore))
-	app.Get("/backup", handlers.Backup(eventstore))
+	setupRoutes(app, eventstore)
 
 	addr := env.GetEnv("LISTENING_ADDRESS", ":5555")
 
