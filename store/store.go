@@ -119,6 +119,10 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 }
 
 func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
+	if limit == 0 {
+		limit = 10
+	}
+
 	result := []uuid.UUID{}
 
 	err := s.db.View(func(txn *bbolt.Tx) error {

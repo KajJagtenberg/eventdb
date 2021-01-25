@@ -35,9 +35,9 @@ func main() {
 	})
 
 	app.Get("/", handlers.Home())
+	app.Get("/streams", handlers.GetStreams(eventstore))
 	app.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
 	app.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))
-	app.Get("/streams", handlers.GetStreams(eventstore))
 	app.Get("/count", handlers.GetEventCount(eventstore))
 	app.Get("/backup", handlers.Backup(eventstore))
 
