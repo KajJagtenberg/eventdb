@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { Badge, Box, Flex, Heading, Link as UILink, Stack } from '@chakra-ui/react';
+import { Box, Flex, Heading, Link as UILink, Stack } from '@chakra-ui/react';
 
 const NavbarLink = ({ href, title }) => {
   const router = useRouter();

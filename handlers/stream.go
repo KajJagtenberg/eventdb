@@ -40,7 +40,7 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 			return errors.New("Limit cannot be negative")
 		}
 
-		events, err := eventstore.LoadFromStream(stream, version, limit)
+		events, total, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {
 			return err
 		}
@@ -49,7 +49,14 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 			return errors.New("Not Found")
 		}
 
-		return c.JSON(events)
+		return c.JSON(struct {
+			Streams []store.Event `json:"events"`
+			Total   int           `json:"total"`
+			Version int           `json:"version"`
+			Limit   int           `json:"limit"`
+		}{
+			events, total, version, limit,
+		})
 	}
 }
 

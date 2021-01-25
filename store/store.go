@@ -89,8 +89,9 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 	})
 }
 
-func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Event, error) {
+func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Event, int, error) {
 	result := []Event{}
+	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
 		streamsBucket := txn.Bucket([]byte("streams"))
@@ -101,6 +102,8 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 		if streamBucket == nil {
 			return nil
 		}
+
+		total = int(streamBucket.Sequence())
 
 		cur := streamBucket.Cursor()
 
@@ -125,10 +128,10 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return result, total, nil
 }
 
 func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
