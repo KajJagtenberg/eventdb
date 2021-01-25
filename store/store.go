@@ -27,9 +27,18 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 		streamsBucket := txn.Bucket([]byte("streams"))
 		eventsBucket := txn.Bucket([]byte("events"))
 
-		streamBucket, err := streamsBucket.CreateBucketIfNotExists(streamId[:])
-		if err != nil {
-			return err
+		streamBucket := streamsBucket.Bucket(streamId[:])
+
+		if streamBucket == nil {
+			var err error
+
+			streamBucket, err = streamsBucket.CreateBucket(streamId[:])
+
+			if err != nil {
+				return err
+			}
+
+			streamsBucket.NextSequence()
 		}
 
 		currentVersion := int(streamBucket.Sequence())
@@ -73,6 +82,7 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 			}
 
 			streamBucket.NextSequence()
+			eventsBucket.NextSequence()
 		}
 
 		return nil
@@ -163,9 +173,10 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
 		bucket := txn.Bucket([]byte("streams"))
-		cur := bucket.Cursor()
 
-		total = bucket.Stats().KeyN
+		total = int(bucket.Sequence())
+
+		cur := bucket.Cursor()
 
 		for k, _ := cur.First(); k != nil && len(streams) < limit; k, _ = cur.Next() {
 			if offset > 0 {
@@ -191,12 +202,12 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
 }
 
 func (s *Store) GetEventCount() (int, error) {
-	count := 0
+	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
 		bucket := txn.Bucket([]byte("events"))
 
-		count = bucket.Stats().KeyN
+		total = int(bucket.Sequence())
 
 		return nil
 	})
@@ -205,7 +216,7 @@ func (s *Store) GetEventCount() (int, error) {
 		return 0, nil
 	}
 
-	return count, nil
+	return total, nil
 }
 
 func (s *Store) GetDBSize() int64 {
@@ -230,12 +241,7 @@ func (s *Store) Backup(dst io.Writer) error {
 
 func NewStore(db *bbolt.DB) (*Store, error) {
 	if err := db.Update(func(txn *bbolt.Tx) error {
-		streams, err := txn.CreateBucketIfNotExists([]byte("streams"))
-		if err != nil {
-			return err
-		}
-
-		if _, err := streams.CreateBucketIfNotExists([]byte("$all")); err != nil {
+		if _, err := txn.CreateBucketIfNotExists([]byte("streams")); err != nil {
 			return err
 		}
 

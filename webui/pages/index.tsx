@@ -26,6 +26,8 @@ const Home = () => {
     { keepPreviousData: true }
   );
 
+  const lastPage = data ? Math.floor(data.total / limit) + 1 : 1;
+
   return (
     <Layout title="EventDB">
       <Flex
@@ -61,7 +63,7 @@ const Home = () => {
           </Button>
 
           <Text fontWeight="semibold" mx={1}>
-            {page}
+            {page}/{lastPage}
           </Text>
 
           <Button
@@ -70,8 +72,20 @@ const Home = () => {
             mx={1}
             minW={20}
             onClick={() => setPage((old) => old + 1)}
+            disabled={page === lastPage}
           >
             Next
+          </Button>
+
+          <Button
+            colorScheme="teal"
+            size="sm"
+            mx={1}
+            minW={20}
+            onClick={() => setPage(lastPage)}
+            disabled={page === lastPage}
+          >
+            Last
           </Button>
         </Flex>
 
@@ -85,7 +99,7 @@ const Home = () => {
 
           <Tbody>
             {data &&
-              data.map((stream: string, index: number) => {
+              data.streams.map((stream: string, index: number) => {
                 return (
                   <Tr key={index}>
                     <Td>{index + 1}</Td>

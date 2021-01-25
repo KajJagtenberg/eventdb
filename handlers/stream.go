@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"strconv"
 
 	"eventdb/store"
@@ -130,6 +131,7 @@ func GetStreams(eventstore *store.Store) fiber.Handler {
 		streams, total, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 
