@@ -7,17 +7,37 @@ import (
 	"eventdb/handlers"
 	"eventdb/store"
 
+	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
 )
 
+var (
+	requestCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "api_requests_total",
+	})
+)
+
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
-	app.Get("/", handlers.Home(eventstore))
-	app.Get("/streams", handlers.GetStreams(eventstore))
-	app.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
-	app.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))
-	app.Get("/count", handlers.GetEventCount(eventstore))
-	app.Get("/backup", handlers.Backup(eventstore))
+	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+
+	app.Use(func(c *fiber.Ctx) error {
+		requestCounter.Inc()
+
+		return c.Next()
+	})
+
+	v1 := app.Group("/api/v1")
+
+	v1.Get("/", handlers.Home(eventstore))
+	v1.Get("/streams", handlers.GetStreams(eventstore))
+	v1.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
+	v1.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))
+	v1.Get("/count", handlers.GetEventCount(eventstore))
+	v1.Get("/backup", handlers.Backup(eventstore))
 }
 
 func main() {
