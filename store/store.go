@@ -163,6 +163,28 @@ func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
 	return result, nil
 }
 
+func (s *Store) GetEventByID(id ulid.ULID) (Event, error) {
+	var result Event
+
+	err := s.db.View(func(txn *bbolt.Tx) error {
+		bucket := txn.Bucket([]byte("events"))
+
+		value := bucket.Get(id[:])
+
+		if err := msgpack.Unmarshal(value, &result); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
 func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
 	if limit == 0 {
 		limit = 10

@@ -112,6 +112,30 @@ func Subscribe(eventstore *store.Store) fiber.Handler {
 	}
 }
 
+func GetEventByID(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		log.Println("Getting the event from the store")
+
+		idParam := c.Params("id")
+
+		if len(idParam) == 0 {
+			return errors.New("Event ID cannot be empty")
+		}
+
+		id, err := ulid.Parse(idParam)
+		if err != nil {
+			return err
+		}
+
+		event, err := eventstore.GetEventByID(id)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(event)
+	}
+}
+
 func GetStreams(eventstore *store.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		offsetQuery := c.Query("offset")
