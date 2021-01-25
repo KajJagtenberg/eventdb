@@ -2,7 +2,7 @@ run:
 	go run .
 
 build:
-	go build .
+	go build -o eventdb main.go
 
 clean:
 	rm -f eventdb
