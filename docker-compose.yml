@@ -5,6 +5,6 @@ services:
     image: eventdb
     restart: unless-stopped
     ports:
-      - 5555:5555
+      - 6543:6543
     volumes:
       - ./data.bolt:/var/lib/eventdb/data.bolt

@@ -66,7 +66,7 @@ func main() {
 
 	setupRoutes(app, eventstore)
 
-	addr := env.GetEnv("LISTENING_ADDRESS", ":5555")
+	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")
 
 	app.Listen(addr)
 }
