@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"time"
 
@@ -172,6 +173,8 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
 
 			stream, err := uuid.FromBytes(k)
 			if err != nil {
+				log.Println(k)
+				log.Println(stream)
 				return err
 			}
 			result = append(result, stream)
@@ -229,12 +232,7 @@ func (s *Store) Backup(dst io.Writer) error {
 
 func NewStore(db *bbolt.DB) (*Store, error) {
 	if err := db.Update(func(txn *bbolt.Tx) error {
-		streams, err := txn.CreateBucketIfNotExists([]byte("streams"))
-		if err != nil {
-			return err
-		}
-
-		if _, err := streams.CreateBucketIfNotExists([]byte("$all")); err != nil {
+		if _, err := txn.CreateBucketIfNotExists([]byte("streams")); err != nil {
 			return err
 		}
 
