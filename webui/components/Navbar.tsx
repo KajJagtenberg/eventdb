@@ -37,7 +37,8 @@ const Navbar = () => {
       </Heading>
 
       <Stack direction="row">
-        <NavbarLink title="Streams" href="/" />
+        <NavbarLink title="Home" href="/" />
+        <NavbarLink title="Streams" href="/streams" />
         <NavbarLink title="Projections" href="/projections" />
         <NavbarLink title="Users" href="/users" />
       </Stack>
