@@ -1,22 +1,14 @@
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 
 import {
-  Button,
-  Flex,
-  Spinner,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  useToast,
+    Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button, Flex,
+    Popover, PopoverArrow, PopoverBody, PopoverCloseButton, PopoverContent, PopoverFooter,
+    PopoverHeader, PopoverTrigger, Spinner, Table, Tbody, Td, Text, Th, Thead, Tr, useToast
 } from '@chakra-ui/react';
 
 import { backend } from '../vars/backend';
-import dayjs from 'dayjs';
 
 const fetchStreams = async (stream: string, page: number, limit: number) => {
   const response = await fetch(
@@ -34,7 +26,6 @@ const EventsTable = ({ stream }) => {
     ['events', page, limit],
     () => fetchStreams(stream as string, page, limit),
     {
-      // keepPreviousData: true,
       onError: (error: Error) => {
         toast({
           title: 'Oops',
@@ -131,7 +122,22 @@ const EventsTable = ({ stream }) => {
                     <Td>{id}</Td>
                     <Td>{type}</Td>
                     <Td>{dayjs(ts).format('DD-MM-YYYY HH:mm:ss:ms')}</Td>
-                    <Td>{JSON.stringify(data)}</Td>
+                    <Td>
+                      <Popover>
+                        <PopoverTrigger>
+                          <Button size="xs" colorScheme="teal">
+                            Show
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                          <PopoverBody my={4}>
+                            <Text fontWeight="semibold">
+                              {JSON.stringify(data, null, 2)}
+                            </Text>
+                          </PopoverBody>
+                        </PopoverContent>
+                      </Popover>
+                    </Td>
                   </Tr>
                 );
               }
