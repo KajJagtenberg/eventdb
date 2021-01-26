@@ -1,6 +1,12 @@
 import { Flex, Heading, Text } from '@chakra-ui/react';
 
-const HomeOverview = ({ version, size, human_size }) => {
+const HomeOverview = ({
+  version,
+  size,
+  human_size,
+  event_count,
+  stream_count,
+}) => {
   return (
     <Flex
       direction="column"
@@ -34,6 +40,20 @@ const HomeOverview = ({ version, size, human_size }) => {
           Size bytes:
         </Text>
         <Text>{size}</Text>
+      </Flex>
+
+      <Flex>
+        <Text fontWeight="semibold" mr={4}>
+          Stream count:
+        </Text>
+        <Text>{stream_count}</Text>
+      </Flex>
+
+      <Flex>
+        <Text fontWeight="semibold" mr={4}>
+          Event count:
+        </Text>
+        <Text>{event_count}</Text>
       </Flex>
     </Flex>
   );

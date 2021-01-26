@@ -247,6 +247,24 @@ func (s *Store) GetEventCount() (int, error) {
 	return total, nil
 }
 
+func (s *Store) GetStreamCount() (int, error) {
+	total := 0
+
+	err := s.db.View(func(txn *bbolt.Tx) error {
+		bucket := txn.Bucket([]byte("streams"))
+
+		total = int(bucket.Sequence())
+
+		return nil
+	})
+
+	if err != nil {
+		return 0, nil
+	}
+
+	return total, nil
+}
+
 func (s *Store) GetDBSize() int64 {
 	var size int64
 
