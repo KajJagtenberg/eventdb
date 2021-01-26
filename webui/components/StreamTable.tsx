@@ -3,8 +3,21 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 
 import {
-    Button, Flex, Link as UILink, Spinner, Table, TableCaption, Tbody, Td, Text, Tfoot, Th, Thead,
-    Tr, useToast
+  Box,
+  Button,
+  Flex,
+  Link as UILink,
+  Spinner,
+  Table,
+  TableCaption,
+  Tbody,
+  Td,
+  Text,
+  Tfoot,
+  Th,
+  Thead,
+  Tr,
+  useToast,
 } from '@chakra-ui/react';
 
 import { backend } from '../vars/backend';
@@ -124,6 +137,12 @@ const StreamTable = () => {
             })}
         </Tbody>
       </Table>
+
+      {data && data.streams.length === 0 && (
+        <Box textAlign="center" w="full" my={8}>
+          <Text fontWeight="semibold">No streams available</Text>
+        </Box>
+      )}
 
       {isLoading && (
         <Flex w="full" justifyContent="center" my={8} color="teal.500">

@@ -1,13 +1,22 @@
-import Link from 'next/link';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 
 import {
-    Button, Flex, Link as UILink, Spinner, Table, TableCaption, Tbody, Td, Text, Tfoot, Th, Thead,
-    Tr, useToast
+  Button,
+  Flex,
+  Spinner,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useToast,
 } from '@chakra-ui/react';
 
 import { backend } from '../vars/backend';
+import dayjs from 'dayjs';
 
 const fetchStreams = async (stream: string, page: number, limit: number) => {
   const response = await fetch(
@@ -25,7 +34,7 @@ const EventsTable = ({ stream }) => {
     ['events', page, limit],
     () => fetchStreams(stream as string, page, limit),
     {
-      keepPreviousData: true,
+      // keepPreviousData: true,
       onError: (error: Error) => {
         toast({
           title: 'Oops',
@@ -112,7 +121,8 @@ const EventsTable = ({ stream }) => {
         </Thead>
 
         <Tbody>
-          {data &&
+          {!isLoading &&
+            data &&
             data.events.map(
               ({ version, id, type, ts, data }, index: number) => {
                 return (
@@ -120,7 +130,7 @@ const EventsTable = ({ stream }) => {
                     <Td>{version}</Td>
                     <Td>{id}</Td>
                     <Td>{type}</Td>
-                    <Td>{ts}</Td>
+                    <Td>{dayjs(ts).format('DD-MM-YYYY HH:mm:ss:ms')}</Td>
                     <Td>{JSON.stringify(data)}</Td>
                   </Tr>
                 );

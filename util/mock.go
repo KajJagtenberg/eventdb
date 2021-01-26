@@ -32,8 +32,8 @@ func AddMockEvents(eventstore *store.Store, count int) float64 {
 					Name string `json:"name"`
 					Age  int    `json:"age"`
 				}{
-					Name: "Kaj Jagtenberg",
-					Age:  22,
+					Name: "John Doe",
+					Age:  30,
 				},
 			})
 
