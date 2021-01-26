@@ -9,7 +9,7 @@ const Stream = () => {
   const { id: stream } = router.query;
 
   return (
-    <Layout title="EventDB">
+    <Layout title={`EventDB - ${stream}`}>
       <Navbar />
 
       <EventsTable stream={stream} />
