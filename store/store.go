@@ -28,9 +28,18 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 		streamsBucket := txn.Bucket([]byte("streams"))
 		eventsBucket := txn.Bucket([]byte("events"))
 
-		streamBucket, err := streamsBucket.CreateBucketIfNotExists(streamId[:])
-		if err != nil {
-			return err
+		streamBucket := streamsBucket.Bucket(streamId[:])
+
+		if streamBucket == nil {
+			var err error
+
+			streamBucket, err = streamsBucket.CreateBucket(streamId[:])
+
+			if err != nil {
+				return err
+			}
+
+			streamsBucket.NextSequence()
 		}
 
 		currentVersion := int(streamBucket.Sequence())
@@ -74,14 +83,16 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 			}
 
 			streamBucket.NextSequence()
+			eventsBucket.NextSequence()
 		}
 
 		return nil
 	})
 }
 
-func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Event, error) {
+func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Event, int, error) {
 	result := []Event{}
+	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
 		streamsBucket := txn.Bucket([]byte("streams"))
@@ -92,6 +103,8 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 		if streamBucket == nil {
 			return nil
 		}
+
+		total = int(streamBucket.Sequence())
 
 		cur := streamBucket.Cursor()
 
@@ -116,10 +129,10 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return result, total, nil
 }
 
 func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
@@ -154,18 +167,44 @@ func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
 	return result, nil
 }
 
-func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
+func (s *Store) GetEventByID(id ulid.ULID) (Event, error) {
+	var result Event
+
+	err := s.db.View(func(txn *bbolt.Tx) error {
+		bucket := txn.Bucket([]byte("events"))
+
+		value := bucket.Get(id[:])
+
+		if err := msgpack.Unmarshal(value, &result); err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
 	if limit == 0 {
 		limit = 10
 	}
 
-	result := []uuid.UUID{}
+	streams := []uuid.UUID{}
+	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
-		streamsBucket := txn.Bucket([]byte("streams"))
-		cur := streamsBucket.Cursor()
+		bucket := txn.Bucket([]byte("streams"))
 
-		for k, _ := cur.First(); k != nil && len(result) < limit; k, _ = cur.Next() {
+		total = int(bucket.Sequence())
+
+		cur := bucket.Cursor()
+
+		for k, _ := cur.First(); k != nil && len(streams) < limit; k, _ = cur.Next() {
 			if offset > 0 {
 				offset--
 				continue
@@ -177,28 +216,26 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
 				log.Println(stream)
 				return err
 			}
-			result = append(result, stream)
+			streams = append(streams, stream)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return streams, total, nil
 }
 
 func (s *Store) GetEventCount() (int, error) {
-	count := 0
+	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
-		cur := txn.Bucket([]byte("events")).Cursor()
+		bucket := txn.Bucket([]byte("events"))
 
-		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
-			count++
-		}
+		total = int(bucket.Sequence())
 
 		return nil
 	})
@@ -207,7 +244,7 @@ func (s *Store) GetEventCount() (int, error) {
 		return 0, nil
 	}
 
-	return count, nil
+	return total, nil
 }
 
 func (s *Store) GetDBSize() int64 {

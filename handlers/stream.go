@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"strconv"
 
 	"eventdb/store"
@@ -39,7 +40,7 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 			return errors.New("Limit cannot be negative")
 		}
 
-		events, err := eventstore.LoadFromStream(stream, version, limit)
+		events, total, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {
 			return err
 		}
@@ -48,7 +49,14 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 			return errors.New("Not Found")
 		}
 
-		return c.JSON(events)
+		return c.JSON(struct {
+			Streams []store.Event `json:"events"`
+			Total   int           `json:"total"`
+			Version int           `json:"version"`
+			Limit   int           `json:"limit"`
+		}{
+			events, total, version, limit,
+		})
 	}
 }
 
@@ -111,6 +119,30 @@ func Subscribe(eventstore *store.Store) fiber.Handler {
 	}
 }
 
+func GetEventByID(eventstore *store.Store) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		log.Println("Getting the event from the store")
+
+		idParam := c.Params("id")
+
+		if len(idParam) == 0 {
+			return errors.New("Event ID cannot be empty")
+		}
+
+		id, err := ulid.Parse(idParam)
+		if err != nil {
+			return err
+		}
+
+		event, err := eventstore.GetEventByID(id)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(event)
+	}
+}
+
 func GetStreams(eventstore *store.Store) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		offsetQuery := c.Query("offset")
@@ -127,12 +159,20 @@ func GetStreams(eventstore *store.Store) fiber.Handler {
 			return errors.New("Limit cannot be negative")
 		}
 
-		streams, err := eventstore.GetStreams(offset, limit)
+		streams, total, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
+			log.Println(err)
 			return err
 		}
 
-		return c.JSON(streams)
+		return c.JSON(struct {
+			Streams []uuid.UUID `json:"streams"`
+			Total   int         `json:"total"`
+			Offset  int         `json:"offset"`
+			Limit   int         `json:"limit"`
+		}{
+			streams, total, offset, limit,
+		})
 	}
 }

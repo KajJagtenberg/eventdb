@@ -1,0 +1,26 @@
+import { useQuery } from 'react-query';
+
+import HomeOverview from '../components/HomeOverview';
+import Layout from '../components/Layout';
+import Navbar from '../components/Navbar';
+import { backend } from '../vars/backend';
+
+const fetchInfo = async () => {
+  const response = await fetch(`${backend}/api/v1`);
+  return response.json();
+};
+
+const Home = () => {
+  const { data } = useQuery('info', fetchInfo);
+  const { version, size, human_size } = data || {};
+
+  return (
+    <Layout title="EventDB - Home">
+      <Navbar />
+
+      <HomeOverview version={version} size={size} human_size={human_size} />
+    </Layout>
+  );
+};
+
+export default Home;
