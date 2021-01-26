@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
-import { Box, Flex, Heading, Link as UILink, Stack } from '@chakra-ui/react';
+import { Box, Flex, Heading, Link as UILink, Stack, Text } from '@chakra-ui/react';
 
 const NavbarLink = ({ href, title }) => {
   const router = useRouter();
@@ -14,7 +14,7 @@ const NavbarLink = ({ href, title }) => {
       rounded="md"
     >
       <Link href={href}>
-        <UILink fontWeight="semibold" color="white">
+        <UILink fontWeight="semibold" color="white" fontSize="sm">
           {title}
         </UILink>
       </Link>
