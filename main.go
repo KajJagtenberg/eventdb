@@ -8,42 +8,28 @@ import (
 	"eventdb/handlers"
 	"eventdb/store"
 
-	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/helmet/v2"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
 )
 
-var (
-	requestCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "api_requests_total",
-	})
-)
+func setupMiddlewares(app *fiber.App) {
+	app.Use(helmet.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "*",
+	}))
+	app.Use(logger.New(logger.Config{
+		TimeZone: env.GetEnv("TZ", "UTC"),
+	}))
+}
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
-	app.Use(helmet.New())
-	app.Use(cors.New())
-	app.Use(logger.New(logger.Config{
-		TimeZone: "Europe/Amsterdam",
-	}))
-	// app.Use(etag.New()) Might not work with individual streams
 
 	v1 := app.Group("/api/v1")
-
-	v1.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
-
-	app.Use(func(c *fiber.Ctx) error {
-		requestCounter.Inc()
-
-		return c.Next()
-	})
 
 	v1.Get("/", handlers.Home(eventstore))
 	v1.Get("/streams", handlers.GetStreams(eventstore))
