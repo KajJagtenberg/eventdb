@@ -19,9 +19,7 @@ import (
 
 func setupMiddlewares(app *fiber.App) {
 	app.Use(helmet.New())
-	app.Use(cors.New(cors.Config{
-		AllowOrigins: "*",
-	}))
+	app.Use(cors.New(cors.Config{}))
 	app.Use(logger.New(logger.Config{
 		TimeZone: env.GetEnv("TZ", "UTC"),
 	}))
@@ -64,6 +62,7 @@ func main() {
 
 	app := fiber.New(fiber.Config{})
 
+	setupMiddlewares(app)
 	setupRoutes(app, eventstore)
 
 	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")

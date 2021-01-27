@@ -23,4 +23,6 @@ RUN yarn --production
 
 COPY --from=build /app/.next ./.next
 
+ENV NODE_ENV=production
+
 CMD ["yarn","start"]

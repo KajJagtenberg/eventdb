@@ -16,4 +16,6 @@ services:
     ports:
       - 3000:3000
     environment:
-      - DATABASE_URL=http://eventbd:6543
+      - DATABASE_URL=http://127.0.0.1:6543
+    depends_on:
+      - eventdb
