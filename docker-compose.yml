@@ -9,3 +9,11 @@ services:
       - 6543:6543
     volumes:
       - ./data.bolt:/var/lib/eventdb/data.bolt
+
+  ui:
+    image: eventdb/ui
+    container_name: eventdb/ui
+    ports:
+      - 3000:3000
+    environment:
+      - DATABASE_URL=http://eventbd:6543

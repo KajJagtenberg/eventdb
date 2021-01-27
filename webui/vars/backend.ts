@@ -1,1 +1,1 @@
-export const backend = process.env.BACKEND_URL || 'http://localhost:6543';
+export const backend = process.env.DATABASE_URL || 'http://localhost:6543';
