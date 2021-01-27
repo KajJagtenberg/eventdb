@@ -4,6 +4,7 @@ import (
 	"eventdb/constants"
 	"eventdb/store"
 	"eventdb/util"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -14,12 +15,14 @@ func Home(eventstore *store.Store) fiber.Handler {
 
 		eventCount, err := eventstore.GetEventCount()
 		if err != nil {
-			return err
+			log.Println(err)
+			return fiber.ErrInternalServerError
 		}
 
 		streamCount, err := eventstore.GetStreamCount()
 		if err != nil {
-			return err
+			log.Println(err)
+			return fiber.ErrInternalServerError
 		}
 
 		return c.JSON(struct {
