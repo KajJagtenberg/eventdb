@@ -1,4 +1,25 @@
+Dockerfile
+.git
+.gitignore
+.dockerignore
+*.rest
+*.env
+*.bolt
+eventdb
+
+*.rest
+*.env
+*.bolt
+eventdb
+
+*.rest
+*.env
+*.bolt
+eventdb
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+pkg
+dist
 
 # dependencies
 /node_modules
@@ -14,9 +35,6 @@
 
 # production
 /build
-
-pkg
-dist
 
 # misc
 .DS_Store
