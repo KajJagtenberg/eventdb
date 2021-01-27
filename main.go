@@ -60,12 +60,16 @@ func main() {
 
 	log.Println("EventDB initializing API layer")
 
-	app := fiber.New(fiber.Config{})
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 
 	setupMiddlewares(app)
 	setupRoutes(app, eventstore)
 
 	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")
+
+	log.Println("EventDB API layer ready to accept requests")
 
 	app.Listen(addr)
 }
