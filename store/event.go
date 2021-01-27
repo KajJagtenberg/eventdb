@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
 )
@@ -26,4 +27,10 @@ type AppendEvent struct {
 	Metadata      interface{} `json:"metadata"`
 	CausationID   string      `json:"causation_id" validate:"required,uuid"`
 	CorrelationID string      `json:"correlation_id" validate:"required,uuid"`
+}
+
+func (e *AppendEvent) Validate() error {
+	validator := validator.New()
+
+	return validator.Struct(e)
 }

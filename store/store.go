@@ -3,9 +3,8 @@ package store
 import (
 	"encoding/binary"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io"
-	"log"
 	"math/rand"
 	"time"
 
@@ -17,6 +16,10 @@ import (
 
 var (
 	entropy = ulid.Monotonic(rand.New((rand.NewSource((int64(ulid.Now()))))), 0)
+)
+
+var (
+	ErrConcurrentStreamModifcation = errors.New("Concurrent stream modification")
 )
 
 type Store struct {
@@ -45,7 +48,7 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 		currentVersion := int(streamBucket.Sequence())
 
 		if currentVersion != version {
-			return fmt.Errorf("Concurrent stream modification. Expected version: %d, current version: %d", version, currentVersion)
+			return ErrConcurrentStreamModifcation
 		}
 
 		for i, event := range events {
@@ -212,8 +215,6 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
 
 			stream, err := uuid.FromBytes(k)
 			if err != nil {
-				log.Println(k)
-				log.Println(stream)
 				return err
 			}
 			streams = append(streams, stream)
