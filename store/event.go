@@ -32,5 +32,7 @@ type AppendEvent struct {
 func (e *AppendEvent) Validate() error {
 	validator := validator.New()
 
+	// TODO: Add friendlier error messages
+
 	return validator.Struct(e)
 }
