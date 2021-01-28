@@ -5,7 +5,6 @@ import (
 	"eventdb/env"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"time"
 
@@ -95,13 +94,15 @@ func LoadFile(name string) *bytes.Buffer {
 }
 
 func LoadBabel(vm *goja.Runtime) error {
-	r, err := http.Get("https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js")
+	file, err := os.OpenFile("projections/babel.min.js", os.O_RDONLY, 0600)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-	src, err := ioutil.ReadAll(r.Body)
+	defer file.Close()
+
+	src, err := ioutil.ReadAll(file)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	_, err = vm.RunString(string(src))
@@ -110,7 +111,6 @@ func LoadBabel(vm *goja.Runtime) error {
 
 func Transpile(code string) (string, error) {
 	vm := goja.New()
-	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 
 	if err := LoadBabel(vm); err != nil {
 		return "", err
@@ -121,6 +121,7 @@ func Transpile(code string) (string, error) {
 	if _, err := vm.RunString(`var output = Babel.transform(input, {presets: ["es2015"]}).code;`); err != nil {
 		return "", err
 	}
+
 	return vm.Get("output").String(), nil
 }
 
@@ -142,6 +143,7 @@ func sandbox() {
 	}
 
 	vm := goja.New()
+	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	vm.Set("log", log.Println)
 	if _, err := vm.RunString(transpiled); err != nil {
 		log.Fatal(err)
