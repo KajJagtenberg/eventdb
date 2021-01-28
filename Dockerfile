@@ -14,8 +14,6 @@ RUN go install github.com/br0xen/boltbrowser
 
 COPY . .
 
-RUN ls -a
-
 RUN go install .
 
 FROM alpine
