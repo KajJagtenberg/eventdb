@@ -14,9 +14,7 @@ RUN go install github.com/br0xen/boltbrowser
 
 COPY . .
 
-RUN ls -a
-
-RUN go install .
+RUN go build -o eventdb .
 
 FROM alpine
 
@@ -26,6 +24,7 @@ RUN apk add bash
 
 WORKDIR /var/lib/eventdb
 
+COPY --from=build /src/eventdb /bin/eventdb
 COPY --from=build /go/bin/* /bin/
 
 CMD [ "eventdb" ]
