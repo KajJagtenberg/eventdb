@@ -116,15 +116,6 @@ const EventsTable = ({ stream }) => {
           {!isLoading &&
             data &&
             data.events
-              .sort((a: IEvent, b: IEvent) => {
-                if (a.version > b.version) {
-                  return 1;
-                } else if (b.version < a.version) {
-                  return -1;
-                } else {
-                  return 0;
-                }
-              })
               .reverse()
               .map(({ version, id, type, ts, data }: IEvent, index: number) => {
                 return (
