@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"eventdb/env"
+	"eventdb/projections"
 	"io/ioutil"
 	"log"
 	"os"
@@ -93,38 +94,6 @@ func LoadFile(name string) *bytes.Buffer {
 	return bytes.NewBuffer(data)
 }
 
-func LoadBabel(vm *goja.Runtime) error {
-	file, err := os.OpenFile("projections/babel.min.js", os.O_RDONLY, 0600)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	src, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	_, err = vm.RunString(string(src))
-	return err
-}
-
-func Transpile(code string) (string, error) {
-	vm := goja.New()
-
-	if err := LoadBabel(vm); err != nil {
-		return "", err
-	}
-
-	vm.Set("input", code)
-
-	if _, err := vm.RunString(`var output = Babel.transform(input, {presets: ["es2015"]}).code;`); err != nil {
-		return "", err
-	}
-
-	return vm.Get("output").String(), nil
-}
-
 func sandbox() {
 	file, err := os.OpenFile("projections/index.js", os.O_RDONLY, 0600)
 	if err != nil {
@@ -137,7 +106,12 @@ func sandbox() {
 		log.Fatal(err)
 	}
 
-	transpiled, err := Transpile(string(src))
+	compiler, err := projections.NewCompiler()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	compiled, err := compiler.Compile(string(src))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -145,13 +119,13 @@ func sandbox() {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	vm.Set("log", log.Println)
-	if _, err := vm.RunString(transpiled); err != nil {
+	if _, err := vm.RunString(compiled); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func main() {
-	// server()
+	server()
 
-	sandbox()
+	// sandbox()
 }
