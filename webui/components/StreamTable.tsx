@@ -3,24 +3,12 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 
 import {
-  Box,
-  Button,
-  Flex,
-  Link as UILink,
-  Spinner,
-  Table,
-  TableCaption,
-  Tbody,
-  Td,
-  Text,
-  Tfoot,
-  Th,
-  Thead,
-  Tr,
-  useToast,
+    Box, Button, Flex, Link as UILink, Spinner, Table, Tbody, Td, Text, Th, Thead, Tr,
+    useDisclosure, useToast
 } from '@chakra-ui/react';
 
 import { backend } from '../vars/backend';
+import AddEventModal from './AddEventModal';
 
 const fetchStreams = async (page: number, limit: number) => {
   const response = await fetch(
@@ -51,6 +39,9 @@ const StreamTable = () => {
   const lastPage = data ? Math.floor(data.total / limit) + 1 : 1;
 
   const toast = useToast();
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   return (
     <Flex
       direction="column"
@@ -61,54 +52,67 @@ const StreamTable = () => {
         boxShadow: '0 0 10px #aaa',
       }}
     >
-      <Flex direction="row" alignItems="center" mb={8}>
-        <Button
-          colorScheme="teal"
-          size="sm"
-          mx={1}
-          minW={20}
-          onClick={() => setPage(1)}
-          disabled={page === 1}
-        >
-          First
-        </Button>
+      <Flex
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={8}
+      >
+        <Flex direction="row">
+          <Button
+            colorScheme="teal"
+            size="sm"
+            mx={1}
+            minW={20}
+            onClick={() => setPage(1)}
+            disabled={page === 1}
+          >
+            First
+          </Button>
 
-        <Button
-          colorScheme="teal"
-          size="sm"
-          mx={1}
-          minW={20}
-          onClick={() => setPage((old) => Math.max(1, old - 1))}
-          disabled={page === 1}
-        >
-          Previous
-        </Button>
+          <Button
+            colorScheme="teal"
+            size="sm"
+            mx={1}
+            minW={20}
+            onClick={() => setPage((old) => Math.max(1, old - 1))}
+            disabled={page === 1}
+          >
+            Previous
+          </Button>
 
-        <Text fontWeight="semibold" mx={1}>
-          {page}/{lastPage}
-        </Text>
+          <Text fontWeight="semibold" mx={1}>
+            {page}/{lastPage}
+          </Text>
 
-        <Button
-          colorScheme="teal"
-          size="sm"
-          mx={1}
-          minW={20}
-          onClick={() => setPage((old) => old + 1)}
-          disabled={page === lastPage}
-        >
-          Next
-        </Button>
+          <Button
+            colorScheme="teal"
+            size="sm"
+            mx={1}
+            minW={20}
+            onClick={() => setPage((old) => old + 1)}
+            disabled={page === lastPage}
+          >
+            Next
+          </Button>
 
-        <Button
-          colorScheme="teal"
-          size="sm"
-          mx={1}
-          minW={20}
-          onClick={() => setPage(lastPage)}
-          disabled={page === lastPage}
-        >
-          Last
-        </Button>
+          <Button
+            colorScheme="teal"
+            size="sm"
+            mx={1}
+            minW={20}
+            onClick={() => setPage(lastPage)}
+            disabled={page === lastPage}
+          >
+            Last
+          </Button>
+        </Flex>
+
+        <Flex>
+          {/* <Button onClick={onOpen} size="sm" colorScheme="teal">
+            Add Event
+          </Button> */}
+        </Flex>
       </Flex>
 
       <Table variant="striped" size="sm">
@@ -149,6 +153,8 @@ const StreamTable = () => {
           <Spinner size="lg" />
         </Flex>
       )}
+
+      <AddEventModal isOpen={isOpen} onClose={onClose} />
     </Flex>
   );
 };

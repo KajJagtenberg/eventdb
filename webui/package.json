@@ -16,11 +16,13 @@
     "@emotion/styled": "^11.0.0",
     "dayjs": "^1.10.4",
     "express": "^4.17.1",
+    "formik": "^2.2.6",
     "framer-motion": "^3.2.2-rc.1",
     "next": "10.0.5",
     "react": "17.0.1",
     "react-dom": "17.0.1",
-    "react-query": "^3.6.0"
+    "react-query": "^3.6.0",
+    "yup": "^0.32.8"
   },
   "devDependencies": {
     "@types/express": "^4.17.11",
