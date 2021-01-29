@@ -8,6 +8,7 @@ import {
     PopoverHeader, PopoverTrigger, Spinner, Table, Tbody, Td, Text, Th, Thead, Tr, useToast
 } from '@chakra-ui/react';
 
+import { IEvent } from '../types/IEvent';
 import { backend } from '../vars/backend';
 
 const fetchStreams = async (stream: string, page: number, limit: number) => {
@@ -114,8 +115,18 @@ const EventsTable = ({ stream }) => {
         <Tbody>
           {!isLoading &&
             data &&
-            data.events.map(
-              ({ version, id, type, ts, data }, index: number) => {
+            data.events
+              .sort((a: IEvent, b: IEvent) => {
+                if (a.version > b.version) {
+                  return 1;
+                } else if (b.version < a.version) {
+                  return -1;
+                } else {
+                  return 0;
+                }
+              })
+              .reverse()
+              .map(({ version, id, type, ts, data }: IEvent, index: number) => {
                 return (
                   <Tr key={index}>
                     <Td>{version}</Td>
@@ -140,8 +151,7 @@ const EventsTable = ({ stream }) => {
                     </Td>
                   </Tr>
                 );
-              }
-            )}
+              })}
         </Tbody>
       </Table>
 
