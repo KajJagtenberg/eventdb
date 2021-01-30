@@ -1,13 +1,8 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
-	"encoding/json"
 	"eventdb/env"
-	"io/ioutil"
 	"log"
-	"os"
 	"time"
 
 	"eventdb/handlers"
@@ -19,7 +14,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/helmet/v2"
-	"github.com/google/uuid"
 	"go.etcd.io/bbolt"
 )
 
@@ -80,21 +74,6 @@ func server() {
 	app.Listen(addr)
 }
 
-func LoadFile(name string) *bytes.Buffer {
-	file, err := os.OpenFile(name, os.O_RDONLY, 0600)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	data, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return bytes.NewBuffer(data)
-}
-
 func check(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -102,44 +81,7 @@ func check(err error) {
 }
 
 func sandbox() {
-	db, err := bbolt.Open("events.db", 0600, nil)
-	check(err)
-	defer db.Close()
 
-	eventstore, err := store.NewStore(db)
-	check(err)
-
-	input, err := os.OpenFile("events.jsonld", os.O_RDONLY, 0600)
-	check(err)
-	defer input.Close()
-
-	reader := bufio.NewReader(input)
-
-	for line, _, err := reader.ReadLine(); err == nil; line, _, err = reader.ReadLine() {
-		event := struct {
-			Stream        uuid.UUID       `json:"stream"`
-			Version       int             `json:"version"`
-			Type          string          `json:"type"`
-			Data          json.RawMessage `json:"data"`
-			Timestamp     string          `json:"ts"`
-			Metadata      struct{}        `json:"metadata"`
-			CausationID   string          `json:"causation_id"`
-			CorrelationID string          `json:"correlation_id"`
-		}{}
-
-		check(json.Unmarshal(line, &event))
-		if err := eventstore.AppendToStream(event.Stream, event.Version, []store.AppendEvent{
-			{
-				Type:          event.Type,
-				Data:          event.Data,
-				Metadata:      event.Metadata,
-				CausationID:   event.CausationID,
-				CorrelationID: event.CorrelationID,
-			},
-		}); err != nil {
-			log.Println(err)
-		}
-	}
 }
 
 func main() {
