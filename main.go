@@ -42,10 +42,10 @@ func setupRoutes(app *fiber.App, eventstore *store.Store) {
 	v1.Get("/backup", handlers.Backup(eventstore))
 }
 
-func main() {
+func server() {
 	log.Println("EventDB initializing storage layer")
 
-	file := env.GetEnv("DATABASE_FILE", "data.bolt")
+	file := env.GetEnv("DATABASE_FILE", "events.db")
 
 	db, err := bbolt.Open(file, 0600, nil)
 	if err != nil {
@@ -72,4 +72,19 @@ func main() {
 	log.Println("EventDB API layer ready to accept requests")
 
 	app.Listen(addr)
+}
+
+func check(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func sandbox() {
+
+}
+
+func main() {
+	// sandbox()
+	server()
 }
