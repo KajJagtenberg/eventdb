@@ -1,0 +1,1 @@
+- Send back json error responses, instead of plaintext

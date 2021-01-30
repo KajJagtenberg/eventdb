@@ -17,10 +17,4 @@ const Stream = () => {
   );
 };
 
-Stream.getInitialProps = () => {
-  return {
-    props: {},
-  };
-};
-
 export default Stream;

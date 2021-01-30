@@ -20,17 +20,14 @@ import (
 func setupMiddlewares(app *fiber.App) {
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{}))
-
-	app.Static("/", "webui/out")
-
-	app.Use(logger.New(logger.Config{
-		TimeZone: env.GetEnv("TZ", "UTC"),
-	}))
 }
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
 
 	v1 := app.Group("/api/v1")
+	v1.Use(logger.New(logger.Config{
+		TimeZone: env.GetEnv("TZ", "UTC"),
+	}))
 
 	v1.Get("/", handlers.Home(eventstore))
 	v1.Get("/streams", handlers.GetStreams(eventstore))
