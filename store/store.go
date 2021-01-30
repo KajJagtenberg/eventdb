@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"time"
 
@@ -27,29 +28,25 @@ type Store struct {
 }
 
 func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendEvent) error {
-	return s.db.Batch(func(txn *bbolt.Tx) error {
-		streamsBucket := txn.Bucket([]byte("streams"))
-		eventsBucket := txn.Bucket([]byte("events"))
+	return s.db.Update(func(txn *bbolt.Tx) error {
+		streams := txn.Bucket([]byte("streams"))
 
-		streamBucket := streamsBucket.Bucket(streamId[:])
+		stream := Stream{}
 
-		if streamBucket == nil {
-			var err error
+		serializedStream := streams.Get(streamId[:])
 
-			streamBucket, err = streamsBucket.CreateBucket(streamId[:])
-
-			if err != nil {
+		if serializedStream != nil {
+			if err := msgpack.Unmarshal(serializedStream, &stream); err != nil {
 				return err
 			}
-
-			streamsBucket.NextSequence()
 		}
 
-		currentVersion := int(streamBucket.Sequence())
-
-		if currentVersion != version {
+		if len(stream) != version {
+			log.Println(len(stream), version)
 			return ErrConcurrentStreamModifcation
 		}
+
+		eventsBucket := txn.Bucket([]byte("events"))
 
 		for i, event := range events {
 			id, err := ulid.New(ulid.Now(), entropy)
@@ -81,15 +78,15 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 				return err
 			}
 
-			if err := streamBucket.Put(itob(streamBucket.Sequence()), id[:]); err != nil {
-				return err
-			}
-
-			streamBucket.NextSequence()
-			eventsBucket.NextSequence()
+			stream = append(stream, id)
 		}
 
-		return nil
+		serializedStream, err := msgpack.Marshal(stream)
+		if err != nil {
+			return err
+		}
+
+		return streams.Put(streamId[:], serializedStream)
 	})
 }
 
@@ -98,26 +95,29 @@ func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Ev
 	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
-		streamsBucket := txn.Bucket([]byte("streams"))
-		eventsBucket := txn.Bucket([]byte("events"))
+		streams := txn.Bucket([]byte("streams"))
 
-		streamBucket := streamsBucket.Bucket(streamId[:])
+		stream := Stream{}
 
-		if streamBucket == nil {
-			return nil
+		serializedStream := streams.Get(streamId[:])
+
+		if serializedStream != nil {
+			if err := msgpack.Unmarshal(serializedStream, &stream); err != nil {
+				return err
+			}
 		}
 
-		total = int(streamBucket.Sequence())
+		eventsBucket := txn.Bucket([]byte("events"))
 
-		cur := streamBucket.Cursor()
+		total = len(stream)
 
-		for k, v := cur.First(); k != nil; k, v = cur.Next() {
+		for _, id := range stream {
 			if version > 0 {
 				version--
 				continue
 			}
 
-			serialized := eventsBucket.Get(v)
+			serialized := eventsBucket.Get(id[:])
 
 			var event Event
 
@@ -148,7 +148,9 @@ func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
 	err := s.db.View(func(txn *bbolt.Tx) error {
 		cur := txn.Bucket([]byte("events")).Cursor()
 
-		for k, v := cur.Seek(offset[:]); k != nil; k, v = cur.Next() {
+		cur.Seek(offset[:])
+
+		for k, v := cur.Next(); k != nil; k, v = cur.Next() {
 			serialized := v
 
 			var event Event
@@ -207,17 +209,21 @@ func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
 
 		cur := bucket.Cursor()
 
-		for k, _ := cur.First(); k != nil && len(streams) < limit; k, _ = cur.Next() {
+		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
+			total++
+
 			if offset > 0 {
 				offset--
 				continue
 			}
 
-			stream, err := uuid.FromBytes(k)
-			if err != nil {
-				return err
+			if len(streams) < limit {
+				stream, err := uuid.FromBytes(k)
+				if err != nil {
+					return err
+				}
+				streams = append(streams, stream)
 			}
-			streams = append(streams, stream)
 		}
 
 		return nil
@@ -234,9 +240,11 @@ func (s *Store) GetEventCount() (int, error) {
 	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
-		bucket := txn.Bucket([]byte("events"))
+		cur := txn.Bucket([]byte("events")).Cursor()
 
-		total = int(bucket.Sequence())
+		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
+			total++
+		}
 
 		return nil
 	})
@@ -252,9 +260,11 @@ func (s *Store) GetStreamCount() (int, error) {
 	total := 0
 
 	err := s.db.View(func(txn *bbolt.Tx) error {
-		bucket := txn.Bucket([]byte("streams"))
+		cur := txn.Bucket([]byte("streams")).Cursor()
 
-		total = int(bucket.Sequence())
+		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
+			total++
+		}
 
 		return nil
 	})
@@ -308,4 +318,12 @@ func itob(v uint64) []byte {
 	r := make([]byte, 8)
 	binary.BigEndian.PutUint64(r, v)
 	return r
+}
+
+func btoi(v []byte) uint64 {
+	if len(v) == 0 {
+		return 0
+	}
+
+	return binary.BigEndian.Uint64(v)
 }

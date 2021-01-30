@@ -1,9 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"encoding/json"
 	"eventdb/env"
-	"eventdb/projections"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,13 +13,13 @@ import (
 	"eventdb/handlers"
 	"eventdb/store"
 
-	"github.com/dop251/goja"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/helmet/v2"
+	"github.com/google/uuid"
 	"go.etcd.io/bbolt"
 )
 
@@ -50,7 +51,7 @@ func setupRoutes(app *fiber.App, eventstore *store.Store) {
 func server() {
 	log.Println("EventDB initializing storage layer")
 
-	file := env.GetEnv("DATABASE_FILE", "data.bolt")
+	file := env.GetEnv("DATABASE_FILE", "events.db")
 
 	db, err := bbolt.Open(file, 0600, nil)
 	if err != nil {
@@ -94,38 +95,54 @@ func LoadFile(name string) *bytes.Buffer {
 	return bytes.NewBuffer(data)
 }
 
-func sandbox() {
-	file, err := os.OpenFile("projections/index.js", os.O_RDONLY, 0600)
+func check(err error) {
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	src, err := ioutil.ReadAll(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	compiler, err := projections.NewCompiler()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	compiled, err := compiler.Compile(string(src))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	vm := goja.New()
-	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-	vm.Set("log", log.Println)
-	if _, err := vm.RunString(compiled); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func main() {
-	server()
+func sandbox() {
+	db, err := bbolt.Open("events.db", 0600, nil)
+	check(err)
+	defer db.Close()
 
+	eventstore, err := store.NewStore(db)
+	check(err)
+
+	input, err := os.OpenFile("events.jsonld", os.O_RDONLY, 0600)
+	check(err)
+	defer input.Close()
+
+	reader := bufio.NewReader(input)
+
+	for line, _, err := reader.ReadLine(); err == nil; line, _, err = reader.ReadLine() {
+		event := struct {
+			Stream        uuid.UUID       `json:"stream"`
+			Version       int             `json:"version"`
+			Type          string          `json:"type"`
+			Data          json.RawMessage `json:"data"`
+			Timestamp     string          `json:"ts"`
+			Metadata      struct{}        `json:"metadata"`
+			CausationID   string          `json:"causation_id"`
+			CorrelationID string          `json:"correlation_id"`
+		}{}
+
+		check(json.Unmarshal(line, &event))
+		if err := eventstore.AppendToStream(event.Stream, event.Version, []store.AppendEvent{
+			{
+				Type:          event.Type,
+				Data:          event.Data,
+				Metadata:      event.Metadata,
+				CausationID:   event.CausationID,
+				CorrelationID: event.CorrelationID,
+			},
+		}); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func main() {
 	// sandbox()
+	server()
 }

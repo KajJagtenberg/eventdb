@@ -12,9 +12,12 @@ require (
 	github.com/gofiber/helmet/v2 v2.1.0
 	github.com/google/uuid v1.1.5
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.6 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/vmihailenco/msgpack/v5 v5.1.4
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e // indirect
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gorm.io/driver/sqlite v1.1.4
+	gorm.io/gorm v1.20.12
 )
