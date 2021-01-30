@@ -20,6 +20,9 @@ import (
 func setupMiddlewares(app *fiber.App) {
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{}))
+
+	app.Static("/", "webui/out")
+
 	app.Use(logger.New(logger.Config{
 		TimeZone: env.GetEnv("TZ", "UTC"),
 	}))
