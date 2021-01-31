@@ -3,8 +3,9 @@ when({
     const { data, stream: id } = event;
     const { name, price } = data;
 
+    print(get('products', id));
+
     set('products', id, {
-      version: 1,
       name,
       price,
     });

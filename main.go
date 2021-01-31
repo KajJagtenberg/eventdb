@@ -15,6 +15,7 @@ import (
 	"github.com/dop251/goja"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -92,15 +93,23 @@ func server() {
 
 		collections := map[string]map[string]interface{}{}
 
-		app.Get("/projections", func(c *fiber.Ctx) error {
+		app.Get("/projections", compress.New(), func(c *fiber.Ctx) error {
 			return c.JSON(collections)
 		})
 
-		vm.Set("set", func(collection string, id string, state interface{}) {
+		vm.Set("print", log.Println)
+
+		vm.Set("set", func(collection string, id string, state map[string]interface{}) {
 			_collection := collections[collection]
 
 			if _collection == nil {
 				_collection = map[string]interface{}{}
+			}
+
+			if state["version"] == nil {
+				state["version"] = 1
+			} else {
+				state["version"] = state["version"].(int) + 1
 			}
 
 			_collection[id] = state
@@ -111,10 +120,18 @@ func server() {
 			_collection := collections[collection]
 
 			if _collection == nil {
-				return nil
+				return map[string]interface {
+				}{"version": 0}
 			}
 
-			return _collection[id]
+			state := _collection[id]
+
+			if state == nil {
+				return map[string]interface {
+				}{"version": 0}
+			} else {
+				return state
+			}
 		})
 
 		checkpoint := ulid.ULID{}
@@ -124,7 +141,6 @@ func server() {
 			check(err)
 
 			if len(events) == 0 {
-				log.Println(checkpoint)
 				time.Sleep(time.Second)
 				continue
 			}
