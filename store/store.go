@@ -59,13 +59,18 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 				return err
 			}
 
+			metadata, err := json.Marshal(event.Data)
+			if err != nil {
+				return err
+			}
+
 			serialized, err := msgpack.Marshal(Event{
 				ID:            id,
 				Stream:        streamId,
 				Version:       version + i,
 				Type:          event.Type,
 				Data:          data,
-				Metadata:      event.Metadata, // TODO: Perhaps turn this into json.RawMessage like data as well
+				Metadata:      metadata,
 				CausationID:   event.CausationID,
 				CorrelationID: event.CorrelationID,
 				Timestamp:     time.Now(),
@@ -150,7 +155,7 @@ func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
 
 		cur.Seek(offset[:])
 
-		for k, v := cur.Next(); k != nil; k, v = cur.Next() {
+		for k, v := cur.Next(); k != nil && len(result) < limit; k, v = cur.Next() {
 			serialized := v
 
 			var event Event

@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"eventdb/env"
 	"eventdb/projections"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -19,6 +19,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/helmet/v2"
+	"github.com/oklog/ulid"
 	"go.etcd.io/bbolt"
 )
 
@@ -53,15 +54,11 @@ func server() {
 	file := env.GetEnv("DATABASE_FILE", "events.db")
 
 	db, err := bbolt.Open(file, 0600, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 	defer db.Close()
 
 	eventstore, err := store.NewStore(db)
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 	log.Println("EventDB initializing API layer")
 
@@ -72,41 +69,93 @@ func server() {
 	setupMiddlewares(app)
 	setupRoutes(app, eventstore)
 
-	log.Println("EventDB initializing projection module")
-
 	go func() {
 		compiler, err := projections.NewCompiler()
 		check(err)
 
-		sourceFile, err := os.OpenFile("projections/index.js", os.O_RDONLY, 0600)
+		code, err := LoadFileAsString("projections/index.js")
 		check(err)
 
-		sourceCode, err := ioutil.ReadAll(sourceFile)
-		sourceFile.Close()
-
-		code, err := compiler.Compile(string(sourceCode))
+		code, err = compiler.Compile(code)
 		check(err)
 
-		fmt.Println(code)
-
-		program, err := goja.Compile("index", code, false)
-		check(err)
+		var handlers map[string]func(event interface{})
 
 		vm := goja.New()
 		vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-		vm.Set("println", func(a ...interface{}) {
-			fmt.Println(a...)
+		vm.Set("when", func(_handlers map[string]func(event interface{})) {
+			handlers = _handlers
 		})
 
-		type WhenInput struct {
-			Initial map[string]interface{} `json:"$init"`
-		}
-
-		output, err := vm.RunProgram(program)
+		_, err = vm.RunString(code)
 		check(err)
 
-		fmt.Println(output.Export())
+		collections := map[string]map[string]interface{}{}
+
+		vm.Set("set", func(collection string, id string, state interface{}) {
+			_collection := collections[collection]
+
+			if _collection == nil {
+				_collection = map[string]interface{}{}
+			}
+
+			_collection[id] = state
+
+			collections[collection] = _collection
+		})
+		vm.Set("get", func(collection string, id string) interface{} {
+			_collection := collections[collection]
+
+			if _collection == nil {
+				return nil
+			}
+
+			return _collection[id]
+		})
+
+		checkpoint := ulid.ULID{}
+
+		events, err := eventstore.Subscribe(checkpoint, 10)
+		check(err)
+
+		for _, event := range events {
+			handler := handlers[event.Type]
+
+			if handler != nil {
+				var data map[string]interface{}
+				// var metadata map[string]interface{}
+
+				check(json.Unmarshal(event.Data, &data))
+				// check(json.Unmarshal(event.Data, &metadata))
+
+				handler(struct {
+					ID      string                 `json:"id"`
+					Stream  string                 `json:"stream"`
+					Version int                    `json:"version"`
+					Type    string                 `json:"type"`
+					Data    map[string]interface{} `json:"data"`
+					// Metadata map[string]interface{} `json:"metadata"`
+					CausationID   string `json:"causation_id"`
+					CorrelationID string `json:"correlation_id"`
+				}{
+					ID:            event.ID.String(),
+					Stream:        event.Stream.String(),
+					Version:       event.Version,
+					Type:          event.Type,
+					Data:          data,
+					CausationID:   event.CausationID,
+					CorrelationID: event.CorrelationID,
+					// Metadata: metadata,
+				})
+			}
+		}
+
+		app.Get("/projections", func(c *fiber.Ctx) error {
+			return c.JSON(collections)
+		})
 	}()
+
+	log.Println("EventDB initializing projection module")
 
 	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")
 
@@ -119,6 +168,23 @@ func check(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+/* */
+
+func LoadFileAsString(file string) (string, error) {
+	fin, err := os.OpenFile(file, os.O_RDONLY, 0600)
+	if err != nil {
+		return "", err
+	}
+	defer fin.Close()
+
+	src, err := ioutil.ReadAll(fin)
+	if err != nil {
+		return "", err
+	}
+
+	return string(src), nil
 }
 
 func main() {

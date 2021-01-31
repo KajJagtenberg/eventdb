@@ -1,32 +1,25 @@
-/***************/
+when({
+  product_added: (event) => {
+    const { data, stream: id } = event;
+    const { name, price } = data;
 
-const project = (projector) => {
-  const state = {};
-  let version = 0;
+    set('products', id, {
+      version: 1,
+      name,
+      price,
+    });
+  },
+  order_added: (event) => {
+    const { data, stream: id } = event;
+    const { code, products, quantity } = data;
 
-  const events = [];
-
-  for (const event of events) {
-    const handler = projector[event.type];
-
-    if (handler) {
-      handler(state, event);
-    }
-  }
-
-  return {
-    version,
-    ...state,
-  };
-};
-
-/***************/
-
-project({
-  product_added: (state, event) => {
-    const { data } = event;
-
-    state.name = data.name;
-    state.price = data.price;
+    set('orders', id, {
+      code,
+      products,
+      quantity,
+    });
+  },
+  $any: (event) => {
+    println(event.type);
   },
 });
