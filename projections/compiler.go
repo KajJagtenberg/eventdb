@@ -25,7 +25,7 @@ func NewCompiler() (*Compiler, error) {
 func (c *Compiler) Compile(code string) (string, error) {
 	c.vm.Set("input", code)
 
-	if _, err := c.vm.RunString(`var output = Babel.transform(input, {presets: ["es2015"]}).code;`); err != nil {
+	if _, err := c.vm.RunString(`var output = Babel.transform(input, {presets: ["env"]}).code;`); err != nil {
 		return "", err
 	}
 

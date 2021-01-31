@@ -1,1 +1,2 @@
 - Send back json error responses, instead of plaintext
+- Should probably add tests

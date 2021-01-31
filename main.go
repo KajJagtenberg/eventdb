@@ -2,12 +2,17 @@ package main
 
 import (
 	"eventdb/env"
+	"eventdb/projections"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"time"
 
 	"eventdb/handlers"
 	"eventdb/store"
 
+	"github.com/dop251/goja"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -67,6 +72,42 @@ func server() {
 	setupMiddlewares(app)
 	setupRoutes(app, eventstore)
 
+	log.Println("EventDB initializing projection module")
+
+	go func() {
+		compiler, err := projections.NewCompiler()
+		check(err)
+
+		sourceFile, err := os.OpenFile("projections/index.js", os.O_RDONLY, 0600)
+		check(err)
+
+		sourceCode, err := ioutil.ReadAll(sourceFile)
+		sourceFile.Close()
+
+		code, err := compiler.Compile(string(sourceCode))
+		check(err)
+
+		fmt.Println(code)
+
+		program, err := goja.Compile("index", code, false)
+		check(err)
+
+		vm := goja.New()
+		vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+		vm.Set("println", func(a ...interface{}) {
+			fmt.Println(a...)
+		})
+
+		type WhenInput struct {
+			Initial map[string]interface{} `json:"$init"`
+		}
+
+		output, err := vm.RunProgram(program)
+		check(err)
+
+		fmt.Println(output.Export())
+	}()
+
 	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")
 
 	log.Println("EventDB API layer ready to accept requests")
@@ -80,11 +121,6 @@ func check(err error) {
 	}
 }
 
-func sandbox() {
-
-}
-
 func main() {
-	// sandbox()
 	server()
 }
