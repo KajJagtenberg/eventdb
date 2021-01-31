@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/json"
 	"errors"
@@ -153,9 +154,11 @@ func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
 	err := s.db.View(func(txn *bbolt.Tx) error {
 		cur := txn.Bucket([]byte("events")).Cursor()
 
-		cur.Seek(offset[:])
+		for k, v := cur.Seek(offset[:]); k != nil && len(result) < limit; k, v = cur.Next() {
+			if bytes.Compare(k, offset[:]) == 0 {
+				continue
+			}
 
-		for k, v := cur.Next(); k != nil && len(result) < limit; k, v = cur.Next() {
 			serialized := v
 
 			var event Event

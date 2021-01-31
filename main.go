@@ -92,6 +92,10 @@ func server() {
 
 		collections := map[string]map[string]interface{}{}
 
+		app.Get("/projections", func(c *fiber.Ctx) error {
+			return c.JSON(collections)
+		})
+
 		vm.Set("set", func(collection string, id string, state interface{}) {
 			_collection := collections[collection]
 
@@ -115,44 +119,48 @@ func server() {
 
 		checkpoint := ulid.ULID{}
 
-		events, err := eventstore.Subscribe(checkpoint, 10)
-		check(err)
+		for {
+			events, err := eventstore.Subscribe(checkpoint, 10)
+			check(err)
 
-		for _, event := range events {
-			handler := handlers[event.Type]
+			if len(events) == 0 {
+				log.Println(checkpoint)
+				time.Sleep(time.Second)
+				continue
+			}
 
-			if handler != nil {
-				var data map[string]interface{}
-				// var metadata map[string]interface{}
+			for _, event := range events {
+				handler := handlers[event.Type]
 
-				check(json.Unmarshal(event.Data, &data))
-				// check(json.Unmarshal(event.Data, &metadata))
+				if handler != nil {
+					var data map[string]interface{}
 
-				handler(struct {
-					ID      string                 `json:"id"`
-					Stream  string                 `json:"stream"`
-					Version int                    `json:"version"`
-					Type    string                 `json:"type"`
-					Data    map[string]interface{} `json:"data"`
-					// Metadata map[string]interface{} `json:"metadata"`
-					CausationID   string `json:"causation_id"`
-					CorrelationID string `json:"correlation_id"`
-				}{
-					ID:            event.ID.String(),
-					Stream:        event.Stream.String(),
-					Version:       event.Version,
-					Type:          event.Type,
-					Data:          data,
-					CausationID:   event.CausationID,
-					CorrelationID: event.CorrelationID,
-					// Metadata: metadata,
-				})
+					check(json.Unmarshal(event.Data, &data))
+
+					// TODO: Add metadata (does not currently work with the way it's stored in the database)
+
+					handler(struct {
+						ID            string                 `json:"id"`
+						Stream        string                 `json:"stream"`
+						Version       int                    `json:"version"`
+						Type          string                 `json:"type"`
+						Data          map[string]interface{} `json:"data"`
+						CausationID   string                 `json:"causation_id"`
+						CorrelationID string                 `json:"correlation_id"`
+					}{
+						ID:            event.ID.String(),
+						Stream:        event.Stream.String(),
+						Version:       event.Version,
+						Type:          event.Type,
+						Data:          data,
+						CausationID:   event.CausationID,
+						CorrelationID: event.CorrelationID,
+					})
+				}
+
+				checkpoint = event.ID
 			}
 		}
-
-		app.Get("/projections", func(c *fiber.Ctx) error {
-			return c.JSON(collections)
-		})
 	}()
 
 	log.Println("EventDB initializing projection module")
