@@ -10,8 +10,6 @@ COPY go.sum .
 
 RUN go mod download
 
-RUN go install github.com/br0xen/boltbrowser
-
 COPY . .
 
 RUN go build -o eventdb .
@@ -25,6 +23,5 @@ RUN apk add bash
 WORKDIR /var/lib/eventdb
 
 COPY --from=build /src/eventdb /bin/eventdb
-COPY --from=build /go/bin/* /bin/
 
 CMD [ "eventdb" ]

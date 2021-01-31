@@ -3,8 +3,6 @@ when({
     const { data, stream: id } = event;
     const { name, price } = data;
 
-    print(get('products', id));
-
     set('products', id, {
       name,
       price,
@@ -19,8 +17,5 @@ when({
       products,
       quantity,
     });
-  },
-  $any: (event) => {
-    println(event.type);
   },
 });

@@ -97,8 +97,6 @@ func server() {
 			return c.JSON(collections)
 		})
 
-		vm.Set("print", log.Println)
-
 		vm.Set("set", func(collection string, id string, state map[string]interface{}) {
 			_collection := collections[collection]
 
@@ -146,32 +144,36 @@ func server() {
 			}
 
 			for _, event := range events {
+				var data map[string]interface{}
+
+				check(json.Unmarshal(event.Data, &data))
+
+				arg := struct { // TODO: Add metadata (does not currently work with the way it's stored in the database)
+					ID            string                 `json:"id"`
+					Stream        string                 `json:"stream"`
+					Version       int                    `json:"version"`
+					Type          string                 `json:"type"`
+					Data          map[string]interface{} `json:"data"`
+					CausationID   string                 `json:"causation_id"`
+					CorrelationID string                 `json:"correlation_id"`
+				}{
+					ID:            event.ID.String(),
+					Stream:        event.Stream.String(),
+					Version:       event.Version,
+					Type:          event.Type,
+					Data:          data,
+					CausationID:   event.CausationID,
+					CorrelationID: event.CorrelationID,
+				}
+
 				handler := handlers[event.Type]
 
 				if handler != nil {
-					var data map[string]interface{}
+					handler(arg)
+				}
 
-					check(json.Unmarshal(event.Data, &data))
-
-					// TODO: Add metadata (does not currently work with the way it's stored in the database)
-
-					handler(struct {
-						ID            string                 `json:"id"`
-						Stream        string                 `json:"stream"`
-						Version       int                    `json:"version"`
-						Type          string                 `json:"type"`
-						Data          map[string]interface{} `json:"data"`
-						CausationID   string                 `json:"causation_id"`
-						CorrelationID string                 `json:"correlation_id"`
-					}{
-						ID:            event.ID.String(),
-						Stream:        event.Stream.String(),
-						Version:       event.Version,
-						Type:          event.Type,
-						Data:          data,
-						CausationID:   event.CausationID,
-						CorrelationID: event.CorrelationID,
-					})
+				if handler := handlers["$any"]; handler != nil {
+					handler(arg)
 				}
 
 				checkpoint = event.ID
