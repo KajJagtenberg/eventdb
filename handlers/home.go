@@ -16,13 +16,19 @@ func Home(eventstore *store.Store) fiber.Handler {
 		eventCount, err := eventstore.GetEventCount()
 		if err != nil {
 			log.Println(err)
-			return fiber.ErrInternalServerError
+
+			return c.Status(fiber.StatusInternalServerError).JSON(Message{
+				Message: "Internal server error",
+			})
 		}
 
 		streamCount, err := eventstore.GetStreamCount()
 		if err != nil {
 			log.Println(err)
-			return fiber.ErrInternalServerError
+
+			return c.Status(fiber.StatusInternalServerError).JSON(Message{
+				Message: "Internal server error",
+			})
 		}
 
 		return c.JSON(struct {

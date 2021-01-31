@@ -16,12 +16,16 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 		streamParam := c.Params("stream")
 
 		if len(streamParam) == 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Stream cannot be empty")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Stream cannot be empty",
+			})
 		}
 
 		stream, err := uuid.Parse(streamParam)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "Stream must be an UUID v4")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Stream must be an UUID v4",
+			})
 		}
 
 		versionQuery := c.Query("version")
@@ -31,17 +35,24 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 		limit, _ := strconv.Atoi(limitQuery)
 
 		if version < 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Version cannot be negative")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Version cannot be negative",
+			})
 		}
 
 		if limit < 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Limit cannot be negative")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Limit cannot be negative",
+			})
 		}
 
 		events, total, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {
 			log.Println(err)
-			return fiber.ErrInternalServerError
+
+			return c.Status(fiber.StatusInternalServerError).JSON(Message{
+				Message: "Internal server error",
+			})
 		}
 
 		return c.JSON(struct {
@@ -61,46 +72,65 @@ func AppendToStream(eventstore *store.Store) fiber.Handler {
 		versionParam := c.Params("version")
 
 		if len(streamParam) == 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Stream cannot be empty")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Stream cannot be empty",
+			})
 		}
 
 		stream, err := uuid.Parse(streamParam)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "Stream must be an UUID v4")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Stream must be an UUID v4",
+			})
 		}
 
 		version, _ := strconv.Atoi(versionParam)
 
 		if version < 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Version cannot be negative")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Version cannot be negative",
+			})
 		}
 
 		var events []store.AppendEvent
 
 		if err := c.BodyParser(&events); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, "Unable to decode request body")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Unable to decode request body",
+			})
 		}
 
 		if len(events) == 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Request contains no events")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Request contains no events",
+			})
 		}
 
 		for _, event := range events {
 			if err := event.Validate(); err != nil {
-				return fiber.NewError(fiber.StatusBadRequest, err.Error())
+				return c.Status(fiber.StatusBadRequest).JSON(Message{
+					Message: err.Error(),
+				})
 			}
 		}
 
 		if err := eventstore.AppendToStream(stream, version, events); err != nil {
 			if err == store.ErrConcurrentStreamModifcation {
-				return fiber.NewError(fiber.StatusBadRequest, err.Error())
+				return c.Status(fiber.StatusBadRequest).JSON(Message{
+					Message: err.Error(),
+				})
 			} else {
 				log.Println(err)
-				return fiber.ErrInternalServerError
+
+				return c.Status(fiber.StatusInternalServerError).JSON(Message{
+					Message: "Internal server error",
+				})
 			}
 		}
 
-		return c.SendString("Events added")
+		return c.JSON(Message{
+			Message: "Events added",
+		})
 	}
 }
 
@@ -125,18 +155,25 @@ func GetEventByID(eventstore *store.Store) fiber.Handler {
 		idParam := c.Params("id")
 
 		if len(idParam) == 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Event ID cannot be empty")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Event ID cannot be empty",
+			})
 		}
 
 		id, err := ulid.Parse(idParam)
 		if err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: err.Error(),
+			})
 		}
 
 		event, err := eventstore.GetEventByID(id)
 		if err != nil {
 			log.Println(err)
-			return fiber.ErrInternalServerError
+
+			return c.Status(fiber.StatusInternalServerError).JSON(Message{
+				Message: "Internal server error",
+			})
 		}
 
 		return c.JSON(event)
@@ -152,18 +189,25 @@ func GetStreams(eventstore *store.Store) fiber.Handler {
 		limit, _ := strconv.Atoi(limitQuery)
 
 		if offset < 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Offset cannot be negative")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Offset cannot be negative",
+			})
 		}
 
 		if limit < 0 {
-			return fiber.NewError(fiber.StatusBadRequest, "Limit cannot be negative")
+			return c.Status(fiber.StatusBadRequest).JSON(Message{
+				Message: "Limit cannot be negative",
+			})
 		}
 
 		streams, total, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
 			log.Println(err)
-			return fiber.ErrInternalServerError
+
+			return c.Status(fiber.StatusInternalServerError).JSON(Message{
+				Message: "Internal server error",
+			})
 		}
 
 		return c.JSON(struct {
