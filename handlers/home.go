@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"eventdb/constants"
-	"eventdb/store"
-	"eventdb/util"
+	"eventflowdb/constants"
+	"eventflowdb/store"
+	"eventflowdb/util"
 	"log"
 
 	"github.com/gofiber/fiber/v2"

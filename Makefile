@@ -2,14 +2,14 @@ run:
 	go run .
 
 build:
-	go build -o eventdb main.go
+	go build -o eventflowdb main.go
 
 clean:
-	rm -f eventdb
+	rm -f eventflowdb
 	rm -rf *.bolt
 
 docker:
-	docker build -t eventdb .
+	docker build -t eventflowdb .
 
 compose_up:
 	docker-compose up -d

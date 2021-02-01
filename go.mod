@@ -1,4 +1,4 @@
-module eventdb
+module eventflowdb
 
 go 1.15
 

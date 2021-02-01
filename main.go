@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	"eventdb/env"
-	"eventdb/projections"
+	"eventflowdb/env"
+	"eventflowdb/projections"
 	"io/ioutil"
 	"log"
 	"os"
 	"time"
 
-	"eventdb/handlers"
-	"eventdb/store"
+	"eventflowdb/handlers"
+	"eventflowdb/store"
 
 	"github.com/dop251/goja"
 	"github.com/gofiber/fiber/v2"

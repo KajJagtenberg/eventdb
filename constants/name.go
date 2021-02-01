@@ -1,5 +1,5 @@
 package constants
 
 const (
-	Name = "EventDB"
+	Name = "EventflowDB"
 )

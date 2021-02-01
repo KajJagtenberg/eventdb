@@ -2,18 +2,18 @@ version: "3"
 
 services:
   eventdb:
-    image: eventdb
-    container_name: eventdb
+    image: eventflowdb
+    container_name: eventflowdb
     restart: unless-stopped
     ports:
       - 6543:6543
 
   ui:
-    image: eventdb/ui
-    container_name: eventdb-ui
+    image: eventflowdb/ui
+    container_name: eventflowdb-ui
     ports:
       - 3000:3000
     environment:
       - DATABASE_URL=http://127.0.0.1:6543
     depends_on:
-      - eventdb
+      - eventflowdb

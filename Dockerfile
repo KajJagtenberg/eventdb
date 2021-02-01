@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o eventdb .
+RUN go build -o eventflowdb .
 
 FROM alpine
 
@@ -22,6 +22,6 @@ RUN apk add bash
 
 WORKDIR /var/lib/eventdb
 
-COPY --from=build /src/eventdb /bin/eventdb
+COPY --from=build /src/eventflowdb /bin/eventflowdb
 
-CMD [ "eventdb" ]
+CMD [ "eventflowdb" ]
