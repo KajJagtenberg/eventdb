@@ -27,7 +27,6 @@ import (
 func setupMiddlewares(app *fiber.App) {
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{}))
-	app.Use(etag.New())
 }
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {
@@ -145,6 +144,7 @@ func server() {
 			}
 
 			for _, event := range events {
+
 				var data map[string]interface{}
 
 				check(json.Unmarshal(event.Data, &data))

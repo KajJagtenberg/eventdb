@@ -29,7 +29,7 @@ type Store struct {
 }
 
 func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendEvent) error {
-	return s.db.Update(func(txn *bbolt.Tx) error {
+	return s.db.Batch(func(txn *bbolt.Tx) error {
 		streams := txn.Bucket([]byte("streams"))
 
 		stream := Stream{}
