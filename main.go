@@ -27,6 +27,7 @@ import (
 func setupMiddlewares(app *fiber.App) {
 	app.Use(helmet.New())
 	app.Use(cors.New(cors.Config{}))
+	app.Use(etag.New())
 }
 
 func setupRoutes(app *fiber.App, eventstore *store.Store) {

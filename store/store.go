@@ -65,6 +65,10 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 				return err
 			}
 
+			if event.Timestamp.IsZero() {
+				event.Timestamp = time.Now()
+			}
+
 			serialized, err := msgpack.Marshal(Event{
 				ID:            id,
 				Stream:        streamId,
@@ -74,7 +78,7 @@ func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendE
 				Metadata:      metadata,
 				CausationID:   event.CausationID,
 				CorrelationID: event.CorrelationID,
-				Timestamp:     time.Now(),
+				Timestamp:     event.Timestamp,
 			})
 			if err != nil {
 				return err

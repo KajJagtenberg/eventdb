@@ -25,6 +25,7 @@ type AppendEvent struct {
 	Type          string      `json:"type" validate:"required,ascii"`
 	Data          interface{} `json:"data" validate:"required"`
 	Metadata      interface{} `json:"metadata"`
+	Timestamp     time.Time   `json:"ts"`
 	CausationID   string      `json:"causation_id" validate:"required,uuid"`
 	CorrelationID string      `json:"correlation_id" validate:"required,uuid"`
 }
