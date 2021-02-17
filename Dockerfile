@@ -2,8 +2,7 @@ FROM golang:1.15-alpine AS build
 
 WORKDIR /src
 
-RUN apk update
-RUN apk upgrade
+RUN apk add g++
 
 COPY go.mod .
 COPY go.sum .
@@ -17,8 +16,6 @@ RUN go build -o eventflowdb .
 
 FROM alpine
 
-RUN apk update
-RUN apk upgrade
 RUN apk add bash
 
 WORKDIR /var/lib/eventdb
