@@ -12,6 +12,7 @@ RUN go mod download
 
 COPY . .
 
+RUN go test ./...
 RUN go build -o eventflowdb .
 
 FROM alpine

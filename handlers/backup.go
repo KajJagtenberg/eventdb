@@ -8,7 +8,7 @@ import (
 
 func Backup(eventstore *store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		c.Attachment("eventdb.bak")
+		c.Attachment("eventflowdb.bak")
 
 		return eventstore.Backup(c.Response().BodyWriter())
 	}

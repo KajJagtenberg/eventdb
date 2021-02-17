@@ -7,6 +7,9 @@ build:
 tidy:
 	go mod tidy
 
+test:
+	go test ./...
+
 clean:
 	rm -f eventflowdb
 	rm -rf *.bolt
