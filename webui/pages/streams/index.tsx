@@ -1,10 +1,11 @@
 import Layout from '../../components/Layout';
 import Navbar from '../../components/Navbar';
 import StreamTable from '../../components/StreamTable';
+import { title } from '../../vars/title';
 
 const Streams = () => {
   return (
-    <Layout title="EventDB - Streams">
+    <Layout title={`${title} - Streams`}>
       <Navbar />
 
       <StreamTable />

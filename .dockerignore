@@ -5,13 +5,11 @@ Dockerfile
 *.rest
 *.env
 *.bolt
-eventdb
 docker-compose.yml
 
 *.rest
 *.env
 *.bolt
-eventdb
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies

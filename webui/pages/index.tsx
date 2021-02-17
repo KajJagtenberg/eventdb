@@ -4,6 +4,7 @@ import HomeOverview from '../components/HomeOverview';
 import Layout from '../components/Layout';
 import Navbar from '../components/Navbar';
 import { backend } from '../vars/backend';
+import { title } from '../vars/title';
 
 const fetchInfo = async () => {
   const response = await fetch(`${backend}`);
@@ -15,7 +16,7 @@ const Home = () => {
   const { version, size, human_size, event_count, stream_count } = data || {};
 
   return (
-    <Layout title="EventDB - Home">
+    <Layout title={`${title} - Home`}>
       <Navbar />
 
       <HomeOverview

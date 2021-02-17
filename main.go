@@ -44,7 +44,7 @@ func setupRoutes(app *fiber.App, eventstore *store.EventStore) {
 }
 
 func server() {
-	log.Println("EventDB initializing storage layer")
+	log.Println("EventflowDB initializing storage layer")
 
 	file := env.GetEnv("DATABASE_FILE", "events.db")
 
@@ -55,7 +55,7 @@ func server() {
 	eventstore, err := store.NewEventStore(db)
 	check(err)
 
-	log.Println("EventDB initializing API layer")
+	log.Println("EventflowDB initializing API layer")
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -64,11 +64,11 @@ func server() {
 	setupMiddlewares(app)
 	setupRoutes(app, eventstore)
 
-	log.Println("EventDB initializing projection module")
+	log.Println("EventflowDB initializing projection module")
 
 	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")
 
-	log.Printf("EventDB API layer ready to accept requests on %s\n", addr)
+	log.Printf("EventflowDB API layer ready to accept requests on %s\n", addr)
 
 	app.Listen(addr)
 }

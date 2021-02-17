@@ -18,7 +18,7 @@ FROM alpine
 
 RUN apk add bash
 
-WORKDIR /var/lib/eventdb
+WORKDIR /var/lib/eventflowdb
 
 COPY --from=build /src/eventflowdb /bin/eventflowdb
 
