@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Home(eventstore *store.Store) fiber.Handler {
+func Home(eventstore *store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		size := eventstore.GetDBSize()
 

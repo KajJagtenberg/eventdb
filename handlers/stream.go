@@ -11,7 +11,7 @@ import (
 	"github.com/oklog/ulid"
 )
 
-func LoadFromStream(eventstore *store.Store) fiber.Handler {
+func LoadFromStream(eventstore *store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		streamParam := c.Params("stream")
 
@@ -46,7 +46,7 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 			})
 		}
 
-		events, total, err := eventstore.LoadFromStream(stream, version, limit)
+		events, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {
 			log.Println(err)
 
@@ -56,17 +56,17 @@ func LoadFromStream(eventstore *store.Store) fiber.Handler {
 		}
 
 		return c.JSON(struct {
-			Events  []store.Event `json:"events"`
-			Total   int           `json:"total"`
-			Version int           `json:"version"`
-			Limit   int           `json:"limit"`
+			Events []store.RecordedEvent `json:"events"`
+			// Total   int                   `json:"total"`
+			Version int `json:"version"`
+			Limit   int `json:"limit"`
 		}{
-			events, total, version, limit,
+			events, version, limit,
 		})
 	}
 }
 
-func AppendToStream(eventstore *store.Store) fiber.Handler {
+func AppendToStream(eventstore *store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		streamParam := c.Params("stream")
 		versionParam := c.Params("version")
@@ -92,7 +92,7 @@ func AppendToStream(eventstore *store.Store) fiber.Handler {
 			})
 		}
 
-		var events []store.AppendEvent
+		var events []store.EventData
 
 		if err := c.BodyParser(&events); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(Message{
@@ -106,16 +106,16 @@ func AppendToStream(eventstore *store.Store) fiber.Handler {
 			})
 		}
 
-		for _, event := range events {
-			if err := event.Validate(); err != nil {
-				return c.Status(fiber.StatusBadRequest).JSON(Message{
-					Message: err.Error(),
-				})
-			}
-		}
+		// for _, event := range events {
+		// 	if err := event.Validate(); err != nil {
+		// 		return c.Status(fiber.StatusBadRequest).JSON(Message{
+		// 			Message: err.Error(),
+		// 		})
+		// 	}
+		// }
 
 		if err := eventstore.AppendToStream(stream, version, events); err != nil {
-			if err == store.ErrConcurrentStreamModifcation {
+			if err == store.ErrConcurrentStreamModification {
 				return c.Status(fiber.StatusBadRequest).JSON(Message{
 					Message: err.Error(),
 				})
@@ -134,11 +134,11 @@ func AppendToStream(eventstore *store.Store) fiber.Handler {
 	}
 }
 
-func Subscribe(eventstore *store.Store) fiber.Handler {
+func Subscribe(eventstore *store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		offset := ulid.ULID{}
 
-		events, err := eventstore.Subscribe(offset, 0)
+		events, err := eventstore.LoadFromAll(offset, 0)
 		if err != nil {
 			log.Println(err)
 			return fiber.ErrInternalServerError
@@ -148,7 +148,7 @@ func Subscribe(eventstore *store.Store) fiber.Handler {
 	}
 }
 
-func GetEventByID(eventstore *store.Store) fiber.Handler {
+func GetEventByID(eventstore *store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		log.Println("Getting the event from the store")
 
@@ -180,7 +180,7 @@ func GetEventByID(eventstore *store.Store) fiber.Handler {
 	}
 }
 
-func GetStreams(eventstore *store.Store) fiber.Handler {
+func GetStreams(eventstore *store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		offsetQuery := c.Query("offset")
 		limitQuery := c.Query("limit")
@@ -200,7 +200,7 @@ func GetStreams(eventstore *store.Store) fiber.Handler {
 			})
 		}
 
-		streams, total, err := eventstore.GetStreams(offset, limit)
+		streams, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
 			log.Println(err)
@@ -212,11 +212,11 @@ func GetStreams(eventstore *store.Store) fiber.Handler {
 
 		return c.JSON(struct {
 			Streams []uuid.UUID `json:"streams"`
-			Total   int         `json:"total"`
-			Offset  int         `json:"offset"`
-			Limit   int         `json:"limit"`
+			// Total   int         `json:"total"`
+			Offset int `json:"offset"`
+			Limit  int `json:"limit"`
 		}{
-			streams, total, offset, limit,
+			streams, offset, limit,
 		})
 	}
 }

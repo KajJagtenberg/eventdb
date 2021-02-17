@@ -4,6 +4,9 @@ run:
 build:
 	go build -o eventflowdb main.go
 
+tidy:
+	go mod tidy
+
 clean:
 	rm -f eventflowdb
 	rm -rf *.bolt

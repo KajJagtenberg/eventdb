@@ -2,172 +2,110 @@ package store
 
 import (
 	"bytes"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"math/rand"
-	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
-	"github.com/vmihailenco/msgpack/v5"
 	"go.etcd.io/bbolt"
 )
 
 var (
-	entropy = ulid.Monotonic(rand.New((rand.NewSource((int64(ulid.Now()))))), 0)
+	ErrConcurrentStreamModification = errors.New("Concurrent stream modification")
+	ErrVersionNegative              = errors.New("Version cannot be negative")
+	ErrEmptyEventData               = errors.New("List of event data is empty")
+	ErrInvalidEventFormat           = errors.New("Invalid event format")
 )
 
-var (
-	ErrConcurrentStreamModifcation = errors.New("Concurrent stream modification")
-)
-
-type Store struct {
-	db *bbolt.DB
+type EventStore struct {
+	db      *bbolt.DB
+	entropy io.Reader
 }
 
-func (s *Store) AppendToStream(streamId uuid.UUID, version int, events []AppendEvent) error {
-	return s.db.Batch(func(txn *bbolt.Tx) error {
-		streams := txn.Bucket([]byte("streams"))
+func (store *EventStore) AppendToStream(name uuid.UUID, version int, events []EventData) error {
+	if version < 0 {
+		return ErrVersionNegative
+	}
 
-		stream := Stream{}
+	if len(events) == 0 {
+		return ErrEmptyEventData
+	}
 
-		serializedStream := streams.Get(streamId[:])
+	return store.db.Update(func(txn *bbolt.Tx) error {
+		streamBucket := txn.Bucket([]byte("streams"))
+		eventBucket := txn.Bucket([]byte("events"))
 
-		if serializedStream != nil {
-			if err := msgpack.Unmarshal(serializedStream, &stream); err != nil {
-				return err
-			}
+		var stream Stream
+		stream.Unmarshal(streamBucket.Get(name[:]))
+
+		if len(stream.Events) != version {
+			return ErrConcurrentStreamModification
 		}
 
-		if len(stream) != version {
-			log.Println(len(stream), version)
-			return ErrConcurrentStreamModifcation
-		}
-
-		eventsBucket := txn.Bucket([]byte("events"))
+		validator := validator.New()
 
 		for i, event := range events {
-			id, err := ulid.New(ulid.Now(), entropy)
+			if err := validator.Struct(event); err != nil {
+				return ErrInvalidEventFormat
+			}
+
+			id := ulid.MustNew(ulid.Now(), store.entropy)
+
+			recorded := RecordedEvent{
+				ID:      id,
+				Stream:  name,
+				Version: version + i,
+				Type:    event.Type,
+				Data:    event.Data,
+			}
+
+			serialized, err := json.Marshal(recorded)
 			if err != nil {
 				return err
 			}
 
-			data, err := json.Marshal(event.Data)
-			if err != nil {
+			if err := eventBucket.Put(id[:], serialized); err != nil {
 				return err
 			}
 
-			metadata, err := json.Marshal(event.Data)
-			if err != nil {
-				return err
-			}
-
-			if event.Timestamp.IsZero() {
-				event.Timestamp = time.Now()
-			}
-
-			serialized, err := msgpack.Marshal(Event{
-				ID:            id,
-				Stream:        streamId,
-				Version:       version + i,
-				Type:          event.Type,
-				Data:          data,
-				Metadata:      metadata,
-				CausationID:   event.CausationID,
-				CorrelationID: event.CorrelationID,
-				Timestamp:     event.Timestamp,
-			})
-			if err != nil {
-				return err
-			}
-
-			if err := eventsBucket.Put(id[:], serialized); err != nil {
-				return err
-			}
-
-			stream = append(stream, id)
+			stream.Events = append(stream.Events, id)
 		}
 
-		serializedStream, err := msgpack.Marshal(stream)
-		if err != nil {
+		if err := streamBucket.Put(name[:], stream.Marshal()); err != nil {
 			return err
-		}
-
-		return streams.Put(streamId[:], serializedStream)
-	})
-}
-
-func (s *Store) LoadFromStream(streamId uuid.UUID, version int, limit int) ([]Event, int, error) {
-	result := []Event{}
-	total := 0
-
-	err := s.db.View(func(txn *bbolt.Tx) error {
-		streams := txn.Bucket([]byte("streams"))
-
-		stream := Stream{}
-
-		serializedStream := streams.Get(streamId[:])
-
-		if serializedStream != nil {
-			if err := msgpack.Unmarshal(serializedStream, &stream); err != nil {
-				return err
-			}
-		}
-
-		eventsBucket := txn.Bucket([]byte("events"))
-
-		total = len(stream)
-
-		for _, id := range stream {
-			if version > 0 {
-				version--
-				continue
-			}
-
-			serialized := eventsBucket.Get(id[:])
-
-			var event Event
-
-			if err := msgpack.Unmarshal(serialized, &event); err != nil {
-				return err
-			}
-
-			result = append(result, event)
 		}
 
 		return nil
 	})
-
-	if err != nil {
-		return nil, 0, err
-	}
-
-	return result, total, nil
 }
 
-func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
-	if limit == 0 {
-		limit = 100
-	}
+func (store *EventStore) LoadFromStream(name uuid.UUID, version int, limit int) ([]RecordedEvent, error) {
+	var result []RecordedEvent
 
-	result := []Event{}
+	err := store.db.View(func(txn *bbolt.Tx) error {
+		streamBucket := txn.Bucket([]byte("streams"))
+		eventBucket := txn.Bucket([]byte("events"))
 
-	err := s.db.View(func(txn *bbolt.Tx) error {
-		cur := txn.Bucket([]byte("events")).Cursor()
+		var stream Stream
+		stream.Unmarshal(streamBucket.Get(name[:]))
 
-		for k, v := cur.Seek(offset[:]); k != nil && len(result) < limit; k, v = cur.Next() {
-			if bytes.Compare(k, offset[:]) == 0 {
+		for _, id := range stream.Events {
+			if version > 0 {
 				continue
 			}
 
-			serialized := v
+			if len(result) == limit && limit != 0 {
+				break
+			}
 
-			var event Event
+			serialized := eventBucket.Get(id[:])
 
-			if err := msgpack.Unmarshal(serialized, &event); err != nil {
+			var event RecordedEvent
+
+			if err := json.Unmarshal(serialized, &event); err != nil {
 				return err
 			}
 
@@ -184,114 +122,91 @@ func (s *Store) Subscribe(offset ulid.ULID, limit int) ([]Event, error) {
 	return result, nil
 }
 
-func (s *Store) GetEventByID(id ulid.ULID) (Event, error) {
-	var result Event
+func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEvent, error) {
+	var result []RecordedEvent
 
-	err := s.db.View(func(txn *bbolt.Tx) error {
-		bucket := txn.Bucket([]byte("events"))
+	err := store.db.View(func(txn *bbolt.Tx) error {
+		cursor := txn.Bucket([]byte("events")).Cursor()
 
-		value := bucket.Get(id[:])
+		for k, v := cursor.Seek(offset[:]); k != nil && (len(result) < limit || limit == 0); k, v = cursor.Next() {
+			if bytes.Compare(offset[:], k) == 0 {
+				continue
+			}
 
-		if err := msgpack.Unmarshal(value, &result); err != nil {
-			return err
+			var event RecordedEvent
+
+			if err := json.Unmarshal(v, &event); err != nil {
+				return err
+			}
+
+			result = append(result, event)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	return result, nil
 }
 
-func (s *Store) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
-	if limit == 0 {
-		limit = 10
+func (store *EventStore) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
+	var result []uuid.UUID
+
+	if offset < 0 {
+		offset = 0
 	}
 
-	streams := []uuid.UUID{}
-	total := 0
+	if limit < 0 {
+		limit = 0
+	}
 
-	err := s.db.View(func(txn *bbolt.Tx) error {
-		bucket := txn.Bucket([]byte("streams"))
+	err := store.db.View(func(txn *bbolt.Tx) error {
+		cursor := txn.Bucket([]byte("streams")).Cursor()
 
-		total = int(bucket.Sequence())
-
-		cur := bucket.Cursor()
-
-		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
-			total++
-
+		for k, _ := cursor.First(); k != nil && (len(result) < limit || limit == 0); k, _ = cursor.Next() {
 			if offset > 0 {
-				offset--
 				continue
 			}
 
-			if len(streams) < limit {
-				stream, err := uuid.FromBytes(k)
-				if err != nil {
-					return err
-				}
-				streams = append(streams, stream)
+			id, err := uuid.FromBytes(k)
+			if err != nil {
+				return err
 			}
+
+			result = append(result, id)
 		}
 
 		return nil
 	})
 
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 
-	return streams, total, nil
+	return result, nil
 }
 
-func (s *Store) GetEventCount() (int, error) {
-	total := 0
+func (store *EventStore) GetEventByID(id ulid.ULID) (RecordedEvent, error) {
+	var event RecordedEvent
 
-	err := s.db.View(func(txn *bbolt.Tx) error {
-		cur := txn.Bucket([]byte("events")).Cursor()
-
-		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
-			total++
+	err := store.db.View(func(txn *bbolt.Tx) error {
+		if value := txn.Bucket([]byte("events")).Get(id[:]); value != nil {
+			return json.Unmarshal(value, &event)
 		}
 
 		return nil
 	})
 
-	if err != nil {
-		return 0, nil
-	}
-
-	return total, nil
+	return event, err
 }
 
-func (s *Store) GetStreamCount() (int, error) {
-	total := 0
-
-	err := s.db.View(func(txn *bbolt.Tx) error {
-		cur := txn.Bucket([]byte("streams")).Cursor()
-
-		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
-			total++
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return 0, nil
-	}
-
-	return total, nil
-}
-
-func (s *Store) GetDBSize() int64 {
+func (store *EventStore) GetDBSize() int64 {
 	var size int64
 
-	s.db.View(func(txn *bbolt.Tx) error {
+	store.db.View(func(txn *bbolt.Tx) error {
 		size = txn.Size()
 
 		return nil
@@ -300,15 +215,49 @@ func (s *Store) GetDBSize() int64 {
 	return size
 }
 
-func (s *Store) Backup(dst io.Writer) error {
-	return s.db.View(func(txn *bbolt.Tx) error {
+func (store *EventStore) GetEventCount() (int, error) {
+	var count int
+
+	err := store.db.View(func(txn *bbolt.Tx) error {
+		cursor := txn.Bucket([]byte("events")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			count++
+		}
+
+		return nil
+	})
+
+	return count, err
+}
+
+func (store *EventStore) GetStreamCount() (int, error) {
+	var count int
+
+	err := store.db.View(func(txn *bbolt.Tx) error {
+		cursor := txn.Bucket([]byte("streams")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			count++
+		}
+
+		return nil
+	})
+
+	return count, err
+}
+
+func (store *EventStore) Backup(dst io.Writer) error {
+	return store.db.View(func(txn *bbolt.Tx) error {
 		_, err := txn.WriteTo(dst)
 
 		return err
 	})
 }
 
-func NewStore(db *bbolt.DB) (*Store, error) {
+func NewEventStore(db *bbolt.DB) (*EventStore, error) {
+	entropy := ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0)
+
 	if err := db.Update(func(txn *bbolt.Tx) error {
 		if _, err := txn.CreateBucketIfNotExists([]byte("streams")); err != nil {
 			return err
@@ -323,19 +272,5 @@ func NewStore(db *bbolt.DB) (*Store, error) {
 		return nil, err
 	}
 
-	return &Store{db}, nil
-}
-
-func itob(v uint64) []byte {
-	r := make([]byte, 8)
-	binary.BigEndian.PutUint64(r, v)
-	return r
-}
-
-func btoi(v []byte) uint64 {
-	if len(v) == 0 {
-		return 0
-	}
-
-	return binary.BigEndian.Uint64(v)
+	return &EventStore{db, entropy}, nil
 }

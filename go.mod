@@ -4,10 +4,7 @@ go 1.15
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dlclark/regexp2 v1.4.0 // indirect
-	github.com/dop251/goja v0.0.0-20210126164150-f5884268f0c0
 	github.com/go-playground/validator/v10 v10.4.1
-	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gofiber/fiber/v2 v2.3.3
 	github.com/gofiber/helmet/v2 v2.1.0
 	github.com/google/uuid v1.1.5
