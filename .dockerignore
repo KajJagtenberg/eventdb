@@ -6,6 +6,7 @@ Dockerfile
 *.env
 *.bolt
 docker-compose.yml
+eventflowdb
 
 *.rest
 *.env
