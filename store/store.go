@@ -83,8 +83,9 @@ func (store *EventStore) AppendToStream(name uuid.UUID, version int, events []Ev
 	})
 }
 
-func (store *EventStore) LoadFromStream(name uuid.UUID, version int, limit int) ([]RecordedEvent, error) {
+func (store *EventStore) LoadFromStream(name uuid.UUID, version int, limit int) ([]RecordedEvent, int, error) {
 	var result []RecordedEvent
+	var total int
 
 	err := store.db.View(func(txn *bbolt.Tx) error {
 		streamBucket := txn.Bucket([]byte("streams"))
@@ -92,6 +93,8 @@ func (store *EventStore) LoadFromStream(name uuid.UUID, version int, limit int) 
 
 		var stream Stream
 		stream.Unmarshal(streamBucket.Get(name[:]))
+
+		total = len(stream.Events)
 
 		for _, id := range stream.Events {
 			if version > 0 {
@@ -117,10 +120,10 @@ func (store *EventStore) LoadFromStream(name uuid.UUID, version int, limit int) 
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return result, total, nil
 }
 
 func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEvent, error) {
@@ -153,8 +156,9 @@ func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEve
 	return result, nil
 }
 
-func (store *EventStore) GetStreams(offset int, limit int) ([]uuid.UUID, error) {
+func (store *EventStore) GetStreams(offset int, limit int) ([]uuid.UUID, int, error) {
 	var result []uuid.UUID
+	var total int
 
 	if offset < 0 {
 		offset = 0
@@ -167,8 +171,14 @@ func (store *EventStore) GetStreams(offset int, limit int) ([]uuid.UUID, error) 
 	err := store.db.View(func(txn *bbolt.Tx) error {
 		cursor := txn.Bucket([]byte("streams")).Cursor()
 
-		for k, _ := cursor.First(); k != nil && (len(result) < limit || limit == 0); k, _ = cursor.Next() {
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			total++
+
 			if offset > 0 {
+				continue
+			}
+
+			if len(result) == limit && limit != 0 {
 				continue
 			}
 
@@ -184,10 +194,10 @@ func (store *EventStore) GetStreams(offset int, limit int) ([]uuid.UUID, error) 
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	return result, nil
+	return result, total, nil
 }
 
 func (store *EventStore) GetEventByID(id ulid.ULID) (RecordedEvent, error) {

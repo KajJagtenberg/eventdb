@@ -6,7 +6,7 @@ import Navbar from '../components/Navbar';
 import { backend } from '../vars/backend';
 
 const fetchInfo = async () => {
-  const response = await fetch(`${backend}/api/v1`);
+  const response = await fetch(`${backend}`);
   return response.json();
 };
 

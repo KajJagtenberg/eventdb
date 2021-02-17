@@ -2,9 +2,7 @@ package main
 
 import (
 	"eventflowdb/env"
-	"io/ioutil"
 	"log"
-	"os"
 	"time"
 
 	"eventflowdb/handlers"
@@ -37,7 +35,7 @@ func setupRoutes(app *fiber.App, eventstore *store.EventStore) {
 	v1.Get("/streams/all", handlers.Subscribe(eventstore))
 	v1.Get("/streams/:stream", handlers.LoadFromStream(eventstore))
 	v1.Post("/streams/:stream/:version", handlers.AppendToStream(eventstore))
-	v1.Get("/events/:id", etag.New(), cache.New(cache.Config{
+	v1.Get("/events/:id", cache.New(cache.Config{
 		Expiration:   30 * time.Minute,
 		CacheControl: true,
 	}), handlers.GetEventByID(eventstore))
@@ -79,23 +77,6 @@ func check(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-/* */
-
-func LoadFileAsString(file string) (string, error) {
-	fin, err := os.OpenFile(file, os.O_RDONLY, 0600)
-	if err != nil {
-		return "", err
-	}
-	defer fin.Close()
-
-	src, err := ioutil.ReadAll(fin)
-	if err != nil {
-		return "", err
-	}
-
-	return string(src), nil
 }
 
 func main() {

@@ -6,6 +6,7 @@ import (
 
 	"eventflowdb/store"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
@@ -46,7 +47,7 @@ func LoadFromStream(eventstore *store.EventStore) fiber.Handler {
 			})
 		}
 
-		events, err := eventstore.LoadFromStream(stream, version, limit)
+		events, total, err := eventstore.LoadFromStream(stream, version, limit)
 		if err != nil {
 			log.Println(err)
 
@@ -56,12 +57,12 @@ func LoadFromStream(eventstore *store.EventStore) fiber.Handler {
 		}
 
 		return c.JSON(struct {
-			Events []store.RecordedEvent `json:"events"`
-			// Total   int                   `json:"total"`
-			Version int `json:"version"`
-			Limit   int `json:"limit"`
+			Events  []store.RecordedEvent `json:"events"`
+			Total   int                   `json:"total"`
+			Version int                   `json:"version"`
+			Limit   int                   `json:"limit"`
 		}{
-			events, version, limit,
+			events, total, version, limit,
 		})
 	}
 }
@@ -92,27 +93,41 @@ func AppendToStream(eventstore *store.EventStore) fiber.Handler {
 			})
 		}
 
-		var events []store.EventData
+		var body []struct {
+			Type     string `json:"type" validate:"required"`
+			Data     []byte `json:"data" validate:"required"`
+			Metadata []byte `json:"metadata"`
+		}
 
-		if err := c.BodyParser(&events); err != nil {
+		if err := c.BodyParser(&body); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(Message{
 				Message: "Unable to decode request body",
 			})
 		}
 
-		if len(events) == 0 {
+		if len(body) == 0 {
 			return c.Status(fiber.StatusBadRequest).JSON(Message{
 				Message: "Request contains no events",
 			})
 		}
 
-		// for _, event := range events {
-		// 	if err := event.Validate(); err != nil {
-		// 		return c.Status(fiber.StatusBadRequest).JSON(Message{
-		// 			Message: err.Error(),
-		// 		})
-		// 	}
-		// }
+		var events []store.EventData
+
+		validator := validator.New()
+
+		for _, event := range body {
+			if err := validator.Struct(event); err != nil { // TODO: Add better error messages
+				return c.Status(fiber.StatusBadRequest).JSON(Message{
+					Message: err.Error(),
+				})
+			}
+
+			events = append(events, store.EventData{
+				Type:     event.Type,
+				Data:     event.Data,
+				Metadata: event.Metadata,
+			})
+		}
 
 		if err := eventstore.AppendToStream(stream, version, events); err != nil {
 			if err == store.ErrConcurrentStreamModification {
@@ -200,7 +215,7 @@ func GetStreams(eventstore *store.EventStore) fiber.Handler {
 			})
 		}
 
-		streams, err := eventstore.GetStreams(offset, limit)
+		streams, total, err := eventstore.GetStreams(offset, limit)
 
 		if err != nil {
 			log.Println(err)
@@ -212,11 +227,11 @@ func GetStreams(eventstore *store.EventStore) fiber.Handler {
 
 		return c.JSON(struct {
 			Streams []uuid.UUID `json:"streams"`
-			// Total   int         `json:"total"`
-			Offset int `json:"offset"`
-			Limit  int `json:"limit"`
+			Total   int         `json:"total"`
+			Offset  int         `json:"offset"`
+			Limit   int         `json:"limit"`
 		}{
-			streams, offset, limit,
+			streams, total, offset, limit,
 		})
 	}
 }

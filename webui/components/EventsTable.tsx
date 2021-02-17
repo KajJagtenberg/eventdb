@@ -3,12 +3,24 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 
 import {
-    Accordion, AccordionButton, AccordionIcon, AccordionItem, AccordionPanel, Box, Button, Flex,
-    Popover, PopoverArrow, PopoverBody, PopoverCloseButton, PopoverContent, PopoverFooter,
-    PopoverHeader, PopoverTrigger, Spinner, Table, Tbody, Td, Text, Th, Thead, Tr, useToast
+  Button,
+  Flex,
+  Popover,
+  PopoverBody,
+  PopoverContent,
+  PopoverTrigger,
+  Spinner,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useToast,
 } from '@chakra-ui/react';
 
-import { IEvent } from '../types/IEvent';
+import { RecordedEvent } from '../types/IEvent';
 import { backend } from '../vars/backend';
 
 const fetchStreams = async (stream: string, page: number, limit: number) => {
@@ -109,6 +121,7 @@ const EventsTable = ({ stream }) => {
             <Th>Type</Th>
             <Th>Timestamp</Th>
             <Th>Payload</Th>
+            <Th>Metadata</Th>
           </Tr>
         </Thead>
 
@@ -117,32 +130,60 @@ const EventsTable = ({ stream }) => {
             data &&
             data.events
               .reverse()
-              .map(({ version, id, type, ts, data }: IEvent, index: number) => {
-                return (
-                  <Tr key={index}>
-                    <Td>{version}</Td>
-                    <Td>{id}</Td>
-                    <Td>{type}</Td>
-                    <Td>{dayjs(ts).format('DD-MM-YYYY HH:mm:ss:ms')}</Td>
-                    <Td>
-                      <Popover>
-                        <PopoverTrigger>
-                          <Button size="xs" colorScheme="teal">
-                            Show
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent>
-                          <PopoverBody my={4}>
-                            <Text fontWeight="semibold">
-                              {JSON.stringify(data, null, 2)}
-                            </Text>
-                          </PopoverBody>
-                        </PopoverContent>
-                      </Popover>
-                    </Td>
-                  </Tr>
-                );
-              })}
+              .map(
+                (
+                  { version, id, type, ts, data, metadata }: RecordedEvent,
+                  index: number
+                ) => {
+                  try {
+                    data = atob(data);
+                  } catch (err) {}
+
+                  return (
+                    <Tr key={index}>
+                      <Td>{version}</Td>
+                      <Td>{id}</Td>
+                      <Td>{type}</Td>
+                      <Td>{dayjs(ts).format('DD-MM-YYYY HH:mm:ss:ms')}</Td>
+                      <Td>
+                        <Popover>
+                          <PopoverTrigger>
+                            <Button size="xs" colorScheme="teal">
+                              Show
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent>
+                            <PopoverBody my={4}>
+                              <Text fontWeight="semibold">{data}</Text>
+                            </PopoverBody>
+                          </PopoverContent>
+                        </Popover>
+                      </Td>
+
+                      <Td>
+                        {metadata ? (
+                          <Popover>
+                            <PopoverTrigger>
+                              <Button size="xs" colorScheme="teal">
+                                Show
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                              <PopoverBody my={4}>
+                                <Text fontWeight="semibold">
+                                  {JSON.stringify(metadata, null, 2)}
+                                </Text>
+                              </PopoverBody>
+                            </PopoverContent>
+                          </Popover>
+                        ) : (
+                          'N/A'
+                        )}
+                      </Td>
+                    </Tr>
+                  );
+                }
+              )}
         </Tbody>
       </Table>
 
