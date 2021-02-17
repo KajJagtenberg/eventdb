@@ -26,13 +26,13 @@ func setupMiddlewares(app *fiber.App) {
 }
 
 func setupRoutes(app *fiber.App, eventstore *store.EventStore) {
+	app.Get("/", handlers.Home(eventstore))
 
 	v1 := app.Group("/api/v1")
 	v1.Use(logger.New(logger.Config{
 		TimeZone: env.GetEnv("TZ", "UTC"),
 	}))
 
-	v1.Get("/", handlers.Home(eventstore))
 	v1.Get("/streams", handlers.GetStreams(eventstore))
 	v1.Get("/streams/all", handlers.Subscribe(eventstore))
 	v1.Get("/streams/:stream", handlers.LoadFromStream(eventstore))

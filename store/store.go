@@ -55,11 +55,12 @@ func (store *EventStore) AppendToStream(name uuid.UUID, version int, events []Ev
 			id := ulid.MustNew(ulid.Now(), store.entropy)
 
 			recorded := RecordedEvent{
-				ID:      id,
-				Stream:  name,
-				Version: version + i,
-				Type:    event.Type,
-				Data:    event.Data,
+				ID:       id,
+				Stream:   name,
+				Version:  version + i,
+				Type:     event.Type,
+				Data:     event.Data,
+				Metadata: event.Metadata,
 			}
 
 			serialized, err := json.Marshal(recorded)
