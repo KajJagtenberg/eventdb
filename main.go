@@ -2,12 +2,18 @@ package main
 
 import (
 	"eventflowdb/env"
+	"eventflowdb/graph"
+	"eventflowdb/graph/generated"
 	"log"
+	"net/http"
 	"time"
 
 	"eventflowdb/handlers"
 	"eventflowdb/store"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -61,6 +67,12 @@ func server() {
 		DisableStartupMessage: true,
 	})
 
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+
+	app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/query")))
+	app.Post("/query", adaptor.HTTPHandler(srv))
+	http.Handle("/query", srv)
+
 	setupMiddlewares(app)
 	setupRoutes(app, eventstore)
 
@@ -70,7 +82,7 @@ func server() {
 
 	log.Printf("EventflowDB HTTP API layer ready to accept requests on %s\n", addr)
 
-	app.Listen(addr)
+	check(app.Listen(addr))
 }
 
 func check(err error) {
