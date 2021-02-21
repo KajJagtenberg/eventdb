@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine AS build
+FROM golang:1.16-alpine AS build
 
 WORKDIR /src
 
@@ -14,7 +14,7 @@ COPY . .
 RUN go test ./...
 RUN go build -o eventflowdb .
 
-FROM alpine
+FROM alpine:3.8
 
 RUN apk add bash
 
