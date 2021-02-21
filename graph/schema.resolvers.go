@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-func (r *mutationResolver) Append(ctx context.Context) ([]*model.Event, error) {
+func (r *mutationResolver) Append(ctx context.Context, events []*model.EventData) ([]*model.Event, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

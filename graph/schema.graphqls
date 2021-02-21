@@ -15,6 +15,12 @@ extend type Query {
   fromAllStreams(offset: String, limit: Int = 0): [Event!]!
 }
 
+input EventData {
+  type: String!
+  data: String!
+  metadata: String
+}
+
 extend type Mutation {
-  append: [Event]!
+  append(events: [EventData!]!): [Event]!
 }

@@ -15,3 +15,9 @@ type Event struct {
 	Metadata string    `json:"metadata"`
 	AddedAt  time.Time `json:"addedAt"`
 }
+
+type EventData struct {
+	Type     string  `json:"type"`
+	Data     string  `json:"data"`
+	Metadata *string `json:"metadata"`
+}

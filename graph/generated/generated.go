@@ -55,7 +55,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Append func(childComplexity int) int
+		Append func(childComplexity int, events []*model.EventData) int
 	}
 
 	Query struct {
@@ -65,7 +65,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	Append(ctx context.Context) ([]*model.Event, error)
+	Append(ctx context.Context, events []*model.EventData) ([]*model.Event, error)
 }
 type QueryResolver interface {
 	FromStream(ctx context.Context, stream *string, version *int, limit *int) ([]*model.Event, error)
@@ -141,7 +141,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Mutation.Append(childComplexity), true
+		args, err := ec.field_Mutation_append_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Append(childComplexity, args["events"].([]*model.EventData)), true
 
 	case "Query.fromAllStreams":
 		if e.complexity.Query.FromAllStreams == nil {
@@ -248,15 +253,37 @@ extend type Query {
   fromAllStreams(offset: String, limit: Int = 0): [Event!]!
 }
 
+input EventData {
+  type: String!
+  data: String!
+  metadata: String
+}
+
 extend type Mutation {
-  append: [Event]!
-}`, BuiltIn: false},
+  append(events: [EventData!]!): [Event]!
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_append_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 []*model.EventData
+	if tmp, ok := rawArgs["events"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("events"))
+		arg0, err = ec.unmarshalNEventData2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventDataᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["events"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -629,9 +656,16 @@ func (ec *executionContext) _Mutation_append(ctx context.Context, field graphql.
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_append_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Append(rctx)
+		return ec.resolvers.Mutation().Append(rctx, args["events"].([]*model.EventData))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1890,6 +1924,42 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputEventData(ctx context.Context, obj interface{}) (model.EventData, error) {
+	var it model.EventData
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			it.Type, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "data":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+			it.Data, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "metadata":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("metadata"))
+			it.Metadata, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2386,6 +2456,32 @@ func (ec *executionContext) marshalNEvent2ᚖeventflowdbᚋgraphᚋmodelᚐEvent
 		return graphql.Null
 	}
 	return ec._Event(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNEventData2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventDataᚄ(ctx context.Context, v interface{}) ([]*model.EventData, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*model.EventData, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNEventData2ᚖeventflowdbᚋgraphᚋmodelᚐEventData(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNEventData2ᚖeventflowdbᚋgraphᚋmodelᚐEventData(ctx context.Context, v interface{}) (*model.EventData, error) {
+	res, err := ec.unmarshalInputEventData(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
