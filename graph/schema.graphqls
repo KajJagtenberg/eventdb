@@ -1,28 +1,20 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
+type Event {
+  id: String!
+  stream: String!
+  version: Int!
+  type: String!
+  data: String!
+  metadata: String!
+  addedAt: Time!
 }
 
-type User {
-  id: ID!
-  name: String!
+scalar Time
+
+extend type Query {
+  fromStream(stream: String, version: Int = 0, limit: Int = 0): [Event!]!
+  fromAllStreams(offset: String, limit: Int = 0): [Event!]!
 }
 
-type Query {
-  todos: [Todo!]!
-}
-
-input NewTodo {
-  text: String!
-  userId: String!
-}
-
-type Mutation {
-  createTodo(input: NewTodo!): Todo!
+extend type Mutation {
+  append: [Event]!
 }

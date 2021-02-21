@@ -14,6 +14,9 @@ clean:
 	rm -f eventflowdb
 	rm -rf *.bolt
 
+generate:
+	go run github.com/99designs/gqlgen generate
+
 docker:
 	docker build -t eventflowdb .
 
