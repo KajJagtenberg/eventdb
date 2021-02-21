@@ -129,7 +129,7 @@ func AppendToStream(eventstore *store.EventStore) fiber.Handler {
 			})
 		}
 
-		if err := eventstore.AppendToStream(stream, version, events); err != nil {
+		if _, err := eventstore.AppendToStream(stream, version, events); err != nil {
 			if err == store.ErrConcurrentStreamModification {
 				return c.Status(fiber.StatusBadRequest).JSON(Message{
 					Message: err.Error(),

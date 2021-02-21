@@ -67,7 +67,9 @@ func server() {
 		DisableStartupMessage: true,
 	})
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
+		EventStore: eventstore,
+	}}))
 
 	app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/query")))
 	app.Post("/query", adaptor.HTTPHandler(srv))

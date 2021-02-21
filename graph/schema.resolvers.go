@@ -5,13 +5,68 @@ package graph
 
 import (
 	"context"
+	"encoding/base64"
 	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
-	"fmt"
+	"eventflowdb/store"
+	"log"
+
+	"github.com/google/uuid"
 )
 
-func (r *mutationResolver) Append(ctx context.Context, events []*model.EventData) ([]*model.Event, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.Event, error) {
+	name, err := uuid.Parse(stream)
+	if err != nil {
+		return nil, err
+	}
+
+	var data []store.EventData
+
+	for _, event := range events {
+		log.Println(event)
+
+		decodedData, err := base64.StdEncoding.DecodeString(event.Data)
+		if err != nil {
+			return nil, err
+		}
+
+		var metadata []byte
+
+		if event.Metadata != nil {
+			metadata, err = base64.StdEncoding.DecodeString(*event.Metadata)
+		}
+
+		if err != nil {
+			return nil, err
+		}
+
+		data = append(data, store.EventData{
+			Type:     event.Type,
+			Data:     decodedData,
+			Metadata: metadata,
+		})
+	}
+
+	records, err := r.EventStore.AppendToStream(name, version, data)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.Event
+
+	for _, record := range records {
+		result = append(result, &model.Event{
+			ID:       record.ID.String(),
+			Stream:   record.Stream.String(),
+			Version:  record.Version,
+			Type:     record.Type,
+			Data:     base64.StdEncoding.EncodeToString(record.Data),
+			Metadata: base64.StdEncoding.EncodeToString(record.Metadata),
+			AddedAt:  record.AddedAt,
+		})
+	}
+
+	return result, nil
 }
 
 func (r *queryResolver) FromStream(ctx context.Context, stream *string, version *int, limit *int) ([]*model.Event, error) {

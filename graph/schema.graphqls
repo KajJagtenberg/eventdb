@@ -22,5 +22,5 @@ input EventData {
 }
 
 extend type Mutation {
-  append(events: [EventData!]!): [Event]!
+  append(stream: String!, version: Int!, events: [EventData!]!): [Event]!
 }

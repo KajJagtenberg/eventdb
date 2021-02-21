@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"math/rand"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -25,16 +26,18 @@ type EventStore struct {
 	entropy io.Reader
 }
 
-func (store *EventStore) AppendToStream(name uuid.UUID, version int, events []EventData) error {
+func (store *EventStore) AppendToStream(name uuid.UUID, version int, events []EventData) ([]RecordedEvent, error) {
 	if version < 0 {
-		return ErrVersionNegative
+		return nil, ErrVersionNegative
 	}
 
 	if len(events) == 0 {
-		return ErrEmptyEventData
+		return nil, ErrEmptyEventData
 	}
 
-	return store.db.Update(func(txn *bbolt.Tx) error {
+	var result []RecordedEvent
+
+	err := store.db.Update(func(txn *bbolt.Tx) error {
 		streamBucket := txn.Bucket([]byte("streams"))
 		eventBucket := txn.Bucket([]byte("events"))
 
@@ -61,7 +64,10 @@ func (store *EventStore) AppendToStream(name uuid.UUID, version int, events []Ev
 				Type:     event.Type,
 				Data:     event.Data,
 				Metadata: event.Metadata,
+				AddedAt:  time.Now(),
 			}
+
+			result = append(result, recorded)
 
 			serialized, err := json.Marshal(recorded)
 			if err != nil {
@@ -81,6 +87,12 @@ func (store *EventStore) AppendToStream(name uuid.UUID, version int, events []Ev
 
 		return nil
 	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (store *EventStore) LoadFromStream(name uuid.UUID, version int, limit int) ([]RecordedEvent, int, error) {

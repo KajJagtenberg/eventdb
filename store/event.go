@@ -1,6 +1,8 @@
 package store
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
 )
@@ -18,4 +20,5 @@ type RecordedEvent struct {
 	Type     string    `json:"type"`
 	Data     []byte    `json:"data"`
 	Metadata []byte    `json:"metadata"`
+	AddedAt  time.Time `json:"added_at"`
 }

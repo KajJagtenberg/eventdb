@@ -55,7 +55,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Append func(childComplexity int, events []*model.EventData) int
+		Append func(childComplexity int, stream string, version int, events []*model.EventData) int
 	}
 
 	Query struct {
@@ -65,7 +65,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	Append(ctx context.Context, events []*model.EventData) ([]*model.Event, error)
+	Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.Event, error)
 }
 type QueryResolver interface {
 	FromStream(ctx context.Context, stream *string, version *int, limit *int) ([]*model.Event, error)
@@ -146,7 +146,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Append(childComplexity, args["events"].([]*model.EventData)), true
+		return e.complexity.Mutation.Append(childComplexity, args["stream"].(string), args["version"].(int), args["events"].([]*model.EventData)), true
 
 	case "Query.fromAllStreams":
 		if e.complexity.Query.FromAllStreams == nil {
@@ -260,7 +260,7 @@ input EventData {
 }
 
 extend type Mutation {
-  append(events: [EventData!]!): [Event]!
+  append(stream: String!, version: Int!, events: [EventData!]!): [Event]!
 }
 `, BuiltIn: false},
 }
@@ -273,15 +273,33 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_append_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []*model.EventData
-	if tmp, ok := rawArgs["events"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("events"))
-		arg0, err = ec.unmarshalNEventData2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventDataᚄ(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["stream"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stream"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["events"] = arg0
+	args["stream"] = arg0
+	var arg1 int
+	if tmp, ok := rawArgs["version"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("version"))
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["version"] = arg1
+	var arg2 []*model.EventData
+	if tmp, ok := rawArgs["events"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("events"))
+		arg2, err = ec.unmarshalNEventData2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventDataᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["events"] = arg2
 	return args, nil
 }
 
@@ -665,7 +683,7 @@ func (ec *executionContext) _Mutation_append(ctx context.Context, field graphql.
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Append(rctx, args["events"].([]*model.EventData))
+		return ec.resolvers.Mutation().Append(rctx, args["stream"].(string), args["version"].(int), args["events"].([]*model.EventData))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
