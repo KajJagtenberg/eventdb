@@ -1,18 +1,30 @@
 type Event {
   id: String!
-  stream: String!
+  stream: Stream!
   version: Int!
   type: String!
   data: String!
   metadata: String!
-  addedAt: Time!
+  added_at: Time!
 }
 
 scalar Time
 
+type Stream {
+  name: String!
+  events(skip: Int = 0, limit: Int = 0): [Event!]!
+  size: Int!
+}
+
+type Streams {
+  streams: [Stream!]!
+  total: Int!
+}
+
 extend type Query {
-  fromStream(stream: String, version: Int = 0, limit: Int = 0): [Event!]!
-  fromAllStreams(offset: String, limit: Int = 0): [Event!]!
+  streams(skip: Int = 0, limit: Int = 0): Streams!
+  stream(id: String!): Stream
+  all(offset: String!, limit: Int = 0): [Event!]!
 }
 
 input EventData {
@@ -22,5 +34,5 @@ input EventData {
 }
 
 extend type Mutation {
-  append(stream: String!, version: Int!, events: [EventData!]!): [Event]!
+  append(stream: String!, version: Int!, events: [EventData!]!): Stream!
 }

@@ -36,8 +36,11 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Event() EventResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
+	Stream() StreamResolver
+	Streams() StreamsResolver
 }
 
 type DirectiveRoot struct {
@@ -59,17 +62,39 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		FromAllStreams func(childComplexity int, offset *string, limit *int) int
-		FromStream     func(childComplexity int, stream *string, version *int, limit *int) int
+		All     func(childComplexity int, offset string, limit *int) int
+		Stream  func(childComplexity int, id string) int
+		Streams func(childComplexity int, skip *int, limit *int) int
+	}
+
+	Stream struct {
+		Events func(childComplexity int, skip *int, limit *int) int
+		Name   func(childComplexity int) int
+		Size   func(childComplexity int) int
+	}
+
+	Streams struct {
+		Streams func(childComplexity int) int
+		Total   func(childComplexity int) int
 	}
 }
 
+type EventResolver interface {
+	Stream(ctx context.Context, obj *model.Event) (*model.Stream, error)
+}
 type MutationResolver interface {
-	Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.Event, error)
+	Append(ctx context.Context, stream string, version int, events []*model.EventData) (*model.Stream, error)
 }
 type QueryResolver interface {
-	FromStream(ctx context.Context, stream *string, version *int, limit *int) ([]*model.Event, error)
-	FromAllStreams(ctx context.Context, offset *string, limit *int) ([]*model.Event, error)
+	Streams(ctx context.Context, skip *int, limit *int) (*model.Streams, error)
+	Stream(ctx context.Context, id string) (*model.Stream, error)
+	All(ctx context.Context, offset string, limit *int) ([]*model.Event, error)
+}
+type StreamResolver interface {
+	Events(ctx context.Context, obj *model.Stream, skip *int, limit *int) ([]*model.Event, error)
+}
+type StreamsResolver interface {
+	Streams(ctx context.Context, obj *model.Streams) ([]*model.Stream, error)
 }
 
 type executableSchema struct {
@@ -87,7 +112,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Event.addedAt":
+	case "Event.added_at":
 		if e.complexity.Event.AddedAt == nil {
 			break
 		}
@@ -148,29 +173,81 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Append(childComplexity, args["stream"].(string), args["version"].(int), args["events"].([]*model.EventData)), true
 
-	case "Query.fromAllStreams":
-		if e.complexity.Query.FromAllStreams == nil {
+	case "Query.all":
+		if e.complexity.Query.All == nil {
 			break
 		}
 
-		args, err := ec.field_Query_fromAllStreams_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_all_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.FromAllStreams(childComplexity, args["offset"].(*string), args["limit"].(*int)), true
+		return e.complexity.Query.All(childComplexity, args["offset"].(string), args["limit"].(*int)), true
 
-	case "Query.fromStream":
-		if e.complexity.Query.FromStream == nil {
+	case "Query.stream":
+		if e.complexity.Query.Stream == nil {
 			break
 		}
 
-		args, err := ec.field_Query_fromStream_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_stream_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.FromStream(childComplexity, args["stream"].(*string), args["version"].(*int), args["limit"].(*int)), true
+		return e.complexity.Query.Stream(childComplexity, args["id"].(string)), true
+
+	case "Query.streams":
+		if e.complexity.Query.Streams == nil {
+			break
+		}
+
+		args, err := ec.field_Query_streams_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Streams(childComplexity, args["skip"].(*int), args["limit"].(*int)), true
+
+	case "Stream.events":
+		if e.complexity.Stream.Events == nil {
+			break
+		}
+
+		args, err := ec.field_Stream_events_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Stream.Events(childComplexity, args["skip"].(*int), args["limit"].(*int)), true
+
+	case "Stream.name":
+		if e.complexity.Stream.Name == nil {
+			break
+		}
+
+		return e.complexity.Stream.Name(childComplexity), true
+
+	case "Stream.size":
+		if e.complexity.Stream.Size == nil {
+			break
+		}
+
+		return e.complexity.Stream.Size(childComplexity), true
+
+	case "Streams.streams":
+		if e.complexity.Streams.Streams == nil {
+			break
+		}
+
+		return e.complexity.Streams.Streams(childComplexity), true
+
+	case "Streams.total":
+		if e.complexity.Streams.Total == nil {
+			break
+		}
+
+		return e.complexity.Streams.Total(childComplexity), true
 
 	}
 	return 0, false
@@ -238,19 +315,31 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `type Event {
   id: String!
-  stream: String!
+  stream: Stream!
   version: Int!
   type: String!
   data: String!
   metadata: String!
-  addedAt: Time!
+  added_at: Time!
 }
 
 scalar Time
 
+type Stream {
+  name: String!
+  events(skip: Int = 0, limit: Int = 0): [Event!]!
+  size: Int!
+}
+
+type Streams {
+  streams: [Stream!]!
+  total: Int!
+}
+
 extend type Query {
-  fromStream(stream: String, version: Int = 0, limit: Int = 0): [Event!]!
-  fromAllStreams(offset: String, limit: Int = 0): [Event!]!
+  streams(skip: Int = 0, limit: Int = 0): Streams!
+  stream(id: String!): Stream
+  all(offset: String!, limit: Int = 0): [Event!]!
 }
 
 input EventData {
@@ -260,7 +349,7 @@ input EventData {
 }
 
 extend type Mutation {
-  append(stream: String!, version: Int!, events: [EventData!]!): [Event]!
+  append(stream: String!, version: Int!, events: [EventData!]!): Stream!
 }
 `, BuiltIn: false},
 }
@@ -318,13 +407,13 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_fromAllStreams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_all_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
+	var arg0 string
 	if tmp, ok := rawArgs["offset"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -342,36 +431,66 @@ func (ec *executionContext) field_Query_fromAllStreams_args(ctx context.Context,
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_fromStream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_stream_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *string
-	if tmp, ok := rawArgs["stream"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stream"))
-		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["stream"] = arg0
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_streams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["skip"] = arg0
 	var arg1 *int
-	if tmp, ok := rawArgs["version"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("version"))
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
 		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["version"] = arg1
-	var arg2 *int
-	if tmp, ok := rawArgs["limit"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg2, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+	args["limit"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Stream_events_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *int
+	if tmp, ok := rawArgs["skip"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
+		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["limit"] = arg2
+	args["skip"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["limit"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["limit"] = arg1
 	return args, nil
 }
 
@@ -459,14 +578,14 @@ func (ec *executionContext) _Event_stream(ctx context.Context, field graphql.Col
 		Object:     "Event",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Stream, nil
+		return ec.resolvers.Event().Stream(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -478,9 +597,9 @@ func (ec *executionContext) _Event_stream(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*model.Stream)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNStream2ᚖeventflowdbᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Event_version(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
@@ -623,7 +742,7 @@ func (ec *executionContext) _Event_metadata(ctx context.Context, field graphql.C
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Event_addedAt(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
+func (ec *executionContext) _Event_added_at(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -695,12 +814,12 @@ func (ec *executionContext) _Mutation_append(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Event)
+	res := resTmp.(*model.Stream)
 	fc.Result = res
-	return ec.marshalNEvent2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEvent(ctx, field.Selections, res)
+	return ec.marshalNStream2ᚖeventflowdbᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_fromStream(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_streams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -717,7 +836,7 @@ func (ec *executionContext) _Query_fromStream(ctx context.Context, field graphql
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_fromStream_args(ctx, rawArgs)
+	args, err := ec.field_Query_streams_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -725,7 +844,7 @@ func (ec *executionContext) _Query_fromStream(ctx context.Context, field graphql
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FromStream(rctx, args["stream"].(*string), args["version"].(*int), args["limit"].(*int))
+		return ec.resolvers.Query().Streams(rctx, args["skip"].(*int), args["limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -737,12 +856,12 @@ func (ec *executionContext) _Query_fromStream(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*model.Event)
+	res := resTmp.(*model.Streams)
 	fc.Result = res
-	return ec.marshalNEvent2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
+	return ec.marshalNStreams2ᚖeventflowdbᚋgraphᚋmodelᚐStreams(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_fromAllStreams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_stream(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -759,7 +878,7 @@ func (ec *executionContext) _Query_fromAllStreams(ctx context.Context, field gra
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_fromAllStreams_args(ctx, rawArgs)
+	args, err := ec.field_Query_stream_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -767,7 +886,46 @@ func (ec *executionContext) _Query_fromAllStreams(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().FromAllStreams(rctx, args["offset"].(*string), args["limit"].(*int))
+		return ec.resolvers.Query().Stream(rctx, args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Stream)
+	fc.Result = res
+	return ec.marshalOStream2ᚖeventflowdbᚋgraphᚋmodelᚐStream(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_all(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_all_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().All(rctx, args["offset"].(string), args["limit"].(*int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -853,6 +1011,188 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_name(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Stream",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_events(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Stream",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Stream_events_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Stream().Events(rctx, obj, args["skip"].(*int), args["limit"].(*int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Event)
+	fc.Result = res
+	return ec.marshalNEvent2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Stream_size(ctx context.Context, field graphql.CollectedField, obj *model.Stream) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Stream",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Size, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Streams_streams(ctx context.Context, field graphql.CollectedField, obj *model.Streams) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Streams",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Streams().Streams(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Stream)
+	fc.Result = res
+	return ec.marshalNStream2ᚕᚖeventflowdbᚋgraphᚋmodelᚐStreamᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Streams_total(ctx context.Context, field graphql.CollectedField, obj *model.Streams) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Streams",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Total, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2000,37 +2340,46 @@ func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, ob
 		case "id":
 			out.Values[i] = ec._Event_id(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "stream":
-			out.Values[i] = ec._Event_stream(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Event_stream(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "version":
 			out.Values[i] = ec._Event_version(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "type":
 			out.Values[i] = ec._Event_type(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "data":
 			out.Values[i] = ec._Event_data(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "metadata":
 			out.Values[i] = ec._Event_metadata(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
-		case "addedAt":
-			out.Values[i] = ec._Event_addedAt(ctx, field, obj)
+		case "added_at":
+			out.Values[i] = ec._Event_added_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -2089,7 +2438,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "fromStream":
+		case "streams":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2097,13 +2446,13 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_fromStream(ctx, field)
+				res = ec._Query_streams(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "fromAllStreams":
+		case "stream":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2111,7 +2460,18 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_fromAllStreams(ctx, field)
+				res = ec._Query_stream(ctx, field)
+				return res
+			})
+		case "all":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_all(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2121,6 +2481,93 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var streamImplementors = []string{"Stream"}
+
+func (ec *executionContext) _Stream(ctx context.Context, sel ast.SelectionSet, obj *model.Stream) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, streamImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Stream")
+		case "name":
+			out.Values[i] = ec._Stream_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "events":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Stream_events(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "size":
+			out.Values[i] = ec._Stream_size(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var streamsImplementors = []string{"Streams"}
+
+func (ec *executionContext) _Streams(ctx context.Context, sel ast.SelectionSet, obj *model.Streams) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, streamsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Streams")
+		case "streams":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Streams_streams(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "total":
+			out.Values[i] = ec._Streams_total(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2392,43 +2839,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNEvent2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v []*model.Event) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalOEvent2ᚖeventflowdbᚋgraphᚋmodelᚐEvent(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
 func (ec *executionContext) marshalNEvent2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Event) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -2515,6 +2925,71 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNStream2eventflowdbᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v model.Stream) graphql.Marshaler {
+	return ec._Stream(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStream2ᚕᚖeventflowdbᚋgraphᚋmodelᚐStreamᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Stream) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNStream2ᚖeventflowdbᚋgraphᚋmodelᚐStream(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNStream2ᚖeventflowdbᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v *model.Stream) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Stream(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNStreams2eventflowdbᚋgraphᚋmodelᚐStreams(ctx context.Context, sel ast.SelectionSet, v model.Streams) graphql.Marshaler {
+	return ec._Streams(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNStreams2ᚖeventflowdbᚋgraphᚋmodelᚐStreams(ctx context.Context, sel ast.SelectionSet, v *model.Streams) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Streams(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2800,13 +3275,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
-func (ec *executionContext) marshalOEvent2ᚖeventflowdbᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v *model.Event) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._Event(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -2820,6 +3288,13 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 		return graphql.Null
 	}
 	return graphql.MarshalInt(*v)
+}
+
+func (ec *executionContext) marshalOStream2ᚖeventflowdbᚋgraphᚋmodelᚐStream(ctx context.Context, sel ast.SelectionSet, v *model.Stream) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Stream(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

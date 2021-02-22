@@ -8,54 +8,46 @@ import (
 	"encoding/base64"
 	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
-	"eventflowdb/store"
-	"log"
+	"fmt"
 
 	"github.com/google/uuid"
 )
 
-func (r *mutationResolver) Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.Event, error) {
-	name, err := uuid.Parse(stream)
+func (r *eventResolver) Stream(ctx context.Context, obj *model.Event) (*model.Stream, error) {
+	return nil, nil
+}
+
+func (r *mutationResolver) Append(ctx context.Context, stream string, version int, events []*model.EventData) (*model.Stream, error) {
+	return nil, nil
+}
+
+func (r *queryResolver) Streams(ctx context.Context, skip *int, limit *int) (*model.Streams, error) {
+	return nil, nil
+}
+
+func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, error) {
+	return nil, nil
+}
+
+func (r *queryResolver) All(ctx context.Context, offset string, limit *int) ([]*model.Event, error) {
+	return nil, nil
+}
+
+func (r *streamResolver) Events(ctx context.Context, obj *model.Stream, skip *int, limit *int) ([]*model.Event, error) {
+	stream, err := uuid.Parse(obj.Name)
 	if err != nil {
 		return nil, err
 	}
 
-	var data []store.EventData
-
-	for _, event := range events {
-		log.Println(event)
-
-		decodedData, err := base64.StdEncoding.DecodeString(event.Data)
-		if err != nil {
-			return nil, err
-		}
-
-		var metadata []byte
-
-		if event.Metadata != nil {
-			metadata, err = base64.StdEncoding.DecodeString(*event.Metadata)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		data = append(data, store.EventData{
-			Type:     event.Type,
-			Data:     decodedData,
-			Metadata: metadata,
-		})
-	}
-
-	records, err := r.EventStore.AppendToStream(name, version, data)
+	records, _, err := r.EventStore.LoadFromStream(stream, *skip, *limit)
 	if err != nil {
 		return nil, err
 	}
 
-	var result []*model.Event
+	var events []*model.Event
 
 	for _, record := range records {
-		result = append(result, &model.Event{
+		events = append(events, &model.Event{
 			ID:       record.ID.String(),
 			Stream:   record.Stream.String(),
 			Version:  record.Version,
@@ -66,16 +58,15 @@ func (r *mutationResolver) Append(ctx context.Context, stream string, version in
 		})
 	}
 
-	return result, nil
+	return events, nil
 }
 
-func (r *queryResolver) FromStream(ctx context.Context, stream *string, version *int, limit *int) ([]*model.Event, error) {
-	return nil, nil
+func (r *streamsResolver) Streams(ctx context.Context, obj *model.Streams) ([]*model.Stream, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) FromAllStreams(ctx context.Context, offset *string, limit *int) ([]*model.Event, error) {
-	return nil, nil
-}
+// Event returns generated.EventResolver implementation.
+func (r *Resolver) Event() generated.EventResolver { return &eventResolver{r} }
 
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
@@ -83,15 +74,14 @@ func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResol
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Stream returns generated.StreamResolver implementation.
+func (r *Resolver) Stream() generated.StreamResolver { return &streamResolver{r} }
+
+// Streams returns generated.StreamsResolver implementation.
+func (r *Resolver) Streams() generated.StreamsResolver { return &streamsResolver{r} }
+
+type eventResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *queryResolver) LoadFromStream(ctx context.Context, stream *string, version *int, limit *int) ([]*model.Event, error) {
-	return nil, nil
-}
+type streamResolver struct{ *Resolver }
+type streamsResolver struct{ *Resolver }
