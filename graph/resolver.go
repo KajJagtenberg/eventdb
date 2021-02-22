@@ -1,6 +1,10 @@
 package graph
 
-import "eventflowdb/store"
+import (
+	"eventflowdb/store"
+
+	"go.etcd.io/bbolt"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +12,5 @@ import "eventflowdb/store"
 
 type Resolver struct {
 	EventStore *store.EventStore
+	DB         *bbolt.DB
 }

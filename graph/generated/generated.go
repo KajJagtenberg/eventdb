@@ -64,7 +64,7 @@ type ComplexityRoot struct {
 	Query struct {
 		All     func(childComplexity int, offset string, limit *int) int
 		Stream  func(childComplexity int, id string) int
-		Streams func(childComplexity int, skip *int, limit *int) int
+		Streams func(childComplexity int, skip int, limit int) int
 	}
 
 	Stream struct {
@@ -86,7 +86,7 @@ type MutationResolver interface {
 	Append(ctx context.Context, stream string, version int, events []*model.EventData) (*model.Stream, error)
 }
 type QueryResolver interface {
-	Streams(ctx context.Context, skip *int, limit *int) (*model.Streams, error)
+	Streams(ctx context.Context, skip int, limit int) (*model.Streams, error)
 	Stream(ctx context.Context, id string) (*model.Stream, error)
 	All(ctx context.Context, offset string, limit *int) ([]*model.Event, error)
 }
@@ -207,7 +207,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Streams(childComplexity, args["skip"].(*int), args["limit"].(*int)), true
+		return e.complexity.Query.Streams(childComplexity, args["skip"].(int), args["limit"].(int)), true
 
 	case "Stream.events":
 		if e.complexity.Stream.Events == nil {
@@ -337,7 +337,7 @@ type Streams {
 }
 
 extend type Query {
-  streams(skip: Int = 0, limit: Int = 0): Streams!
+  streams(skip: Int! = 0, limit: Int! = 0): Streams!
   stream(id: String!): Stream
   all(offset: String!, limit: Int = 0): [Event!]!
 }
@@ -449,19 +449,19 @@ func (ec *executionContext) field_Query_stream_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_streams_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *int
+	var arg0 int
 	if tmp, ok := rawArgs["skip"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("skip"))
-		arg0, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["skip"] = arg0
-	var arg1 *int
+	var arg1 int
 	if tmp, ok := rawArgs["limit"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -844,7 +844,7 @@ func (ec *executionContext) _Query_streams(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Streams(rctx, args["skip"].(*int), args["limit"].(*int))
+		return ec.resolvers.Query().Streams(rctx, args["skip"].(int), args["limit"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

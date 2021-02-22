@@ -45,6 +45,7 @@ func server() {
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		EventStore: eventstore,
+		DB:         db,
 	}}))
 
 	setupMiddlewares(app)

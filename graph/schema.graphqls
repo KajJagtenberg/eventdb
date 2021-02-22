@@ -22,7 +22,7 @@ type Streams {
 }
 
 extend type Query {
-  streams(skip: Int = 0, limit: Int = 0): Streams!
+  streams(skip: Int! = 0, limit: Int! = 0): Streams!
   stream(id: String!): Stream
   all(offset: String!, limit: Int = 0): [Event!]!
 }

@@ -8,9 +8,9 @@ import (
 	"encoding/base64"
 	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
-	"fmt"
 
 	"github.com/google/uuid"
+	"go.etcd.io/bbolt"
 )
 
 func (r *eventResolver) Stream(ctx context.Context, obj *model.Event) (*model.Stream, error) {
@@ -21,8 +21,39 @@ func (r *mutationResolver) Append(ctx context.Context, stream string, version in
 	return nil, nil
 }
 
-func (r *queryResolver) Streams(ctx context.Context, skip *int, limit *int) (*model.Streams, error) {
-	return nil, nil
+func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) (*model.Streams, error) {
+	streams := &model.Streams{}
+
+	err := r.DB.View(func(txn *bbolt.Tx) error {
+		bucket := txn.Bucket([]byte("streams"))
+		cursor := bucket.Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			streams.Total++
+
+			if skip > 0 {
+				skip--
+				continue
+			}
+
+			if len(streams.Streams) < limit || limit == 0 {
+				stream, err := uuid.FromBytes(k)
+				if err != nil {
+					return err
+				}
+
+				streams.Streams = append(streams.Streams, stream.String())
+			}
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return streams, nil
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, error) {
@@ -62,7 +93,7 @@ func (r *streamResolver) Events(ctx context.Context, obj *model.Stream, skip *in
 }
 
 func (r *streamsResolver) Streams(ctx context.Context, obj *model.Streams) ([]*model.Stream, error) {
-	panic(fmt.Errorf("not implemented"))
+	return nil, nil
 }
 
 // Event returns generated.EventResolver implementation.
