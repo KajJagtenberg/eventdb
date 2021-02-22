@@ -50,7 +50,10 @@ func server() {
 
 	setupMiddlewares(app)
 
-	app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/query")))
+	if env.GetEnv("DISABLE_PLAYGROUND", "false") != "true" {
+		app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/query")))
+	}
+
 	app.Post("/query", adaptor.HTTPHandler(srv))
 	http.Handle("/query", srv)
 

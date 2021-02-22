@@ -1,37 +1,39 @@
 import Link from 'next/link';
 import { useState } from 'react';
-import { useQuery } from 'react-query';
 
 import {
-    Box, Button, Flex, Link as UILink, Spinner, Table, Tbody, Td, Text, Th, Thead, Tr,
-    useDisclosure, useToast
+  Box,
+  Button,
+  Flex,
+  Link as UILink,
+  Spinner,
+  Table,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useToast,
 } from '@chakra-ui/react';
 
-import { backend } from '../vars/backend';
-import AddEventModal from './AddEventModal';
-
-const fetchStreams = async (page: number, limit: number) => {
-  const response = await fetch(
-    `${backend}/api/v1/streams?offset=${(page - 1) * limit}&limit=${limit}`
-  );
-  return response.json();
-};
+import { useQuery, gql } from '@apollo/client';
 
 const StreamTable = () => {
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const { data, isLoading } = useQuery(
-    ['streams', page, limit],
-    () => fetchStreams(page, limit),
+  const { loading, error, data } = useQuery(
+    gql`
+      query Streams($skip: Int!, $limit: Int!) {
+        streams(skip: $skip, limit: $limit) {
+          name
+        }
+      }
+    `,
     {
-      keepPreviousData: true,
-      onError: (error: Error) => {
-        toast({
-          title: 'Oops',
-          description: error.message,
-          isClosable: true,
-          status: 'error',
-        });
+      variables: {
+        skip: (page - 1) * limit * 0,
+        limit: 0,
       },
     }
   );
@@ -40,7 +42,13 @@ const StreamTable = () => {
 
   const toast = useToast();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  if (error) {
+    toast({
+      title: 'Oops',
+      description: error.message,
+      status: 'error',
+    });
+  }
 
   return (
     <Flex
@@ -80,6 +88,8 @@ const StreamTable = () => {
           >
             Previous
           </Button>
+
+          <pre>{JSON.stringify(loading)}</pre>
 
           <Text fontWeight="semibold" mx={1}>
             {page}/{lastPage}
@@ -125,14 +135,14 @@ const StreamTable = () => {
 
         <Tbody>
           {data &&
-            data.streams.map((stream: string, index: number) => {
+            data.streams.map(({ name }: { name: string }, index: number) => {
               return (
                 <Tr key={index}>
                   <Td>{(page - 1) * limit + index + 1}</Td>
                   <Td>
                     <UILink textDecoration="underline" color="blue.600">
-                      <Link href={`/streams/${stream}`}>
-                        <a>{stream}</a>
+                      <Link href={`/streams/${name}`}>
+                        <a>{name}</a>
                       </Link>
                     </UILink>
                   </Td>
@@ -148,13 +158,13 @@ const StreamTable = () => {
         </Box>
       )}
 
-      {isLoading && (
+      {loading && (
         <Flex w="full" justifyContent="center" my={8} color="teal.500">
           <Spinner size="lg" />
         </Flex>
       )}
 
-      <AddEventModal isOpen={isOpen} onClose={onClose} />
+      {/* <AddEventModal isOpen={isOpen} onClose={onClose} /> */}
     </Flex>
   );
 };

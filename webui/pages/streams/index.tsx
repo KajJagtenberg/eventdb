@@ -1,3 +1,4 @@
+import { getApolloClient } from '../../apollo';
 import Layout from '../../components/Layout';
 import Navbar from '../../components/Navbar';
 import StreamTable from '../../components/StreamTable';

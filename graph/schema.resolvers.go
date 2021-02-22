@@ -108,7 +108,7 @@ func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*mo
 		streamBucket := txn.Bucket([]byte("streams"))
 		cursor := streamBucket.Cursor()
 
-		for k, v := cursor.First(); k != nil && (len(streams) < 0 || limit == 0); k, v = cursor.Next() {
+		for k, v := cursor.First(); k != nil && (len(streams) < limit || limit == 0); k, v = cursor.Next() {
 			if skip > 0 {
 				skip--
 				continue
@@ -170,6 +170,15 @@ func (r *queryResolver) Stream(ctx context.Context, id string, skip int, limit i
 		}
 
 		for _, id := range stream {
+			if skip > 0 {
+				skip--
+				continue
+			}
+
+			if len(events) == limit && limit != 0 {
+				break
+			}
+
 			key := id[:]
 			value := eventsBucket.Get(key)
 
