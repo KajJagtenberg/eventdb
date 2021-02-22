@@ -21,7 +21,7 @@ import (
 func (r *mutationResolver) Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.Event, error) {
 	name, err := uuid.Parse(stream)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Invalid UUID")
 	}
 
 	if version < 0 {
