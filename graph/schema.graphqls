@@ -16,8 +16,13 @@ scalar Time
 #   size: Int!
 # }
 
+type Stream {
+  name: String!
+  size: Int!
+}
+
 extend type Query {
-  streams(skip: Int! = 0, limit: Int! = 0): [String!]!
+  streams(skip: Int! = 0, limit: Int! = 0): [Stream!]!
   stream(id: String!, skip: Int! = 0, limit: Int! = 0): [Event!]!
   all(offset: String!, limit: Int = 0): [Event!]!
 }

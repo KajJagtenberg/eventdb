@@ -21,3 +21,8 @@ type EventData struct {
 	Data     string `json:"data"`
 	Metadata string `json:"metadata"`
 }
+
+type Stream struct {
+	Name string `json:"name"`
+	Size int    `json:"size"`
+}

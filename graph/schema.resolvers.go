@@ -100,8 +100,43 @@ func (r *mutationResolver) Append(ctx context.Context, stream string, version in
 	return result, nil
 }
 
-func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]string, error) {
-	return nil, ErrNotImplemented
+func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*model.Stream, error) {
+	streams := []*model.Stream{}
+
+	err := r.DB.View(func(txn *bbolt.Tx) error {
+		streamBucket := txn.Bucket([]byte("streams"))
+		cursor := streamBucket.Cursor()
+
+		for k, v := cursor.First(); k != nil && (len(streams) < 0 || limit == 0); k, v = cursor.Next() {
+			if skip > 0 {
+				skip--
+				continue
+			}
+
+			name, err := uuid.FromBytes(k)
+			if err != nil {
+				return err
+			}
+
+			stream := []ulid.ULID{}
+
+			if err := json.Unmarshal(v, &stream); err != nil {
+				return err
+			}
+
+			streams = append(streams, &model.Stream{
+				Name: name.String(),
+				Size: len(stream),
+			})
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return streams, nil
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string, skip int, limit int) ([]*model.Event, error) {
