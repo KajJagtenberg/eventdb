@@ -59,7 +59,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		All     func(childComplexity int, offset string, limit *int) int
+		All     func(childComplexity int, offset string, limit int) int
 		Stream  func(childComplexity int, id string, skip int, limit int) int
 		Streams func(childComplexity int, skip int, limit int) int
 	}
@@ -76,7 +76,7 @@ type MutationResolver interface {
 type QueryResolver interface {
 	Streams(ctx context.Context, skip int, limit int) ([]*model.Stream, error)
 	Stream(ctx context.Context, id string, skip int, limit int) ([]*model.Event, error)
-	All(ctx context.Context, offset string, limit *int) ([]*model.Event, error)
+	All(ctx context.Context, offset string, limit int) ([]*model.Event, error)
 }
 
 type executableSchema struct {
@@ -165,7 +165,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.All(childComplexity, args["offset"].(string), args["limit"].(*int)), true
+		return e.complexity.Query.All(childComplexity, args["offset"].(string), args["limit"].(int)), true
 
 	case "Query.stream":
 		if e.complexity.Query.Stream == nil {
@@ -295,7 +295,7 @@ type Stream {
 extend type Query {
   streams(skip: Int! = 0, limit: Int! = 0): [Stream!]!
   stream(id: String!, skip: Int! = 0, limit: Int! = 0): [Event!]!
-  all(offset: String!, limit: Int = 0): [Event!]!
+  all(offset: String! = "", limit: Int! = 0): [Event!]!
 }
 
 input EventData {
@@ -375,10 +375,10 @@ func (ec *executionContext) field_Query_all_args(ctx context.Context, rawArgs ma
 		}
 	}
 	args["offset"] = arg0
-	var arg1 *int
+	var arg1 int
 	if tmp, ok := rawArgs["limit"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
-		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		arg1, err = ec.unmarshalNInt2int(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -878,7 +878,7 @@ func (ec *executionContext) _Query_all(ctx context.Context, field graphql.Collec
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().All(rctx, args["offset"].(string), args["limit"].(*int))
+		return ec.resolvers.Query().All(rctx, args["offset"].(string), args["limit"].(int))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3035,21 +3035,6 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
-}
-
-func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalInt(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return graphql.MarshalInt(*v)
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {

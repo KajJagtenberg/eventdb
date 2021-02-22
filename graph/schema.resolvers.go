@@ -4,6 +4,7 @@ package graph
 // will be copied through when generating and any unknown code will be moved to the end.
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -190,8 +191,48 @@ func (r *queryResolver) Stream(ctx context.Context, id string, skip int, limit i
 	return events, nil
 }
 
-func (r *queryResolver) All(ctx context.Context, offset string, limit *int) ([]*model.Event, error) {
-	return nil, ErrNotImplemented
+func (r *queryResolver) All(ctx context.Context, offset string, limit int) ([]*model.Event, error) {
+	var name ulid.ULID
+	var err error
+
+	if len(offset) > 0 {
+		name, err = ulid.Parse(offset)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if limit < 0 {
+		return nil, errors.New("Limit cannot be negative")
+	}
+
+	events := []*model.Event{}
+
+	err = r.DB.View(func(txn *bbolt.Tx) error {
+		eventsBucket := txn.Bucket([]byte("events"))
+		cursor := eventsBucket.Cursor()
+
+		for k, v := cursor.Seek(name[:]); k != nil && (len(events) < limit || limit == 0); k, v = cursor.Next() {
+			if bytes.Compare(k, name[:]) == 0 {
+				continue
+			}
+
+			event := &model.Event{}
+
+			if err := json.Unmarshal(v, &event); err != nil {
+				return err
+			}
+
+			events = append(events, event)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
