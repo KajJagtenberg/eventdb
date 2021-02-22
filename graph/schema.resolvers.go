@@ -140,7 +140,54 @@ func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*mo
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string, skip int, limit int) ([]*model.Event, error) {
-	return nil, ErrNotImplemented
+	name, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	if skip < 0 {
+		return nil, errors.New("Skip cannot be negative")
+	}
+
+	if limit < 0 {
+		return nil, errors.New("Limit cannot be negative")
+	}
+
+	events := []*model.Event{}
+
+	err = r.DB.View(func(txn *bbolt.Tx) error {
+		streamBucket := txn.Bucket([]byte("streams"))
+		eventsBucket := txn.Bucket([]byte("events"))
+
+		key := name[:]
+		value := streamBucket.Get(key)
+
+		stream := []ulid.ULID{}
+
+		if err := json.Unmarshal(value, &stream); err != nil {
+			return err
+		}
+
+		for _, id := range stream {
+			key := id[:]
+			value := eventsBucket.Get(key)
+
+			event := &model.Event{}
+
+			if err := json.Unmarshal(value, &event); err != nil {
+				return err
+			}
+
+			events = append(events, event)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return events, nil
 }
 
 func (r *queryResolver) All(ctx context.Context, offset string, limit *int) ([]*model.Event, error) {
