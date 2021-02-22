@@ -10,6 +10,7 @@ import (
 	"errors"
 	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -233,6 +234,29 @@ func (r *queryResolver) All(ctx context.Context, offset string, limit int) ([]*m
 	}
 
 	return events, nil
+}
+
+func (r *queryResolver) TotalStreams(ctx context.Context) (int, error) {
+	total := 0
+
+	err := r.DB.View(func(txn *bbolt.Tx) error {
+		cursor := txn.Bucket([]byte("streams")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			total++
+		}
+
+		return nil
+	})
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (r *queryResolver) TotalEvents(ctx context.Context) (int, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

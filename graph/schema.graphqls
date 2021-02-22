@@ -25,6 +25,8 @@ extend type Query {
   streams(skip: Int! = 0, limit: Int! = 0): [Stream!]!
   stream(id: String!, skip: Int! = 0, limit: Int! = 0): [Event!]!
   all(offset: String! = "", limit: Int! = 0): [Event!]!
+  totalStreams: Int!
+  totalEvents: Int!
 }
 
 input EventData {

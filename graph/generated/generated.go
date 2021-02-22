@@ -59,9 +59,11 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		All     func(childComplexity int, offset string, limit int) int
-		Stream  func(childComplexity int, id string, skip int, limit int) int
-		Streams func(childComplexity int, skip int, limit int) int
+		All          func(childComplexity int, offset string, limit int) int
+		Stream       func(childComplexity int, id string, skip int, limit int) int
+		Streams      func(childComplexity int, skip int, limit int) int
+		TotalEvents  func(childComplexity int) int
+		TotalStreams func(childComplexity int) int
 	}
 
 	Stream struct {
@@ -77,6 +79,8 @@ type QueryResolver interface {
 	Streams(ctx context.Context, skip int, limit int) ([]*model.Stream, error)
 	Stream(ctx context.Context, id string, skip int, limit int) ([]*model.Event, error)
 	All(ctx context.Context, offset string, limit int) ([]*model.Event, error)
+	TotalStreams(ctx context.Context) (int, error)
+	TotalEvents(ctx context.Context) (int, error)
 }
 
 type executableSchema struct {
@@ -191,6 +195,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Streams(childComplexity, args["skip"].(int), args["limit"].(int)), true
 
+	case "Query.totalEvents":
+		if e.complexity.Query.TotalEvents == nil {
+			break
+		}
+
+		return e.complexity.Query.TotalEvents(childComplexity), true
+
+	case "Query.totalStreams":
+		if e.complexity.Query.TotalStreams == nil {
+			break
+		}
+
+		return e.complexity.Query.TotalStreams(childComplexity), true
+
 	case "Stream.name":
 		if e.complexity.Stream.Name == nil {
 			break
@@ -296,6 +314,8 @@ extend type Query {
   streams(skip: Int! = 0, limit: Int! = 0): [Stream!]!
   stream(id: String!, skip: Int! = 0, limit: Int! = 0): [Event!]!
   all(offset: String! = "", limit: Int! = 0): [Event!]!
+  totalStreams: Int!
+  totalEvents: Int!
 }
 
 input EventData {
@@ -893,6 +913,76 @@ func (ec *executionContext) _Query_all(ctx context.Context, field graphql.Collec
 	res := resTmp.([]*model.Event)
 	fc.Result = res
 	return ec.marshalNEvent2ᚕᚖeventflowdbᚋgraphᚋmodelᚐEventᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_totalStreams(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TotalStreams(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_totalEvents(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().TotalEvents(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2307,6 +2397,34 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_all(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "totalStreams":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_totalStreams(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "totalEvents":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_totalEvents(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
