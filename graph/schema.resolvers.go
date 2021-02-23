@@ -10,6 +10,7 @@ import (
 	"errors"
 	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
+	"log"
 	"math/rand"
 	"time"
 
@@ -165,8 +166,10 @@ func (r *queryResolver) Stream(ctx context.Context, id string, skip int, limit i
 
 		stream := []ulid.ULID{}
 
-		if err := json.Unmarshal(value, &stream); err != nil {
-			return err
+		if value != nil {
+			if err := json.Unmarshal(value, &stream); err != nil {
+				return err
+			}
 		}
 
 		for _, id := range stream {
@@ -181,6 +184,8 @@ func (r *queryResolver) Stream(ctx context.Context, id string, skip int, limit i
 
 			key := id[:]
 			value := eventsBucket.Get(key)
+
+			log.Println(string(value))
 
 			event := &model.Event{}
 

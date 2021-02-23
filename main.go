@@ -5,7 +5,6 @@ import (
 	"eventflowdb/graph"
 	"eventflowdb/graph/generated"
 	"log"
-	"net/http"
 
 	"eventflowdb/store"
 
@@ -43,19 +42,18 @@ func server() {
 		DisableStartupMessage: true,
 	})
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		EventStore: eventstore,
-		DB:         db,
-	}}))
-
 	setupMiddlewares(app)
 
 	if env.GetEnv("DISABLE_PLAYGROUND", "false") != "true" {
 		app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/query")))
 	}
 
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
+		EventStore: eventstore,
+		DB:         db,
+	}}))
+
 	app.Post("/query", adaptor.HTTPHandler(srv))
-	http.Handle("/query", srv)
 
 	log.Println("EventflowDB initializing projection module")
 
