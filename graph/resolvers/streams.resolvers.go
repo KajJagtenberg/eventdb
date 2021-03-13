@@ -15,23 +15,20 @@ func (r *mutationResolver) Append(ctx context.Context, stream string, version in
 }
 
 func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*model.Stream, error) {
-	return nil, fmt.Errorf("not implemented")
+
+	return nil, nil
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (r *queryResolver) Subscribe(ctx context.Context, offset string, limit int) ([]*model.RecordedEvent, error) {
-	return nil, fmt.Errorf("not implemented")
+func (r *queryResolver) LoadFromStream(ctx context.Context, stream string, skip int, limit int) ([]*model.RecordedEvent, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) TotalStreams(ctx context.Context) (int, error) {
-	return 0, fmt.Errorf("not implemented")
-}
-
-func (r *queryResolver) TotalEvents(ctx context.Context) (int, error) {
-	return 0, fmt.Errorf("not implemented")
+func (r *queryResolver) LoadFromAll(ctx context.Context, offset string, limit int) ([]*model.RecordedEvent, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

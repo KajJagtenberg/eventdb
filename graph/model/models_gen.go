@@ -23,8 +23,7 @@ type RecordedEvent struct {
 }
 
 type Stream struct {
-	Name      string           `json:"name"`
-	Size      int              `json:"size"`
-	Events    []*RecordedEvent `json:"events"`
-	CreatedAt time.Time        `json:"created_at"`
+	Name      string    `json:"name"`
+	Size      int       `json:"size"`
+	CreatedAt time.Time `json:"created_at"`
 }

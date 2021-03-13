@@ -2,4 +2,6 @@ extend type Query {
   version: String!
   time: Int!
   uptime: Int!
+  totalStreams: Int!
+  totalEvents: Int!
 }

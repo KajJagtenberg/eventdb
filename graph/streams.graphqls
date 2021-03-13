@@ -13,16 +13,18 @@ scalar Time
 type Stream {
   name: String!
   size: Int!
-  events: [RecordedEvent!]!
   created_at: Time!
 }
 
 extend type Query {
   streams(skip: Int! = 0, limit: Int! = 0): [Stream!]!
   stream(id: String!): Stream
-  subscribe(offset: String! = "", limit: Int! = 0): [RecordedEvent!]!
-  totalStreams: Int!
-  totalEvents: Int!
+  loadFromStream(
+    stream: String!
+    skip: Int! = 0
+    limit: Int! = 0
+  ): [RecordedEvent!]!
+  loadFromAll(offset: String! = "", limit: Int! = 0): [RecordedEvent!]!
 }
 
 input EventData {

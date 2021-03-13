@@ -22,6 +22,14 @@ func (r *queryResolver) Uptime(ctx context.Context) (int, error) {
 	return int(time.Now().Sub(r.Startup).Seconds()), nil
 }
 
+func (r *queryResolver) TotalStreams(ctx context.Context) (int, error) {
+	return r.EventStore.GetTotalStreams()
+}
+
+func (r *queryResolver) TotalEvents(ctx context.Context) (int, error) {
+	return r.EventStore.GetTotalEvents()
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
