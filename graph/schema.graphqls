@@ -10,12 +10,6 @@ type Event {
 
 scalar Time
 
-# type Stream {
-#   name: String!
-#   events(skip: Int = 0, limit: Int = 0): [Event!]!
-#   size: Int!
-# }
-
 type Stream {
   name: String!
   size: Int!

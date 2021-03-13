@@ -36,7 +36,7 @@ func server() {
 	eventstore, err := store.NewEventStore(db)
 	check(err)
 
-	log.Println("EventflowDB initializing HTTP API layer")
+	log.Println("EventflowDB initializing GraphQL")
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -55,11 +55,9 @@ func server() {
 
 	app.Post("/query", adaptor.HTTPHandler(srv))
 
-	log.Println("EventflowDB initializing projection module")
-
 	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")
 
-	log.Printf("EventflowDB HTTP API layer ready to accept requests on %s\n", addr)
+	log.Printf("EventflowDB GraphQL layer ready to accept requests on %s\n", addr)
 
 	check(app.Listen(addr))
 }

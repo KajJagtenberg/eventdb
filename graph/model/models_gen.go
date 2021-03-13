@@ -22,6 +22,12 @@ type EventData struct {
 	Metadata string `json:"metadata"`
 }
 
+type Info struct {
+	Name    string    `json:"name"`
+	Version string    `json:"version"`
+	Time    time.Time `json:"time"`
+}
+
 type Stream struct {
 	Name string `json:"name"`
 	Size int    `json:"size"`

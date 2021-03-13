@@ -1,9 +1,6 @@
 run:
 	go run .
 
-build:
-	go build -o eventflowdb main.go
-
 tidy:
 	go mod tidy
 
@@ -15,9 +12,9 @@ clean:
 	rm -rf *.bolt
 
 generate:
-	go run github.com/99designs/gqlgen generate
+	go generate ./...
 
-docker:
+build:
 	docker build -t eventflowdb .
 
 compose_up:

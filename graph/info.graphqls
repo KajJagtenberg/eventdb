@@ -1,0 +1,9 @@
+type Info {
+  name: String!
+  version: String!
+  time: Time!
+}
+
+extend type Query {
+  info: Info!
+}
