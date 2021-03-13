@@ -2,8 +2,8 @@ package main
 
 import (
 	"eventflowdb/env"
-	"eventflowdb/graph"
 	"eventflowdb/graph/generated"
+	graph "eventflowdb/graph/resolvers"
 	"log"
 
 	"eventflowdb/store"
