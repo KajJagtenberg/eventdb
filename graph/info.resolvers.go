@@ -5,13 +5,18 @@ package graph
 
 import (
 	"context"
+	"eventflowdb/constants"
 	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
-	"fmt"
+	"time"
 )
 
 func (r *queryResolver) Info(ctx context.Context) (*model.Info, error) {
-	panic(fmt.Errorf("not implemented"))
+	return &model.Info{
+		Name:    constants.Name,
+		Version: constants.Version,
+		Time:    time.Now(),
+	}, nil
 }
 
 // Query returns generated.QueryResolver implementation.

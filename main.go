@@ -45,7 +45,7 @@ func server() {
 	setupMiddlewares(app)
 
 	if env.GetEnv("DISABLE_PLAYGROUND", "false") != "true" {
-		app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/query")))
+		app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/")))
 	}
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
@@ -53,7 +53,7 @@ func server() {
 		DB:         db,
 	}}))
 
-	app.Post("/query", adaptor.HTTPHandler(srv))
+	app.Post("/", adaptor.HTTPHandler(srv))
 
 	addr := env.GetEnv("LISTENING_ADDRESS", ":6543")
 
