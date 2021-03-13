@@ -1,9 +1,5 @@
-type Info {
-  name: String!
+extend type Query {
   version: String!
   time: Int!
-}
-
-extend type Query {
-  info: Info!
+  uptime: Int!
 }

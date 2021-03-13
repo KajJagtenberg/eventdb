@@ -7,16 +7,19 @@ import (
 	"context"
 	"eventflowdb/constants"
 	"eventflowdb/graph/generated"
-	"eventflowdb/graph/model"
 	"time"
 )
 
-func (r *queryResolver) Info(ctx context.Context) (*model.Info, error) {
-	return &model.Info{
-		Name:    constants.Name,
-		Version: constants.Version,
-		Time:    int(time.Now().UTC().UnixNano()),
-	}, nil
+func (r *queryResolver) Version(ctx context.Context) (string, error) {
+	return constants.Version, nil
+}
+
+func (r *queryResolver) Time(ctx context.Context) (int, error) {
+	return time.Now().UTC().Nanosecond(), nil
+}
+
+func (r *queryResolver) Uptime(ctx context.Context) (int, error) {
+	return int(time.Now().Sub(r.Startup).Seconds()), nil
 }
 
 // Query returns generated.QueryResolver implementation.

@@ -5,6 +5,7 @@ import (
 	"eventflowdb/graph/generated"
 	graph "eventflowdb/graph/resolvers"
 	"log"
+	"time"
 
 	"eventflowdb/store"
 
@@ -51,6 +52,7 @@ func server() {
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		EventStore: eventstore,
 		DB:         db,
+		Startup:    time.Now(),
 	}}))
 
 	app.Post("/", adaptor.HTTPHandler(srv))

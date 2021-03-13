@@ -3,6 +3,7 @@ package graph
 
 import (
 	"eventflowdb/store"
+	"time"
 
 	"go.etcd.io/bbolt"
 )
@@ -14,4 +15,5 @@ import (
 type Resolver struct {
 	EventStore *store.EventStore
 	DB         *bbolt.DB
+	Startup    time.Time
 }
