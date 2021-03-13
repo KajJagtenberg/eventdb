@@ -56,3 +56,6 @@ yarn-error.log*
 
 *.txt
 *.bak
+
+tmp
+.air.conf
