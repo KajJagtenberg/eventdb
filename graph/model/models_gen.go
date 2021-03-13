@@ -23,9 +23,9 @@ type EventData struct {
 }
 
 type Info struct {
-	Name    string    `json:"name"`
-	Version string    `json:"version"`
-	Time    time.Time `json:"time"`
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	Time    int    `json:"time"`
 }
 
 type Stream struct {

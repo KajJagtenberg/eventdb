@@ -326,7 +326,7 @@ var sources = []*ast.Source{
 	{Name: "graph/info.graphqls", Input: `type Info {
   name: String!
   version: String!
-  time: Time!
+  time: Int!
 }
 
 extend type Query {
@@ -887,9 +887,9 @@ func (ec *executionContext) _Info_time(ctx context.Context, field graphql.Collec
 		}
 		return graphql.Null
 	}
-	res := resTmp.(time.Time)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_append(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {

@@ -15,7 +15,7 @@ func (r *queryResolver) Info(ctx context.Context) (*model.Info, error) {
 	return &model.Info{
 		Name:    constants.Name,
 		Version: constants.Version,
-		Time:    time.Now(),
+		Time:    int(time.Now().UTC().UnixNano()),
 	}, nil
 }
 

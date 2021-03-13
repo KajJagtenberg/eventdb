@@ -1,7 +1,7 @@
 type Info {
   name: String!
   version: String!
-  time: Time!
+  time: Int!
 }
 
 extend type Query {
