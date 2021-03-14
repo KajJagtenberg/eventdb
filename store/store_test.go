@@ -1,6 +1,8 @@
-package store
+package store_test
 
 import (
+	"eventflowdb/store"
+	"eventflowdb/util"
 	"math/rand"
 	"os"
 	"testing"
@@ -9,29 +11,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/bbolt"
 )
-
-func GenerateRandomEvents(count int) []EventData {
-	var events []EventData
-
-	types := []string{
-		"UserAdded", "ProductAdded", "OrderRefunded", "OrderCanceled", "ProductDiscontinued", "UserLocked",
-	}
-
-	for i := 0; i < count; i++ {
-		t := types[rand.Intn(len(types))]
-
-		payload := make([]byte, rand.Intn(128)+16)
-
-		rand.Read(payload)
-
-		events = append(events, EventData{
-			Type: t,
-			Data: payload,
-		})
-	}
-
-	return events
-}
 
 func TestAppendingEvents(t *testing.T) {
 	assert := assert.New(t)
@@ -42,7 +21,7 @@ func TestAppendingEvents(t *testing.T) {
 	}
 	defer db.Close()
 
-	store, err := NewEventStore(db)
+	store, err := store.NewEventStore(db)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +30,7 @@ func TestAppendingEvents(t *testing.T) {
 
 	count := rand.Intn(9) + 1
 
-	if _, err := store.AppendToStream(stream, 0, GenerateRandomEvents(count)); err != nil {
+	if _, err := store.AppendToStream(stream, 0, util.GenerateRandomEvents(count)); err != nil {
 		t.Fatal(err)
 	}
 
