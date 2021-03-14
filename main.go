@@ -4,6 +4,7 @@ import (
 	"eventflowdb/env"
 	"eventflowdb/graph/generated"
 	graph "eventflowdb/graph/resolvers"
+	"eventflowdb/projections"
 	"log"
 	"time"
 
@@ -27,18 +28,29 @@ func setupMiddlewares(app *fiber.App) {
 }
 
 func server() {
-	log.Println("EventflowDB initializing storage layer")
+	log.Println("Initializing Event Store")
 
-	file := env.GetEnv("DATABASE_FILE", "events.db")
+	eventstoreFile := env.GetEnv("EVENT_STORE_FILE", "events.db")
 
-	db, err := bbolt.Open(file, 0600, nil)
+	eventstoreDB, err := bbolt.Open(eventstoreFile, 0600, nil)
 	check(err)
-	defer db.Close()
+	defer eventstoreDB.Close()
 
-	eventstore, err := store.NewEventStore(db)
+	eventstore, err := store.NewEventStore(eventstoreDB)
 	check(err)
 
-	log.Println("EventflowDB initializing GraphQL")
+	log.Println("Initializing Projection Engine")
+
+	projectionEngineFile := env.GetEnv("EVENT_STORE_FILE", "events.db")
+
+	projectionEngineDB, err := bbolt.Open(projectionEngineFile, 0600, nil)
+	check(err)
+	defer projectionEngineDB.Close()
+
+	projectionEngine, err := projections.NewProjectionEngine(projectionEngineDB)
+	check(err)
+
+	log.Println("Initializing GraphQL")
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -58,9 +70,9 @@ func server() {
 	})
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
-		EventStore: eventstore,
-		DB:         db,
-		Startup:    time.Now(),
+		EventStore:       eventstore,
+		ProjectionEngine: projectionEngine,
+		Startup:          time.Now(),
 	}}))
 
 	app.Post("/", adaptor.HTTPHandler(srv))
