@@ -8,7 +8,7 @@ import (
 )
 
 type Stream struct {
-	Name      uuid.UUID   `json:"name"`
+	ID        uuid.UUID   `json:"name"`
 	Events    []ulid.ULID `json:"events"`
 	CreatedAt time.Time   `json:"created_at"`
 }

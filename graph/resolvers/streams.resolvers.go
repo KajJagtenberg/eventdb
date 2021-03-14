@@ -24,7 +24,7 @@ func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*mo
 
 	for _, stream := range streams {
 		result = append(result, &model.Stream{
-			Name:      stream.Name.String(),
+			ID:        stream.ID.String(),
 			Size:      stream.Size(),
 			CreatedAt: stream.CreatedAt,
 		})
@@ -34,7 +34,6 @@ func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*mo
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, error) {
-
 	return nil, fmt.Errorf("not implemented")
 }
 
