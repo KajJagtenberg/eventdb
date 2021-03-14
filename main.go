@@ -79,5 +79,6 @@ func check(err error) {
 }
 
 func main() {
-	server()
+	// server()
+	sandbox()
 }

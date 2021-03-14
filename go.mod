@@ -7,8 +7,11 @@ require (
 	github.com/cosmtrek/air v1.21.2 // indirect
 	github.com/creack/pty v1.1.11 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dlclark/regexp2 v1.4.0 // indirect
+	github.com/dop251/goja v0.0.0-20210313120006-a9b721bfc503
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1
+	github.com/go-sourcemap/sourcemap v2.1.3+incompatible // indirect
 	github.com/gofiber/adaptor/v2 v2.1.1
 	github.com/gofiber/fiber/v2 v2.5.0
 	github.com/gofiber/helmet/v2 v2.1.0
