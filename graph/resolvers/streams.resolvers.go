@@ -15,11 +15,26 @@ func (r *mutationResolver) Append(ctx context.Context, stream string, version in
 }
 
 func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*model.Stream, error) {
+	streams, err := r.EventStore.GetStreams(skip, limit)
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	var result []*model.Stream
+
+	for _, stream := range streams {
+		result = append(result, &model.Stream{
+			Name:      stream.Name.String(),
+			Size:      stream.Size(),
+			CreatedAt: stream.CreatedAt,
+		})
+	}
+
+	return result, nil
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, error) {
+
 	return nil, fmt.Errorf("not implemented")
 }
 
