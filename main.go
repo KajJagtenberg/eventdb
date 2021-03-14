@@ -41,7 +41,7 @@ func server() {
 
 	log.Println("Initializing Projection Engine")
 
-	projectionEngineFile := env.GetEnv("EVENT_STORE_FILE", "events.db")
+	projectionEngineFile := env.GetEnv("PROJECTION_ENGINE_FILE", "projections.db")
 
 	projectionEngineDB, err := bbolt.Open(projectionEngineFile, 0600, nil)
 	check(err)

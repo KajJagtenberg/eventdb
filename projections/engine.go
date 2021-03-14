@@ -1,6 +1,8 @@
 package projections
 
-import "go.etcd.io/bbolt"
+import (
+	"go.etcd.io/bbolt"
+)
 
 type ProjectionEngine struct {
 	db *bbolt.DB
