@@ -41,6 +41,9 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 			if err := json.Unmarshal(v, &persistedStream); err != nil {
 				return err
 			}
+		} else {
+			persistedStream.ID = stream
+			persistedStream.CreatedAt = time.Now()
 		}
 
 		if version != persistedStream.Size() {
@@ -176,6 +179,27 @@ func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEve
 	})
 
 	return records, err
+}
+
+func (store *EventStore) GetStream(id uuid.UUID) (Stream, error) {
+	var stream Stream
+
+	err := store.db.View(func(t *bbolt.Tx) error {
+		v := t.Bucket([]byte("streams")).Get(id[:])
+
+		if v == nil {
+			return nil
+		}
+
+		if err := json.Unmarshal(v, &stream); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	stream.ID = id
+
+	return stream, err
 }
 
 func (store *EventStore) GetStreams(skip int, limit int) ([]Stream, error) {

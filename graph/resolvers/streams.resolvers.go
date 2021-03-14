@@ -37,16 +37,27 @@ func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*mo
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, error) {
-	return nil, fmt.Errorf("not implemented")
-}
 
-func (r *queryResolver) LoadFromStream(ctx context.Context, stream string, skip int, limit int) ([]*model.RecordedEvent, error) {
-	parsedStream, err := uuid.Parse(stream)
+	parsedId, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
 
-	records, err := r.EventStore.LoadFromStream(parsedStream, skip, limit)
+	stream, err := r.EventStore.GetStream(parsedId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Stream{ID: stream.ID.String(), Size: stream.Size(), CreatedAt: stream.CreatedAt}, nil
+}
+
+func (r *queryResolver) LoadFromStream(ctx context.Context, id string, skip int, limit int) ([]*model.RecordedEvent, error) {
+	parsedId, err := uuid.Parse(id)
+	if err != nil {
+		return nil, err
+	}
+
+	records, err := r.EventStore.LoadFromStream(parsedId, skip, limit)
 	if err != nil {
 		return nil, err
 	}
