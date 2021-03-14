@@ -4,6 +4,8 @@ go 1.16
 
 require (
 	github.com/99designs/gqlgen v0.13.0
+	github.com/c-bata/go-prompt v0.2.6 // indirect
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
 	github.com/cosmtrek/air v1.21.2 // indirect
 	github.com/creack/pty v1.1.11 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

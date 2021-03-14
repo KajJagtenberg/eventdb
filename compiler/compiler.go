@@ -8,13 +8,13 @@ import (
 	"github.com/dop251/goja"
 )
 
-//go:embed js/babel.min.js
+//go:embed babel.min.js
 var babelSource string
 
-//go:embed js/babel.env.min.js
+//go:embed babel.env.min.js
 var babelEnvSource string
 
-//go:embed js/compiler.js
+//go:embed compiler.js
 var compilerSource string
 
 type Compiler struct {
