@@ -126,7 +126,13 @@ func (store *EventStore) GetTotalStreams() (int, error) {
 	var total int
 
 	err := store.db.View(func(t *bbolt.Tx) error {
-		return errors.New("Not implemented")
+		cur := t.Bucket([]byte("streams")).Cursor()
+
+		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
+			total++
+		}
+
+		return nil
 	})
 
 	return total, err
@@ -136,7 +142,13 @@ func (store *EventStore) GetTotalEvents() (int, error) {
 	var total int
 
 	err := store.db.View(func(t *bbolt.Tx) error {
-		return errors.New("Not implemented")
+		cur := t.Bucket([]byte("events")).Cursor()
+
+		for k, _ := cur.First(); k != nil; k, _ = cur.Next() {
+			total++
+		}
+
+		return nil
 	})
 
 	return total, err
