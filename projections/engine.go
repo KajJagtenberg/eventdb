@@ -4,13 +4,15 @@ import (
 	"errors"
 	"time"
 
+	"eventflowdb/compiler"
+
 	"github.com/google/uuid"
 	"go.etcd.io/bbolt"
 )
 
 type ProjectionEngine struct {
 	db       *bbolt.DB
-	compiler *Compiler
+	compiler *compiler.Compiler
 }
 
 func (engine *ProjectionEngine) CreateProjection(name string, code string) (*Projection, error) {
@@ -69,7 +71,7 @@ func NewProjectionEngine(db *bbolt.DB) (*ProjectionEngine, error) {
 		return nil, err
 	}
 
-	compiler, err := NewCompiler()
+	compiler, err := compiler.NewCompiler()
 	if err != nil {
 		return nil, err
 	}

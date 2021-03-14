@@ -1,4 +1,4 @@
-package projections
+package compiler
 
 import (
 	_ "embed"
