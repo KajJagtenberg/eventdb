@@ -4,9 +4,7 @@ import (
 	"eventflowdb/env"
 	"eventflowdb/graph/generated"
 	graph "eventflowdb/graph/resolvers"
-	"eventflowdb/util"
 	"log"
-	"math/rand"
 	"time"
 
 	"eventflowdb/store"
@@ -15,10 +13,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/helmet/v2"
-	"github.com/google/uuid"
 	"go.etcd.io/bbolt"
 )
 
@@ -40,12 +38,6 @@ func server() {
 	eventstore, err := store.NewEventStore(db)
 	check(err)
 
-	for i := 0; i < rand.Intn(900)+10; i++ {
-		if _, err := eventstore.AppendToStream(uuid.New(), 0, util.GenerateRandomEvents(rand.Intn(4)+1)); err != nil {
-			check(err)
-		}
-	}
-
 	log.Println("EventflowDB initializing GraphQL")
 
 	app := fiber.New(fiber.Config{
@@ -57,6 +49,13 @@ func server() {
 	if env.GetEnv("DISABLE_PLAYGROUND", "false") != "true" {
 		app.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/")))
 	}
+
+	app.Get("/backup", compress.New(), func(c *fiber.Ctx) error {
+		c.Set("Content-Type", "application/octet-stream")
+		c.Set("Content-Disposition", "attachment;filename=backup.db")
+
+		return eventstore.Backup(c.Response().BodyWriter())
+	})
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		EventStore: eventstore,

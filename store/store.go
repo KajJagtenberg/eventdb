@@ -151,6 +151,13 @@ func (store *EventStore) LoadFromStream(stream uuid.UUID, skip int, limit int) (
 	return records, err
 }
 
+func (store *EventStore) Backup(dst io.Writer) error {
+	return store.db.View(func(t *bbolt.Tx) error {
+		_, err := t.WriteTo(dst)
+		return err
+	})
+}
+
 func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEvent, error) {
 	if limit < 0 {
 		limit = 0
@@ -217,6 +224,11 @@ func (store *EventStore) GetStreams(skip int, limit int) ([]Stream, error) {
 		cur := t.Bucket([]byte("streams")).Cursor()
 
 		for k, v := cur.First(); k != nil && (limit == 0 || len(streams) < limit); k, v = cur.Next() {
+			if skip > 0 {
+				skip--
+				continue
+			}
+
 			var stream Stream
 
 			if err := json.Unmarshal(v, &stream); err != nil {
