@@ -10,7 +10,24 @@ import (
 )
 
 func (r *queryResolver) Projections(ctx context.Context, skip int, limit int) ([]*model.Projection, error) {
-	panic(fmt.Errorf("not implemented"))
+	projections, err := r.ProjectionEngine.GetProjections()
+	if err != nil {
+		return nil, err
+	}
+	var result []*model.Projection
+
+	for _, projection := range projections {
+		result = append(result, &model.Projection{
+			ID:         projection.ID.String(),
+			Name:       projection.Name,
+			Code:       projection.Code,
+			CreatedAt:  projection.CreatedAt,
+			UpdatedAt:  projection.UpdatedAt,
+			Checkpoint: projection.Checkpoint.String(),
+		})
+	}
+
+	return result, nil
 }
 
 func (r *queryResolver) Projection(ctx context.Context, id string) (*model.Projection, error) {
