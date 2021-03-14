@@ -37,7 +37,6 @@ func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*mo
 }
 
 func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, error) {
-
 	parsedId, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
@@ -51,8 +50,8 @@ func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, e
 	return &model.Stream{ID: stream.ID.String(), Size: stream.Size(), CreatedAt: stream.CreatedAt}, nil
 }
 
-func (r *queryResolver) LoadFromStream(ctx context.Context, id string, skip int, limit int) ([]*model.RecordedEvent, error) {
-	parsedId, err := uuid.Parse(id)
+func (r *queryResolver) LoadFromStream(ctx context.Context, stream string, skip int, limit int) ([]*model.RecordedEvent, error) {
+	parsedId, err := uuid.Parse(stream)
 	if err != nil {
 		return nil, err
 	}

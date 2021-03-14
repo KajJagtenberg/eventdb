@@ -1,0 +1,13 @@
+type Projection {
+  id: ID!
+  name: String!
+  code: String!
+  created_at: Time!
+  updated_at: Time!
+  checkpoint: String!
+}
+
+extend type Query {
+  projections(skip: Int! = 0, limit: Int! = 0): [Projection!]!
+  projection(id: ID!): Projection
+}
