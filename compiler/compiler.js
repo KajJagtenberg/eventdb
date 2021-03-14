@@ -1,5 +1,5 @@
 var compile = function compile(src) {
   return Babel.transform(src, {
-    presets: ["env"],
+    presets: ["es2016"],
   }).code;
 };

@@ -3,6 +3,7 @@ package main
 import (
 	"eventflowdb/compiler"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -23,11 +24,6 @@ var shellSource string
 var running = true
 
 func main() {
-	compiler, err := compiler.NewCompiler()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	vm.Set("version", func() {
@@ -40,14 +36,22 @@ func main() {
 			fmt.Println(v)
 		},
 	})
-	vm.RunString(shellSource)
+	vm.Set("global", vm.GlobalObject())
+
+	compiledShellSource, err := compiler.Compile(shellSource)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := vm.RunString(compiledShellSource); err != nil {
+		log.Println(err)
+	}
 
 	fmt.Println("EventflowDB Shell")
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          "> ",
 		HistoryFile:     "/tmp/flowcli",
-		EOFPrompt:       "exit",
 		Stdout:          os.Stdout,
 		Stderr:          os.Stderr,
 		InterruptPrompt: "^C",
@@ -59,8 +63,11 @@ func main() {
 
 	for running {
 		input, err := rl.Readline()
-		if err != nil {
-			panic(err)
+		if err == readline.ErrInterrupt {
+			break
+		}
+		if err == io.EOF {
+			break
 		}
 
 		tokens := strings.Split(input, " ")
@@ -83,9 +90,10 @@ func main() {
 				continue
 			}
 
-			if !goja.IsUndefined(output) {
+			if !goja.IsUndefined(output) && !output.Equals(vm.ToValue("use strict")) {
 				fmt.Println(output)
 			}
+
 		}
 	}
 

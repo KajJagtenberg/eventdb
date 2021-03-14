@@ -11,8 +11,7 @@ import (
 )
 
 type ProjectionEngine struct {
-	db       *bbolt.DB
-	compiler *compiler.Compiler
+	db *bbolt.DB
 }
 
 func (engine *ProjectionEngine) CreateProjection(name string, code string) (*Projection, error) {
@@ -24,7 +23,7 @@ func (engine *ProjectionEngine) CreateProjection(name string, code string) (*Pro
 		return nil, errors.New("Code cannot be empty")
 	}
 
-	compiled, err := engine.compiler.Compile(code)
+	compiled, err := compiler.Compile(code)
 	if err != nil {
 		return nil, err
 	}
@@ -71,10 +70,5 @@ func NewProjectionEngine(db *bbolt.DB) (*ProjectionEngine, error) {
 		return nil, err
 	}
 
-	compiler, err := compiler.NewCompiler()
-	if err != nil {
-		return nil, err
-	}
-
-	return &ProjectionEngine{db, compiler}, nil
+	return &ProjectionEngine{db}, nil
 }

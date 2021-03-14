@@ -19,6 +19,7 @@ require (
 	github.com/gofiber/helmet/v2 v2.1.0
 	github.com/google/uuid v1.2.0
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/jvatic/goja-babel v0.0.0-20210308004931-b9e24388e7b1 // indirect
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/pelletier/go-toml v1.8.1 // indirect
@@ -27,5 +28,4 @@ require (
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/sys v0.0.0-20210313110737-8e9fff1a3a18 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
 )

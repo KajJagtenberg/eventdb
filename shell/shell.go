@@ -31,11 +31,6 @@ func NewShell() (*Shell, error) {
 		Log: log.Println,
 	})
 
-	compiler, err := compiler.NewCompiler()
-	if err != nil {
-		return nil, err
-	}
-
 	compiled, err := compiler.Compile(source)
 	if err != nil {
 		return nil, err
