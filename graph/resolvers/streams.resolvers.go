@@ -8,6 +8,8 @@ import (
 	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
 	"fmt"
+
+	"github.com/oklog/ulid"
 )
 
 func (r *mutationResolver) Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.RecordedEvent, error) {
@@ -42,7 +44,36 @@ func (r *queryResolver) LoadFromStream(ctx context.Context, stream string, skip 
 }
 
 func (r *queryResolver) LoadFromAll(ctx context.Context, offset string, limit int) ([]*model.RecordedEvent, error) {
-	panic(fmt.Errorf("not implemented"))
+	var parsedOffset ulid.ULID
+	var err error
+
+	if len(offset) != 0 {
+		parsedOffset, err = ulid.Parse(offset)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	records, err := r.EventStore.LoadFromAll(parsedOffset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.RecordedEvent
+
+	for _, record := range records {
+		result = append(result, &model.RecordedEvent{
+			ID:       record.ID.String(),
+			Stream:   record.Stream.String(),
+			Version:  record.Version,
+			Type:     record.Type,
+			Data:     string(record.Data),
+			Metadata: string(record.Metadata),
+			AddedAt:  record.AddedAt,
+		})
+	}
+
+	return result, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

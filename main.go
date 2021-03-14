@@ -4,7 +4,9 @@ import (
 	"eventflowdb/env"
 	"eventflowdb/graph/generated"
 	graph "eventflowdb/graph/resolvers"
+	"eventflowdb/util"
 	"log"
+	"math/rand"
 	"time"
 
 	"eventflowdb/store"
@@ -16,6 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/helmet/v2"
+	"github.com/google/uuid"
 	"go.etcd.io/bbolt"
 )
 
@@ -36,6 +39,12 @@ func server() {
 
 	eventstore, err := store.NewEventStore(db)
 	check(err)
+
+	for i := 0; i < rand.Intn(900)+10; i++ {
+		if _, err := eventstore.AppendToStream(uuid.New(), 0, util.GenerateRandomEvents(rand.Intn(4)+1)); err != nil {
+			check(err)
+		}
+	}
 
 	log.Println("EventflowDB initializing GraphQL")
 

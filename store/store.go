@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
@@ -82,6 +83,42 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 
 		if err := streamsBucket.Put(stream[:], v); err != nil {
 			return err
+		}
+
+		return nil
+	})
+
+	return records, err
+}
+
+func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEvent, error) {
+	if limit < 0 {
+		limit = 0
+	}
+
+	var records []RecordedEvent
+
+	err := store.db.View(func(t *bbolt.Tx) error {
+		cur := t.Bucket([]byte("events")).Cursor()
+
+		k, _ := cur.Seek(offset[:])
+
+		if bytes.Compare(k, offset[:]) == 0 {
+			cur.Next()
+		}
+
+		for k, v := cur.Seek(offset[:]); k != nil && (limit == 0 || len(records) < limit); k, v = cur.Next() {
+			if bytes.Compare(k, offset[:]) == 0 {
+				continue
+			}
+
+			var record RecordedEvent
+
+			if err := json.Unmarshal(v, &record); err != nil {
+				return err
+			}
+
+			records = append(records, record)
 		}
 
 		return nil
