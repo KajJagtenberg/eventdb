@@ -5,7 +5,6 @@ package graph
 
 import (
 	"context"
-	"eventflowdb/graph/generated"
 	"eventflowdb/graph/model"
 	"fmt"
 
@@ -110,8 +109,3 @@ func (r *queryResolver) LoadFromAll(ctx context.Context, offset string, limit in
 
 	return result, nil
 }
-
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
-
-type mutationResolver struct{ *Resolver }

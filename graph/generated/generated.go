@@ -45,7 +45,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		Append func(childComplexity int, stream string, version int, events []*model.EventData) int
+		Append           func(childComplexity int, stream string, version int, events []*model.EventData) int
+		CreateProjection func(childComplexity int, input *model.CreateProjection) int
 	}
 
 	Projection struct {
@@ -89,6 +90,7 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
+	CreateProjection(ctx context.Context, input *model.CreateProjection) (*model.Projection, error)
 	Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.RecordedEvent, error)
 }
 type QueryResolver interface {
@@ -131,6 +133,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.Append(childComplexity, args["stream"].(string), args["version"].(int), args["events"].([]*model.EventData)), true
+
+	case "Mutation.createProjection":
+		if e.complexity.Mutation.CreateProjection == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createProjection_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateProjection(childComplexity, args["input"].(*model.CreateProjection)), true
 
 	case "Projection.checkpoint":
 		if e.complexity.Projection.Checkpoint == nil {
@@ -432,9 +446,18 @@ var sources = []*ast.Source{
   checkpoint: String!
 }
 
+input CreateProjection {
+  name: String!
+  code: String!
+}
+
 extend type Query {
   projections(skip: Int! = 0, limit: Int! = 0): [Projection!]!
   projection(id: ID!): Projection
+}
+
+extend type Mutation {
+  createProjection(input: CreateProjection): Projection!
 }
 `, BuiltIn: false},
 	{Name: "graph/streams.graphqls", Input: `type RecordedEvent {
@@ -517,6 +540,21 @@ func (ec *executionContext) field_Mutation_append_args(ctx context.Context, rawA
 		}
 	}
 	args["events"] = arg2
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createProjection_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.CreateProjection
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOCreateProjection2ᚖeventflowdbᚋgraphᚋmodelᚐCreateProjection(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -707,6 +745,48 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Mutation_createProjection(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createProjection_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateProjection(rctx, args["input"].(*model.CreateProjection))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Projection)
+	fc.Result = res
+	return ec.marshalNProjection2ᚖeventflowdbᚋgraphᚋmodelᚐProjection(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Mutation_append(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
@@ -2889,6 +2969,34 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCreateProjection(ctx context.Context, obj interface{}) (model.CreateProjection, error) {
+	var it model.CreateProjection
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "code":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("code"))
+			it.Code, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputEventData(ctx context.Context, obj interface{}) (model.EventData, error) {
 	var it model.EventData
 	var asMap = obj.(map[string]interface{})
@@ -2948,6 +3056,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "createProjection":
+			out.Values[i] = ec._Mutation_createProjection(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "append":
 			out.Values[i] = ec._Mutation_append(ctx, field)
 			if out.Values[i] == graphql.Null {
@@ -3604,6 +3717,10 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
+func (ec *executionContext) marshalNProjection2eventflowdbᚋgraphᚋmodelᚐProjection(ctx context.Context, sel ast.SelectionSet, v model.Projection) graphql.Marshaler {
+	return ec._Projection(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNProjection2ᚕᚖeventflowdbᚋgraphᚋmodelᚐProjectionᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Projection) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -4026,6 +4143,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) unmarshalOCreateProjection2ᚖeventflowdbᚋgraphᚋmodelᚐCreateProjection(ctx context.Context, v interface{}) (*model.CreateProjection, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCreateProjection(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOProjection2ᚖeventflowdbᚋgraphᚋmodelᚐProjection(ctx context.Context, sel ast.SelectionSet, v *model.Projection) graphql.Marshaler {

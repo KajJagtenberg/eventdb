@@ -6,6 +6,11 @@ import (
 	"time"
 )
 
+type CreateProjection struct {
+	Name string `json:"name"`
+	Code string `json:"code"`
+}
+
 type EventData struct {
 	Type     string `json:"type"`
 	Data     string `json:"data"`
