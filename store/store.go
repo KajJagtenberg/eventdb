@@ -18,6 +18,7 @@ var (
 	ErrVersionNegative              = errors.New("Version cannot be negative")
 	ErrEmptyEventData               = errors.New("List of event data is empty")
 	ErrInvalidEventFormat           = errors.New("Invalid event format")
+	ErrEventDoesNotExist            = errors.New("Event does not exist")
 )
 
 type EventStore struct {
@@ -91,6 +92,62 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 	return records, err
 }
 
+func (store *EventStore) LoadFromStream(stream uuid.UUID, skip int, limit int) ([]RecordedEvent, error) {
+	if skip < 0 {
+		skip = 0
+	}
+
+	if limit < 0 {
+		limit = 0
+	}
+
+	var records []RecordedEvent
+
+	err := store.db.View(func(t *bbolt.Tx) error {
+		var persistedStream Stream
+
+		v := t.Bucket([]byte("streams")).Get(stream[:])
+		if v == nil {
+			return nil
+		}
+
+		if err := json.Unmarshal(v, &persistedStream); err != nil {
+			return err
+		}
+
+		eventsBucket := t.Bucket([]byte("events"))
+
+		for _, id := range persistedStream.Events {
+			if skip > 0 {
+				skip--
+				continue
+			}
+
+			if len(records) >= limit && limit != 0 {
+				break
+			}
+
+			v := eventsBucket.Get(id[:])
+
+			if v == nil {
+				return ErrEventDoesNotExist
+			}
+
+			var record RecordedEvent
+
+			if err := json.Unmarshal(v, &record); err != nil {
+				return err
+			}
+
+			records = append(records, record)
+		}
+
+		return nil
+	})
+
+	return records, err
+}
+
 func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEvent, error) {
 	if limit < 0 {
 		limit = 0
@@ -100,12 +157,6 @@ func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEve
 
 	err := store.db.View(func(t *bbolt.Tx) error {
 		cur := t.Bucket([]byte("events")).Cursor()
-
-		k, _ := cur.Seek(offset[:])
-
-		if bytes.Compare(k, offset[:]) == 0 {
-			cur.Next()
-		}
 
 		for k, v := cur.Seek(offset[:]); k != nil && (limit == 0 || len(records) < limit); k, v = cur.Next() {
 			if bytes.Compare(k, offset[:]) == 0 {

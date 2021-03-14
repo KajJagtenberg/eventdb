@@ -9,6 +9,7 @@ import (
 	"eventflowdb/graph/model"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/oklog/ulid"
 )
 
@@ -40,7 +41,31 @@ func (r *queryResolver) Stream(ctx context.Context, id string) (*model.Stream, e
 }
 
 func (r *queryResolver) LoadFromStream(ctx context.Context, stream string, skip int, limit int) ([]*model.RecordedEvent, error) {
-	panic(fmt.Errorf("not implemented"))
+	parsedStream, err := uuid.Parse(stream)
+	if err != nil {
+		return nil, err
+	}
+
+	records, err := r.EventStore.LoadFromStream(parsedStream, skip, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.RecordedEvent
+
+	for _, record := range records {
+		result = append(result, &model.RecordedEvent{
+			ID:       record.ID.String(),
+			Stream:   record.Stream.String(),
+			Version:  record.Version,
+			Type:     record.Type,
+			Data:     string(record.Data),
+			Metadata: string(record.Metadata),
+			AddedAt:  record.AddedAt,
+		})
+	}
+
+	return result, nil
 }
 
 func (r *queryResolver) LoadFromAll(ctx context.Context, offset string, limit int) ([]*model.RecordedEvent, error) {
