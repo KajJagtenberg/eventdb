@@ -48,10 +48,7 @@ func main() {
 		Stderr:          os.Stderr,
 		InterruptPrompt: "^C",
 	})
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	check(err)
 
 	for running {
 		input, err := rl.Readline()
