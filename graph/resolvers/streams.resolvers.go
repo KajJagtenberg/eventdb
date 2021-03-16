@@ -5,15 +5,50 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"eventflowdb/graph/model"
-	"fmt"
+	"eventflowdb/store"
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
 )
 
 func (r *mutationResolver) Append(ctx context.Context, stream string, version int, events []*model.EventData) ([]*model.RecordedEvent, error) {
-	return nil, fmt.Errorf("not implemented")
+	streamId, err := uuid.Parse(stream)
+	if err != nil {
+		return nil, errors.New("Unable to parse stream ID")
+	}
+
+	var eventData []store.EventData
+
+	for _, event := range events {
+		eventData = append(eventData, store.EventData{
+			Type:     event.Type,
+			Data:     []byte(event.Data),
+			Metadata: []byte(event.Metadata),
+		})
+	}
+
+	records, err := r.EventStore.AppendToStream(streamId, version, eventData)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.RecordedEvent
+
+	for _, record := range records {
+		result = append(result, &model.RecordedEvent{
+			ID:       record.ID.String(),
+			Stream:   record.Stream.String(),
+			Version:  record.Version,
+			Type:     record.Type,
+			Data:     string(record.Data),
+			Metadata: string(record.Metadata),
+			AddedAt:  record.AddedAt,
+		})
+	}
+
+	return result, nil
 }
 
 func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]*model.Stream, error) {

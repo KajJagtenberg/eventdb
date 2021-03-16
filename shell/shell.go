@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"encoding/json"
 	"eventflowdb/compiler"
 	"eventflowdb/store"
 	"fmt"
@@ -38,7 +39,6 @@ func (shell *Shell) Run(code string) (string, error) {
 }
 
 func NewShell(eventstore *store.EventStore) (*Shell, error) {
-
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 	vm.Set("console", struct {
@@ -68,6 +68,38 @@ func NewShell(eventstore *store.EventStore) (*Shell, error) {
 		}
 
 		return vm.ToValue(events), err
+	})
+
+	vm.Set("project", func(projection map[string]func(state interface{}, event interface{})) {
+		var offset ulid.ULID
+		state := map[string]interface{}{}
+
+		records, err := eventstore.LoadFromAll(offset, 10)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		for _, record := range records {
+			handler := projection[record.Type]
+
+			if handler == nil {
+				continue
+			}
+
+			var event interface{}
+
+			if json.Unmarshal(record.Data, &event); err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			handler(state, event)
+
+			log.Println("Projection:", state)
+
+			offset = record.ID
+		}
 	})
 
 	freeze, ok := goja.AssertFunction(vm.Get("Object").ToObject(vm).Get("freeze"))
