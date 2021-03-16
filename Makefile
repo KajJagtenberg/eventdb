@@ -22,3 +22,6 @@ compose_up:
 
 compose_down:
 	docker-compose down
+
+client:
+	go run cmd/client/main.go

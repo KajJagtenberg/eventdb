@@ -2,6 +2,8 @@ package main
 
 import (
 	"eventflowdb/compiler"
+	"eventflowdb/shell"
+	"eventflowdb/store"
 	"fmt"
 	"io"
 	"log"
@@ -11,41 +13,31 @@ import (
 	_ "embed"
 
 	"github.com/chzyer/readline"
-	"github.com/dop251/goja"
+	"go.etcd.io/bbolt"
 )
 
 const (
 	version = "0.0.1"
 )
 
-//go:embed shell.js
-var shellSource string
-
 var running = true
 
-func main() {
-	vm := goja.New()
-	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
-	vm.Set("version", func() {
-		fmt.Println(version)
-	})
-	vm.Set("console", struct {
-		Log interface{} `json:"log"`
-	}{
-		Log: func(v string) {
-			fmt.Println(v)
-		},
-	})
-	vm.Set("global", vm.GlobalObject())
-
-	compiledShellSource, err := compiler.Compile(shellSource)
+func check(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
 
-	if _, err := vm.RunString(compiledShellSource); err != nil {
-		log.Println(err)
-	}
+func main() {
+	db, err := bbolt.Open("events.db", 0600, nil)
+	check(err)
+	defer db.Close()
+
+	eventstore, err := store.NewEventStore(db)
+	check(err)
+
+	shell, err := shell.NewShell(eventstore)
+	check(err)
 
 	fmt.Println("EventflowDB Shell")
 
@@ -84,16 +76,15 @@ func main() {
 				continue
 			}
 
-			output, err := vm.RunString(code)
+			output, err := shell.Run(code)
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
 
-			if !goja.IsUndefined(output) && !output.Equals(vm.ToValue("use strict")) {
+			if len(output) > 0 {
 				fmt.Println(output)
 			}
-
 		}
 	}
 
