@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"encoding/base64"
 	"errors"
 	"eventflowdb/graph/model"
 	"eventflowdb/store"
@@ -22,10 +23,20 @@ func (r *mutationResolver) Append(ctx context.Context, stream string, version in
 	var eventData []store.EventData
 
 	for _, event := range events {
+		data, err := base64.StdEncoding.DecodeString(event.Data)
+		if err != nil {
+			return nil, err
+		}
+
+		metadata, err := base64.StdEncoding.DecodeString(event.Metadata)
+		if err != nil {
+			return nil, err
+		}
+
 		eventData = append(eventData, store.EventData{
 			Type:     event.Type,
-			Data:     []byte(event.Data),
-			Metadata: []byte(event.Metadata),
+			Data:     data,
+			Metadata: metadata,
 		})
 	}
 
@@ -103,8 +114,8 @@ func (r *queryResolver) LoadFromStream(ctx context.Context, stream string, skip 
 			Stream:   record.Stream.String(),
 			Version:  int(record.Version),
 			Type:     record.Type,
-			Data:     string(record.Data),
-			Metadata: string(record.Metadata),
+			Data:     base64.StdEncoding.EncodeToString(record.Data),
+			Metadata: base64.StdEncoding.EncodeToString(record.Metadata),
 			AddedAt:  record.AddedAt,
 		})
 	}
@@ -136,8 +147,8 @@ func (r *queryResolver) LoadFromAll(ctx context.Context, offset string, limit in
 			Stream:   record.Stream.String(),
 			Version:  int(record.Version),
 			Type:     record.Type,
-			Data:     string(record.Data),
-			Metadata: string(record.Metadata),
+			Data:     base64.StdEncoding.EncodeToString(record.Data),
+			Metadata: base64.StdEncoding.EncodeToString(record.Metadata),
 			AddedAt:  record.AddedAt,
 		})
 	}

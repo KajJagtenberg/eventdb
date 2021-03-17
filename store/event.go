@@ -30,7 +30,6 @@ type RecordedEvent struct {
 }
 
 func (event *RecordedEvent) Serialize() ([]byte, error) {
-
 	t, err := event.AddedAt.MarshalBinary()
 	if err != nil {
 		return nil, err

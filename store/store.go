@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"time"
 
@@ -74,6 +75,8 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 			if err != nil {
 				return err
 			}
+
+			log.Println(string(v))
 
 			if err := eventsBucket.Put(record.ID[:], v); err != nil {
 				return err
@@ -175,7 +178,7 @@ func (store *EventStore) LoadFromAll(offset ulid.ULID, limit int) ([]RecordedEve
 
 			var record RecordedEvent
 
-			if err := json.Unmarshal(v, &record); err != nil {
+			if err := record.Deserialize(v); err != nil {
 				return err
 			}
 
