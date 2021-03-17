@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+option go_package = "protos";
+
+message Stream {
+  bytes id = 1;
+  bytes addedAt = 2;
+  repeated bytes events = 3;
+}
