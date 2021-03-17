@@ -16,3 +16,11 @@ type Stream struct {
 func (stream *Stream) Size() int {
 	return len(stream.Events)
 }
+
+func (stream *Stream) Serialize() ([]byte, error) {
+	return nil, nil
+}
+
+func (stream *Stream) Deserialize(data []byte) error {
+	return nil
+}

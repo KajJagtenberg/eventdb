@@ -2,10 +2,8 @@ package store
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"math/rand"
 	"time"
 
@@ -39,7 +37,7 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 		v := streamsBucket.Get(stream[:])
 
 		if v != nil {
-			if err := json.Unmarshal(v, &persistedStream); err != nil {
+			if err := persistedStream.Deserialize(v); err != nil {
 				return err
 			}
 		} else {
@@ -76,14 +74,12 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 				return err
 			}
 
-			log.Println(string(v))
-
 			if err := eventsBucket.Put(record.ID[:], v); err != nil {
 				return err
 			}
 		}
 
-		v, err := json.Marshal(persistedStream)
+		v, err := persistedStream.Serialize()
 		if err != nil {
 			return err
 		}
@@ -117,7 +113,7 @@ func (store *EventStore) LoadFromStream(stream uuid.UUID, skip int, limit int) (
 			return nil
 		}
 
-		if err := json.Unmarshal(v, &persistedStream); err != nil {
+		if err := persistedStream.Deserialize(v); err != nil {
 			return err
 		}
 
@@ -201,7 +197,7 @@ func (store *EventStore) GetStream(id uuid.UUID) (Stream, error) {
 			return nil
 		}
 
-		if err := json.Unmarshal(v, &stream); err != nil {
+		if err := stream.Deserialize(v); err != nil {
 			return err
 		}
 		return nil
@@ -234,7 +230,7 @@ func (store *EventStore) GetStreams(skip int, limit int) ([]Stream, error) {
 
 			var stream Stream
 
-			if err := json.Unmarshal(v, &stream); err != nil {
+			if err := stream.Deserialize(v); err != nil {
 				return err
 			}
 
