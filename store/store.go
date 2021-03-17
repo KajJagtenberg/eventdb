@@ -58,7 +58,7 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 
 			record := RecordedEvent{
 				ID:       id,
-				Version:  version + i,
+				Version:  uint32(version + i),
 				Stream:   stream,
 				Type:     event.Type,
 				Data:     event.Data,

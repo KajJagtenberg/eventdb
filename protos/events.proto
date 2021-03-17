@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "protos";
+
+message Response {
+    string message = 1;
+}
+
+message AppendRequest {
+    message EventData {
+        string type = 1;
+        bytes data = 2;
+        bytes metadata = 3;
+        bytes causationId = 4;
+        bytes correlationId = 5;
+    }
+    string stream = 1;
+    int32 version = 2;
+    repeated EventData events = 3;
+}
+
+service EventService {
+    rpc Append(AppendRequest) returns (Response);
+  }
+  

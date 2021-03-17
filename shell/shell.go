@@ -57,7 +57,7 @@ func NewShell(eventstore *store.EventStore) (*Shell, error) {
 			event := Event{
 				ID:       record.ID.String(),
 				Stream:   record.Stream.String(),
-				Version:  record.Version,
+				Version:  int(record.Version),
 				Type:     record.Type,
 				Data:     record.Data,
 				Metadata: record.Metadata,

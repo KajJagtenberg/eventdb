@@ -40,7 +40,7 @@ func (r *mutationResolver) Append(ctx context.Context, stream string, version in
 		result = append(result, &model.RecordedEvent{
 			ID:       record.ID.String(),
 			Stream:   record.Stream.String(),
-			Version:  record.Version,
+			Version:  int(record.Version),
 			Type:     record.Type,
 			Data:     string(record.Data),
 			Metadata: string(record.Metadata),
@@ -101,7 +101,7 @@ func (r *queryResolver) LoadFromStream(ctx context.Context, stream string, skip 
 		result = append(result, &model.RecordedEvent{
 			ID:       record.ID.String(),
 			Stream:   record.Stream.String(),
-			Version:  record.Version,
+			Version:  int(record.Version),
 			Type:     record.Type,
 			Data:     string(record.Data),
 			Metadata: string(record.Metadata),
@@ -134,7 +134,7 @@ func (r *queryResolver) LoadFromAll(ctx context.Context, offset string, limit in
 		result = append(result, &model.RecordedEvent{
 			ID:       record.ID.String(),
 			Stream:   record.Stream.String(),
-			Version:  record.Version,
+			Version:  int(record.Version),
 			Type:     record.Type,
 			Data:     string(record.Data),
 			Metadata: string(record.Metadata),

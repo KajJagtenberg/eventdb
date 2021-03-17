@@ -18,6 +18,7 @@ require (
 	github.com/gofiber/adaptor/v2 v2.1.1
 	github.com/gofiber/fiber/v2 v2.5.0
 	github.com/gofiber/helmet/v2 v2.1.0
+	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/hasura/go-graphql-client v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
@@ -29,5 +30,6 @@ require (
 	github.com/vektah/gqlparser/v2 v2.1.0
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/sys v0.0.0-20210313110737-8e9fff1a3a18 // indirect
+	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
