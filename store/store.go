@@ -28,7 +28,7 @@ type EventStore struct {
 func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []EventData) ([]RecordedEvent, error) {
 	var records []RecordedEvent
 
-	err := store.db.Update(func(t *bbolt.Tx) error {
+	err := store.db.Batch(func(t *bbolt.Tx) error {
 		streamsBucket := t.Bucket([]byte("streams"))
 		eventsBucket := t.Bucket([]byte("events"))
 
