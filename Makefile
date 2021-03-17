@@ -25,3 +25,6 @@ compose_down:
 
 client:
 	go run cmd/client/main.go
+
+protobuf:
+	protoc -I=protos --go_out=./gen protos/*.proto

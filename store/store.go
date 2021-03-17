@@ -70,7 +70,7 @@ func (store *EventStore) AppendToStream(stream uuid.UUID, version int, events []
 
 			persistedStream.Events = append(persistedStream.Events, record.ID)
 
-			v, err := json.Marshal(record)
+			v, err := record.Serialize()
 			if err != nil {
 				return err
 			}
@@ -138,7 +138,7 @@ func (store *EventStore) LoadFromStream(stream uuid.UUID, skip int, limit int) (
 
 			var record RecordedEvent
 
-			if err := json.Unmarshal(v, &record); err != nil {
+			if err := record.Deserialize(v); err != nil {
 				return err
 			}
 

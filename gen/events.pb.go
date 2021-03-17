@@ -20,165 +20,103 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type Response struct {
-	Message              string   `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+type RecordedEvent struct {
+	Id                   []byte   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Stream               []byte   `protobuf:"bytes,2,opt,name=stream,proto3" json:"stream,omitempty"`
+	Version              uint32   `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
+	Type                 string   `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
+	Data                 []byte   `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"`
+	Metadata             []byte   `protobuf:"bytes,6,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	AddedAt              []byte   `protobuf:"bytes,7,opt,name=addedAt,proto3" json:"addedAt,omitempty"`
+	CausationId          []byte   `protobuf:"bytes,8,opt,name=causationId,proto3" json:"causationId,omitempty"`
+	CorrelationId        []byte   `protobuf:"bytes,9,opt,name=correlationId,proto3" json:"correlationId,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Response) Reset()         { *m = Response{} }
-func (m *Response) String() string { return proto.CompactTextString(m) }
-func (*Response) ProtoMessage()    {}
-func (*Response) Descriptor() ([]byte, []int) {
+func (m *RecordedEvent) Reset()         { *m = RecordedEvent{} }
+func (m *RecordedEvent) String() string { return proto.CompactTextString(m) }
+func (*RecordedEvent) ProtoMessage()    {}
+func (*RecordedEvent) Descriptor() ([]byte, []int) {
 	return fileDescriptor_8f22242cb04491f9, []int{0}
 }
 
-func (m *Response) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Response.Unmarshal(m, b)
+func (m *RecordedEvent) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RecordedEvent.Unmarshal(m, b)
 }
-func (m *Response) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Response.Marshal(b, m, deterministic)
+func (m *RecordedEvent) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RecordedEvent.Marshal(b, m, deterministic)
 }
-func (m *Response) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Response.Merge(m, src)
+func (m *RecordedEvent) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RecordedEvent.Merge(m, src)
 }
-func (m *Response) XXX_Size() int {
-	return xxx_messageInfo_Response.Size(m)
+func (m *RecordedEvent) XXX_Size() int {
+	return xxx_messageInfo_RecordedEvent.Size(m)
 }
-func (m *Response) XXX_DiscardUnknown() {
-	xxx_messageInfo_Response.DiscardUnknown(m)
+func (m *RecordedEvent) XXX_DiscardUnknown() {
+	xxx_messageInfo_RecordedEvent.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Response proto.InternalMessageInfo
+var xxx_messageInfo_RecordedEvent proto.InternalMessageInfo
 
-func (m *Response) GetMessage() string {
+func (m *RecordedEvent) GetId() []byte {
 	if m != nil {
-		return m.Message
+		return m.Id
 	}
-	return ""
+	return nil
 }
 
-type AppendRequest struct {
-	Stream               string                     `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
-	Version              int32                      `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
-	Events               []*AppendRequest_EventData `protobuf:"bytes,3,rep,name=events,proto3" json:"events,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                   `json:"-"`
-	XXX_unrecognized     []byte                     `json:"-"`
-	XXX_sizecache        int32                      `json:"-"`
-}
-
-func (m *AppendRequest) Reset()         { *m = AppendRequest{} }
-func (m *AppendRequest) String() string { return proto.CompactTextString(m) }
-func (*AppendRequest) ProtoMessage()    {}
-func (*AppendRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8f22242cb04491f9, []int{1}
-}
-
-func (m *AppendRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AppendRequest.Unmarshal(m, b)
-}
-func (m *AppendRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AppendRequest.Marshal(b, m, deterministic)
-}
-func (m *AppendRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AppendRequest.Merge(m, src)
-}
-func (m *AppendRequest) XXX_Size() int {
-	return xxx_messageInfo_AppendRequest.Size(m)
-}
-func (m *AppendRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_AppendRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AppendRequest proto.InternalMessageInfo
-
-func (m *AppendRequest) GetStream() string {
+func (m *RecordedEvent) GetStream() []byte {
 	if m != nil {
 		return m.Stream
 	}
-	return ""
+	return nil
 }
 
-func (m *AppendRequest) GetVersion() int32 {
+func (m *RecordedEvent) GetVersion() uint32 {
 	if m != nil {
 		return m.Version
 	}
 	return 0
 }
 
-func (m *AppendRequest) GetEvents() []*AppendRequest_EventData {
-	if m != nil {
-		return m.Events
-	}
-	return nil
-}
-
-type AppendRequest_EventData struct {
-	Type                 string   `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
-	Data                 []byte   `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
-	Metadata             []byte   `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	CausationId          []byte   `protobuf:"bytes,4,opt,name=causationId,proto3" json:"causationId,omitempty"`
-	CorrelationId        []byte   `protobuf:"bytes,5,opt,name=correlationId,proto3" json:"correlationId,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *AppendRequest_EventData) Reset()         { *m = AppendRequest_EventData{} }
-func (m *AppendRequest_EventData) String() string { return proto.CompactTextString(m) }
-func (*AppendRequest_EventData) ProtoMessage()    {}
-func (*AppendRequest_EventData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_8f22242cb04491f9, []int{1, 0}
-}
-
-func (m *AppendRequest_EventData) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_AppendRequest_EventData.Unmarshal(m, b)
-}
-func (m *AppendRequest_EventData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_AppendRequest_EventData.Marshal(b, m, deterministic)
-}
-func (m *AppendRequest_EventData) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AppendRequest_EventData.Merge(m, src)
-}
-func (m *AppendRequest_EventData) XXX_Size() int {
-	return xxx_messageInfo_AppendRequest_EventData.Size(m)
-}
-func (m *AppendRequest_EventData) XXX_DiscardUnknown() {
-	xxx_messageInfo_AppendRequest_EventData.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AppendRequest_EventData proto.InternalMessageInfo
-
-func (m *AppendRequest_EventData) GetType() string {
+func (m *RecordedEvent) GetType() string {
 	if m != nil {
 		return m.Type
 	}
 	return ""
 }
 
-func (m *AppendRequest_EventData) GetData() []byte {
+func (m *RecordedEvent) GetData() []byte {
 	if m != nil {
 		return m.Data
 	}
 	return nil
 }
 
-func (m *AppendRequest_EventData) GetMetadata() []byte {
+func (m *RecordedEvent) GetMetadata() []byte {
 	if m != nil {
 		return m.Metadata
 	}
 	return nil
 }
 
-func (m *AppendRequest_EventData) GetCausationId() []byte {
+func (m *RecordedEvent) GetAddedAt() []byte {
+	if m != nil {
+		return m.AddedAt
+	}
+	return nil
+}
+
+func (m *RecordedEvent) GetCausationId() []byte {
 	if m != nil {
 		return m.CausationId
 	}
 	return nil
 }
 
-func (m *AppendRequest_EventData) GetCorrelationId() []byte {
+func (m *RecordedEvent) GetCorrelationId() []byte {
 	if m != nil {
 		return m.CorrelationId
 	}
@@ -186,29 +124,24 @@ func (m *AppendRequest_EventData) GetCorrelationId() []byte {
 }
 
 func init() {
-	proto.RegisterType((*Response)(nil), "Response")
-	proto.RegisterType((*AppendRequest)(nil), "AppendRequest")
-	proto.RegisterType((*AppendRequest_EventData)(nil), "AppendRequest.EventData")
+	proto.RegisterType((*RecordedEvent)(nil), "RecordedEvent")
 }
 
 func init() { proto.RegisterFile("events.proto", fileDescriptor_8f22242cb04491f9) }
 
 var fileDescriptor_8f22242cb04491f9 = []byte{
-	// 256 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x90, 0xcf, 0x4e, 0x83, 0x40,
-	0x10, 0xc6, 0x43, 0x69, 0x11, 0xa6, 0xd4, 0xc3, 0x1c, 0xcc, 0x86, 0x13, 0xa9, 0x3d, 0x70, 0x22,
-	0xa6, 0x7d, 0x02, 0x8d, 0x1e, 0xbc, 0xae, 0x37, 0x6f, 0x2b, 0x4c, 0x0c, 0x89, 0xb0, 0xb8, 0xb3,
-	0x25, 0xf1, 0x21, 0x3c, 0xfb, 0xba, 0x86, 0x85, 0x6d, 0xca, 0x69, 0xe6, 0xfb, 0xcd, 0x97, 0xf9,
-	0x07, 0x29, 0x0d, 0xd4, 0x59, 0x2e, 0x7b, 0xa3, 0xad, 0xde, 0x1f, 0x20, 0x96, 0xc4, 0xbd, 0xee,
-	0x98, 0x50, 0xc0, 0x4d, 0x4b, 0xcc, 0xea, 0x93, 0x44, 0x90, 0x07, 0x45, 0x22, 0xbd, 0xdc, 0xff,
-	0xae, 0x60, 0xf7, 0xd8, 0xf7, 0xd4, 0xd5, 0x92, 0xbe, 0xcf, 0xc4, 0x16, 0xef, 0x20, 0x62, 0x6b,
-	0x48, 0xb5, 0xb3, 0x75, 0x56, 0x63, 0x8f, 0x81, 0x0c, 0x37, 0xba, 0x13, 0xab, 0x3c, 0x28, 0x36,
-	0xd2, 0x4b, 0x7c, 0x80, 0x68, 0x9a, 0x2c, 0xc2, 0x3c, 0x2c, 0xb6, 0x47, 0x51, 0x2e, 0x3a, 0x96,
-	0x2f, 0x63, 0xf1, 0x59, 0x59, 0x25, 0x67, 0x5f, 0xf6, 0x17, 0x40, 0x72, 0xa1, 0x88, 0xb0, 0xb6,
-	0x3f, 0xbd, 0x5f, 0xcd, 0xe5, 0x23, 0xab, 0x95, 0x55, 0x6e, 0x54, 0x2a, 0x5d, 0x8e, 0x19, 0xc4,
-	0x2d, 0x59, 0xe5, 0x78, 0xe8, 0xf8, 0x45, 0x63, 0x0e, 0xdb, 0x4a, 0x9d, 0x59, 0xd9, 0x46, 0x77,
-	0xaf, 0xb5, 0x58, 0xbb, 0xf2, 0x35, 0xc2, 0x03, 0xec, 0x2a, 0x6d, 0x0c, 0x7d, 0x79, 0xcf, 0xc6,
-	0x79, 0x96, 0xf0, 0x78, 0x82, 0xd4, 0x2d, 0xf6, 0x46, 0x66, 0x68, 0x2a, 0xc2, 0x7b, 0x88, 0xa6,
-	0x63, 0xf0, 0x76, 0x79, 0x55, 0x96, 0x94, 0xfe, 0xbd, 0x4f, 0xf1, 0x7b, 0xe4, 0x7e, 0xce, 0x1f,
-	0x53, 0x3c, 0xfd, 0x07, 0x00, 0x00, 0xff, 0xff, 0xf0, 0x1e, 0x66, 0xf8, 0x8b, 0x01, 0x00, 0x00,
+	// 204 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x90, 0x31, 0x4f, 0xc4, 0x30,
+	0x0c, 0x85, 0x95, 0x72, 0xf4, 0x7a, 0xe6, 0xca, 0xe0, 0x01, 0x59, 0x4c, 0x11, 0x62, 0xe8, 0xc4,
+	0xc2, 0x2f, 0x00, 0x89, 0x81, 0x35, 0x23, 0x5b, 0xa8, 0x3d, 0x44, 0xe2, 0x9a, 0x2a, 0x31, 0x95,
+	0xf8, 0xe5, 0xac, 0xa8, 0x86, 0x22, 0x98, 0xe2, 0xef, 0x7b, 0x4f, 0x6f, 0x08, 0x1c, 0x65, 0x91,
+	0x49, 0xeb, 0xdd, 0x5c, 0xb2, 0xe6, 0x9b, 0x4f, 0x07, 0x7d, 0x90, 0x31, 0x17, 0x16, 0x7e, 0x5a,
+	0x03, 0xbc, 0x84, 0x26, 0x31, 0x39, 0xef, 0x86, 0x63, 0x68, 0x12, 0xe3, 0x15, 0xb4, 0x55, 0x8b,
+	0xc4, 0x13, 0x35, 0xe6, 0x7e, 0x08, 0x09, 0xf6, 0x8b, 0x94, 0x9a, 0xf2, 0x44, 0x67, 0xde, 0x0d,
+	0x7d, 0xd8, 0x10, 0x11, 0x76, 0xfa, 0x31, 0x0b, 0xed, 0xbc, 0x1b, 0x0e, 0xc1, 0xee, 0xd5, 0x71,
+	0xd4, 0x48, 0xe7, 0xb6, 0x61, 0x37, 0x5e, 0x43, 0x77, 0x12, 0x8d, 0xe6, 0x5b, 0xf3, 0xbf, 0xbc,
+	0xae, 0x47, 0x66, 0xe1, 0x07, 0xa5, 0xbd, 0x45, 0x1b, 0xa2, 0x87, 0x8b, 0x31, 0xbe, 0xd7, 0xa8,
+	0x29, 0x4f, 0xcf, 0x4c, 0x9d, 0xa5, 0x7f, 0x15, 0xde, 0x42, 0x3f, 0xe6, 0x52, 0xe4, 0x6d, 0xeb,
+	0x1c, 0xac, 0xf3, 0x5f, 0x3e, 0x76, 0x2f, 0xad, 0x7d, 0x41, 0x7d, 0xfd, 0x7e, 0xef, 0xbf, 0x02,
+	0x00, 0x00, 0xff, 0xff, 0x83, 0xdc, 0x8f, 0x42, 0x1a, 0x01, 0x00, 0x00,
 }
