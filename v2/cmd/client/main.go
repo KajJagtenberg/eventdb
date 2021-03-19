@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"log"
 	"os"
 	"time"
@@ -59,6 +60,16 @@ func main() {
 	}); err != nil {
 		log.Fatalf("Unable to perform request: %v", err)
 	} else {
-		enc.Encode(res)
+		for {
+			event, err := res.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatalf("Unable to receive message: %v", err)
+			}
+
+			enc.Encode(event)
+		}
 	}
 }

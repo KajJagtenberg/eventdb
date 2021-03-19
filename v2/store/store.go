@@ -66,28 +66,39 @@ func (s *StoreService) Add(ctx context.Context, in *AddRequest) (*AddResponse, e
 	}, nil
 }
 
-func (s *StoreService) Get(ctx context.Context, in *GetRequest) (*GetResponse, error) {
+func (s *StoreService) Get(in *GetRequest, result EventStore_GetServer) error {
 	var stream uuid.UUID
 	if err := stream.UnmarshalBinary(in.Stream); err != nil {
 		err := status.Error(codes.InvalidArgument, "Invalid stream uuid")
-		return nil, err
+		return err
 	}
 
 	events := s.streams[stream]
 
-	if int(in.Version) > len(events) {
-		events = []*RecordedEvent{}
-	} else {
-		events = events[in.Version:]
+	sent := 0
+
+	for _, event := range events {
+		if in.Version > 0 {
+			in.Version--
+			continue
+		}
+
+		if sent >= int(in.Limit) {
+			break
+		}
+
+		if err := result.Send(event); err != nil {
+			return err
+		}
+
+		sent++
 	}
 
-	if in.Limit > 0 {
-		events = events[:in.Limit]
-	}
+	return nil
+}
 
-	return &GetResponse{
-		Events: events,
-	}, nil
+func (s *StoreService) Log(in *LogRequest, result EventStore_LogServer) error {
+	return nil
 }
 
 func NewStoreService() *StoreService {

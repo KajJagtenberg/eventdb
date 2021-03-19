@@ -39,11 +39,13 @@ message GetRequest {
     uint32 limit = 3;
 }
 
-message GetResponse {
-    repeated RecordedEvent events = 1;
+message LogRequest {
+    bytes offset = 1;
+    uint32 limit = 2;
 }
 
 service EventStore {
     rpc Add(AddRequest) returns (AddResponse) {}
-    rpc Get(GetRequest) returns (GetResponse) {}
+    rpc Get(GetRequest) returns (stream RecordedEvent) {}
+    rpc Log(LogRequest) returns (stream RecordedEvent) {}
 }
