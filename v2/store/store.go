@@ -14,6 +14,8 @@ import (
 
 type StoreService struct {
 	entropy io.Reader
+	streams map[uuid.UUID][]*RecordedEvent
+	log     map[ulid.ULID]*RecordedEvent
 }
 
 func (s *StoreService) Add(ctx context.Context, in *AddRequest) (*AddResponse, error) {
@@ -57,17 +59,41 @@ func (s *StoreService) Add(ctx context.Context, in *AddRequest) (*AddResponse, e
 		})
 	}
 
+	s.streams[stream] = append(s.streams[stream], events...)
+
 	return &AddResponse{
 		Events: events,
 	}, nil
 }
 
 func (s *StoreService) Get(ctx context.Context, in *GetRequest) (*GetResponse, error) {
-	return nil, nil
+	var stream uuid.UUID
+	if err := stream.UnmarshalBinary(in.Stream); err != nil {
+		err := status.Error(codes.InvalidArgument, "Invalid stream uuid")
+		return nil, err
+	}
+
+	events := s.streams[stream]
+
+	if int(in.Version) > len(events) {
+		events = []*RecordedEvent{}
+	} else {
+		events = events[in.Version:]
+	}
+
+	if in.Limit > 0 {
+		events = events[:in.Limit]
+	}
+
+	return &GetResponse{
+		Events: events,
+	}, nil
 }
 
 func NewStoreService() *StoreService {
 	return &StoreService{
 		entropy: ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0),
+		streams: make(map[uuid.UUID][]*RecordedEvent),
+		log:     make(map[ulid.ULID]*RecordedEvent),
 	}
 }
