@@ -16,9 +16,14 @@ func main() {
 
 	db, err := bbolt.Open("events.db", 0666, nil)
 	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
+		log.Fatalf("Failed to initialize Storage service: %v", err)
 	}
 	defer db.Close()
+
+	storage, err := store.NewStorage(db)
+	if err != nil {
+		log.Fatalf("Failed to initialize Storage service: %v", err)
+	}
 
 	addr := ":6543"
 
@@ -32,7 +37,7 @@ func main() {
 
 	log.Println("Initializing gRPC services")
 
-	store.RegisterEventStoreServer(srv, store.NewStoreService(store.NewStorage(db)))
+	store.RegisterEventStoreServer(srv, store.NewStoreService(storage))
 
 	log.Printf("Starting gRPC server on %s", addr)
 

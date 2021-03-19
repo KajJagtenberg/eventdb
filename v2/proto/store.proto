@@ -16,6 +16,12 @@ message RecordedEvent {
     int64 added_at = 9;
 }
 
+message Stream {
+    bytes id = 1;
+    repeated bytes events = 2;
+    int64 added_at = 3;
+}
+
 message AddRequest {
     message Event {
         string type = 1;
