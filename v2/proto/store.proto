@@ -33,6 +33,17 @@ message AddResponse {
     repeated RecordedEvent events = 1;
 }
 
+message GetRequest {
+    bytes stream = 1;
+    uint32 version = 2;
+    uint32 limit = 3;
+}
+
+message GetResponse {
+    repeated RecordedEvent events = 1;
+}
+
 service EventStore {
     rpc Add(AddRequest) returns (AddResponse) {}
+    rpc Get(GetRequest) returns (GetResponse) {}
 }

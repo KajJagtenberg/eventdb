@@ -8,8 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
-	codes "google.golang.org/grpc/codes"
-	status "google.golang.org/grpc/status"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type StoreService struct {
@@ -60,6 +60,10 @@ func (s *StoreService) Add(ctx context.Context, in *AddRequest) (*AddResponse, e
 	return &AddResponse{
 		Events: events,
 	}, nil
+}
+
+func (s *StoreService) Get(ctx context.Context, in *GetRequest) (*GetResponse, error) {
+	return nil, nil
 }
 
 func NewStoreService() *StoreService {
