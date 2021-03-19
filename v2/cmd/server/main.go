@@ -4,6 +4,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"google.golang.org/grpc"
 )
 
@@ -21,6 +22,8 @@ func main() {
 	srv := grpc.NewServer()
 
 	log.Println("Initializing gRPC services")
+
+	store.RegisterEventStoreServer(srv, store.NewStoreService())
 
 	log.Printf("Starting gRPC server on %s", addr)
 
