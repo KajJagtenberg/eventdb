@@ -20,6 +20,8 @@ func main() {
 
 	srv := grpc.NewServer()
 
+	log.Println("Initializing gRPC services")
+
 	log.Printf("Starting gRPC server on %s", addr)
 
 	if err := srv.Serve(lis); err != nil {
