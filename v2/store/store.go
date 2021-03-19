@@ -20,6 +20,7 @@ var (
 
 var (
 	ErrConcurrentStreamModification = errors.New("Concurrent stream modification")
+	ErrNoEvents                     = errors.New("No events specified")
 )
 
 type Storage struct {
@@ -31,6 +32,10 @@ func (s *Storage) Add(req *AddRequest) ([]*RecordedEvent, error) {
 	if err := stream.UnmarshalBinary(req.Stream); err != nil {
 		err := status.Error(codes.InvalidArgument, "Invalid stream uuid")
 		return nil, err
+	}
+
+	if len(req.Events) == 0 {
+		return nil, ErrNoEvents
 	}
 
 	var records []*RecordedEvent
@@ -71,11 +76,14 @@ func (s *Storage) Add(req *AddRequest) ([]*RecordedEvent, error) {
 		streams := t.Bucket([]byte("streams"))
 		events := t.Bucket([]byte("events"))
 
-		var stream *Stream
+		stream := &Stream{}
 
 		v := streams.Get(req.Stream)
 
-		if v != nil {
+		if v == nil {
+			stream.Id = req.Stream
+			stream.AddedAt = time.Now().UnixNano()
+		} else {
 			if err := proto.Unmarshal(v, stream); err != nil {
 				return err
 			}
@@ -134,7 +142,7 @@ func (s *Storage) Get(req *GetRequest) ([]*RecordedEvent, error) {
 			return nil
 		}
 
-		var stream *Stream
+		stream := &Stream{}
 
 		if err := proto.Unmarshal(v, stream); err != nil {
 			return nil
@@ -151,7 +159,7 @@ func (s *Storage) Get(req *GetRequest) ([]*RecordedEvent, error) {
 
 			v := events.Get(id)
 
-			var event *RecordedEvent
+			event := &RecordedEvent{}
 
 			if err := proto.Unmarshal(v, event); err != nil {
 				return err // TODO: Add more specific error
