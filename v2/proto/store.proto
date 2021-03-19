@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+option go_package="store";
+
 package store;
 
 message RecordedEvent {
