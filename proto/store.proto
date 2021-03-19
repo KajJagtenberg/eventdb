@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package store;
+
+message RecordedEvent {
+    bytes id = 1;
+    bytes stream = 2;
+    uint32 version = 3;
+    string type = 4;
+    bytes data = 5;
+    bytes metadata = 6;
+    bytes causation_id = 7;
+    bytes correlation_id = 8;
+    int64 added_at = 9;
+}

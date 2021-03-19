@@ -1,6 +1,9 @@
 run:
 	air
 
+sandbox:
+	go run cmd/sandbox/main.go
+
 tidy:
 	go mod tidy
 
@@ -27,4 +30,4 @@ client:
 	go run cmd/client/main.go
 
 protobuf:
-	protoc -I=protos --go_out=./gen protos/*.proto
+	protoc --go_out=grpc:store ./proto/store.proto

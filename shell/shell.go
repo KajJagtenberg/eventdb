@@ -6,10 +6,12 @@ import (
 	"eventflowdb/store"
 	"fmt"
 	"log"
+	"os"
 
 	_ "embed"
 
 	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/require"
 	"github.com/oklog/ulid"
 )
 
@@ -41,6 +43,10 @@ func (shell *Shell) Run(code string) (string, error) {
 func NewShell(eventstore *store.EventStore) (*Shell, error) {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+
+	registry := new(require.Registry)
+	registry.Enable(vm)
+
 	vm.Set("console", struct {
 		Log interface{} `json:"log"`
 	}{
@@ -69,6 +75,38 @@ func NewShell(eventstore *store.EventStore) (*Shell, error) {
 
 		return vm.ToValue(events), err
 	})
+
+	vm.Set("pwd", func() {
+		dir, err := os.Getwd()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Println(dir)
+	})
+
+	// vm.Set("exports", goja.Object{})
+
+	// vm.Set("require", func(src string) error {
+	// 	log.Println(os.Getwd())
+
+	// 	f, err := os.OpenFile("./shell/node_modules/"+src+".js", os.O_RDONLY, 0666)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer f.Close()
+
+	// 	data, err := ioutil.ReadAll(f)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+
+	// 	if _, err := vm.RunString(string(data)); err != nil {
+	// 		return err
+	// 	}
+
+	// 	return nil
+	// })
 
 	vm.Set("project", func(projection map[string]func(state interface{}, event interface{})) {
 		var offset ulid.ULID
