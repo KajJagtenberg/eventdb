@@ -3,3 +3,5 @@
 .dockerignore
 Dockerfile
 Makefile
+
+*.db

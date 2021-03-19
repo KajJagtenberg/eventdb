@@ -29,10 +29,6 @@ message AddRequest {
     repeated Event events = 3;
 }
 
-message AddResponse {
-    repeated RecordedEvent events = 1;
-}
-
 message GetRequest {
     bytes stream = 1;
     uint32 version = 2;
@@ -45,7 +41,7 @@ message LogRequest {
 }
 
 service EventStore {
-    rpc Add(AddRequest) returns (AddResponse) {}
+    rpc Add(AddRequest) returns (stream RecordedEvent) {}
     rpc Get(GetRequest) returns (stream RecordedEvent) {}
     rpc Log(LogRequest) returns (stream RecordedEvent) {}
 }
