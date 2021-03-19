@@ -192,7 +192,7 @@ func (s *Storage) Log(req *LogRequest) ([]*RecordedEvent, error) {
 				continue
 			}
 
-			var event *RecordedEvent
+			event := &RecordedEvent{}
 
 			if err := proto.Unmarshal(v, event); err != nil {
 				return err // TODO: Add more specific error

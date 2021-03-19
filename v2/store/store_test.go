@@ -99,3 +99,49 @@ func TestGet(t *testing.T) {
 	assert.Equal(records[0].Type, req.Events[0].Type)
 	assert.Equal(records[0].Data, req.Events[0].Data)
 }
+
+func TestLog(t *testing.T) {
+	assert := assert.New(t)
+
+	db, err := bbolt.Open("/tmp/events.db", 0666, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	storage, err := store.NewStorage(db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stream, err := uuid.New().MarshalBinary()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := &store.AddRequest{
+		Stream:  stream,
+		Version: 0,
+		Events: []*store.AddRequest_Event{
+			{
+				Type: "ProductAdded",
+				Data: []byte(`{"name":"Samsung Galaxy S8","version":80000}`),
+			},
+		},
+	}
+
+	records, err := storage.Add(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	records, err = storage.Log(&store.LogRequest{
+		Offset: make([]byte, 16),
+		Limit:  0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(len(records) > 0, true)
+}
