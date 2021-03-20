@@ -96,6 +96,7 @@ func main() {
 	log.Println("Stopping all services")
 
 	grpcSrv.GracefulStop()
+	httpSrv.Shutdown()
 	db.Close()
 
 	log.Println("Closed all services")
