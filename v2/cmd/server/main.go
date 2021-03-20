@@ -136,6 +136,10 @@ func main() {
 		Storage:    storage,
 	}}))))
 
+	httpSrv.Get("*", func(c *fiber.Ctx) error {
+		return c.Redirect("/404")
+	})
+
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
 
