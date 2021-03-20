@@ -122,10 +122,10 @@ func main() {
 		WriteTimeout:          time.Second * 10,
 		IdleTimeout:           time.Second * 10,
 	})
-	httpSrv.Use(logger.New())
 	httpSrv.Static("/", "webui/out", fiber.Static{
 		Compress: true,
 	})
+	httpSrv.Use(logger.New())
 	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	log.Println("Initializing GraphQL")
