@@ -15,6 +15,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/hashicorp/memberlist"
 	"github.com/joho/godotenv"
+	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
 	"github.com/kajjagtenberg/eventflowdb/store"
@@ -36,8 +37,10 @@ func main() {
 
 	godotenv.Load()
 
-	grpcAddr := ":6543"
-	httpAddr := ":16543"
+	grpcAddr := env.GetEnv("GRPC_LISTENER", ":6543")
+	httpAddr := env.GetEnv("HTTP_LISTENER", ":16543")
+	eventsFile := env.GetEnv("EVENTS_FILE", "events.db")
+	existingNodes := env.GetEnv("EXISTING_NODES", "")
 
 	///////////////
 	//  Storage  //
@@ -45,7 +48,7 @@ func main() {
 
 	log.Println("Initializing Storage service")
 
-	db, err := bbolt.Open("events.db", 0666, nil)
+	db, err := bbolt.Open(eventsFile, 0666, nil)
 	if err != nil {
 		log.Fatalf("Failed to initialize Storage service: %v", err)
 	}
@@ -72,8 +75,8 @@ func main() {
 
 	var existing []string
 
-	if v := os.Getenv("EXISTING_NODES"); len(v) > 0 {
-		existing = strings.Split(v, ",")
+	if len(existingNodes) > 0 {
+		existing = strings.Split(existingNodes, ",")
 	}
 
 	if joined, err := cluster.Join(existing); err != nil {
