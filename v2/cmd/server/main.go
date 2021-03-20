@@ -7,13 +7,31 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/gofiber/adaptor/v2"
+	"github.com/gofiber/fiber/v2"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
 	"google.golang.org/grpc"
 )
 
 func main() {
+	/////////////
+	//  Hello  //
+	/////////////
+
 	log.Println("Hello, world!")
+
+	//////////////
+	//  Config  //
+	//////////////
+
+	grpcAddr := ":6543"
+	httpAddr := ":16543"
+
+	///////////////
+	//  Storage  //
+	///////////////
 
 	log.Println("Initializing Storage service")
 
@@ -28,27 +46,48 @@ func main() {
 		log.Fatalf("Failed to initialize Storage service: %v", err)
 	}
 
-	addr := ":6543"
+	////////////
+	//  gRPC  //
+	////////////
 
-	lis, err := net.Listen("tcp", addr)
+	lis, err := net.Listen("tcp", grpcAddr)
 	if err != nil {
-		log.Fatalf("Failed to listen on %s", addr)
+		log.Fatalf("Failed to listen on %s", grpcAddr)
 	}
 	defer lis.Close()
 
-	srv := grpc.NewServer()
+	grpcSrv := grpc.NewServer()
 
 	log.Println("Initializing gRPC services")
 
-	store.RegisterEventStoreServer(srv, store.NewStoreService(storage))
+	store.RegisterEventStoreServer(grpcSrv, store.NewStoreService(storage))
 
 	go func() {
-		log.Printf("Starting gRPC server on %s", addr)
+		log.Printf("Starting gRPC server on %s", grpcAddr)
 
-		if err := srv.Serve(lis); err != nil {
+		if err := grpcSrv.Serve(lis); err != nil {
 			log.Fatalf("Failed to start gRPC server: %v", err)
 		}
 	}()
+
+	////////////
+	//  HTTP  //
+	////////////
+
+	log.Println("Initializing Prometheus metrics")
+
+	httpSrv := fiber.New()
+	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+
+	go func() {
+		log.Printf("Starting HTTP server on %s", httpAddr)
+
+		httpSrv.Listen(httpAddr)
+	}()
+
+	////////////////
+	//  Shutdown  //
+	////////////////
 
 	sig := make(chan os.Signal)
 	signal.Notify(sig, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
@@ -56,7 +95,7 @@ func main() {
 
 	log.Println("Stopping all services")
 
-	srv.GracefulStop()
+	grpcSrv.GracefulStop()
 	db.Close()
 
 	log.Println("Closed all services")
