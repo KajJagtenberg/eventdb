@@ -46,8 +46,18 @@ message LogRequest {
     uint32 limit = 2;
 }
 
+message StreamCountRequest {
+
+}
+
+message StreamCountResponse {
+    uint64 count = 1;
+}
+
+
 service EventStore {
     rpc Add(AddRequest) returns (stream RecordedEvent) {}
     rpc Get(GetRequest) returns (stream RecordedEvent) {}
     rpc Log(LogRequest) returns (stream RecordedEvent) {}
+    rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
 }

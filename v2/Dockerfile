@@ -13,6 +13,8 @@ RUN yarn export
 
 FROM golang:1.16-alpine AS build
 
+RUN apk add g++
+
 WORKDIR /src
 
 COPY go.mod .
@@ -22,7 +24,9 @@ RUN go mod download
 
 COPY . .
 
-RUN GOOS=linux go build -o bin/server -ldflags="-s -w" cmd/server/main.go
+RUN go test ./tests
+
+RUN GOOS=linux go build -o bin/server cmd/server/main.go
 
 FROM alpine:3.8
 

@@ -1,0 +1,10 @@
+type ClusterNode {
+  ip: String!
+  port: Int!
+  address: String!
+}
+
+extend type Query {
+  healthscore: Int!
+  nodes: [ClusterNode!]!
+}
