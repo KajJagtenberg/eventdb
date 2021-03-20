@@ -9,6 +9,7 @@ import (
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
@@ -79,6 +80,7 @@ func main() {
 	httpSrv := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
+	httpSrv.Use(logger.New())
 	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 	httpSrv.Static("/", "webui/out", fiber.Static{
 		Compress: true,
@@ -101,8 +103,16 @@ func main() {
 	log.Println("Stopping all services")
 
 	grpcSrv.GracefulStop()
+
+	log.Println("Stopped gRPC")
+
 	httpSrv.Shutdown()
+
+	log.Println("Stopped HTTP")
+
 	db.Close()
 
-	log.Println("Closed all services")
+	log.Println("Stopped Storage")
+
+	log.Println("Stopped all services")
 }
