@@ -215,6 +215,24 @@ func (s *Storage) Log(req *LogRequest) ([]*RecordedEvent, error) {
 	return result, nil
 }
 
+func (s *Storage) StreamCount() (int, error) {
+	var count int
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		streams := t.Bucket([]byte("streams")).Cursor()
+
+		for k, _ := streams.First(); k != nil; k, _ = streams.Next() {
+			count++
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func NewStorage(db *bbolt.DB) (*Storage, error) {
 	if err := db.Update(func(t *bbolt.Tx) error {
 		buckets := []string{"events", "streams"}
