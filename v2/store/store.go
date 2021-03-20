@@ -183,8 +183,11 @@ func (s *Storage) Get(req *GetRequest) ([]*RecordedEvent, error) {
 
 func (s *Storage) Log(req *LogRequest) ([]*RecordedEvent, error) {
 	var offset ulid.ULID
-	if err := offset.UnmarshalBinary(req.Offset); err != nil {
-		return nil, errors.New("Unable to decode offset to a valid ULID")
+
+	if len(req.Offset) > 0 {
+		if err := offset.UnmarshalBinary(req.Offset); err != nil {
+			return nil, errors.New("Unable to decode offset to a valid ULID")
+		}
 	}
 
 	var result []*RecordedEvent
@@ -192,7 +195,7 @@ func (s *Storage) Log(req *LogRequest) ([]*RecordedEvent, error) {
 	if err := s.db.View(func(t *bbolt.Tx) error {
 		events := t.Bucket([]byte("events")).Cursor()
 
-		for k, v := events.Seek(req.Offset); k != nil && (req.Limit == 0 || len(result) >= int(req.Limit)); k, v = events.Next() {
+		for k, v := events.Seek(req.Offset); k != nil; /*&& (req.Limit == 0 || len(result) >= int(req.Limit))*/ k, v = events.Next() {
 			if bytes.Compare(k, req.Offset) == 0 {
 				continue
 			}

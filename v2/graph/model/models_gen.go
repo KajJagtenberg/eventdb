@@ -2,8 +2,34 @@
 
 package model
 
+import (
+	"time"
+)
+
 type ClusterNode struct {
 	IP      string `json:"ip"`
 	Port    int    `json:"port"`
 	Address string `json:"address"`
+}
+
+type GetInput struct {
+	Stream  string `json:"stream"`
+	Version int    `json:"version"`
+	Limit   int    `json:"limit"`
+}
+
+type LogInput struct {
+	Offset string `json:"offset"`
+	Limit  int    `json:"limit"`
+}
+
+type RecordedEvent struct {
+	ID            string    `json:"id"`
+	Stream        string    `json:"stream"`
+	Version       int       `json:"version"`
+	Data          string    `json:"data"`
+	Metadata      string    `json:"metadata"`
+	CausationID   string    `json:"causation_id"`
+	CorrelationID string    `json:"correlation_id"`
+	AddedAt       time.Time `json:"added_at"`
 }
