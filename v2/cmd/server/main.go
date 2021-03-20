@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"go.etcd.io/bbolt"
@@ -39,9 +42,22 @@ func main() {
 
 	store.RegisterEventStoreServer(srv, store.NewStoreService(storage))
 
-	log.Printf("Starting gRPC server on %s", addr)
+	go func() {
+		log.Printf("Starting gRPC server on %s", addr)
 
-	if err := srv.Serve(lis); err != nil {
-		log.Fatalf("Failed to start gRPC server: %v", err)
-	}
+		if err := srv.Serve(lis); err != nil {
+			log.Fatalf("Failed to start gRPC server: %v", err)
+		}
+	}()
+
+	sig := make(chan os.Signal)
+	signal.Notify(sig, syscall.SIGTERM, syscall.SIGHUP, syscall.SIGINT)
+	<-sig
+
+	log.Println("Stopping all services")
+
+	srv.GracefulStop()
+	db.Close()
+
+	log.Println("Closed all services")
 }
