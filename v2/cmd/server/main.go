@@ -119,6 +119,7 @@ func main() {
 	httpSrv.Get("/graphql", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/graphql")))
 	httpSrv.Post("/graphql", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
 		Memberlist: cluster,
+		Storage:    storage,
 	}}))))
 
 	go func() {

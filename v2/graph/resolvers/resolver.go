@@ -1,6 +1,9 @@
 package resolvers
 
-import "github.com/hashicorp/memberlist"
+import (
+	"github.com/hashicorp/memberlist"
+	"github.com/kajjagtenberg/eventflowdb/store"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +11,5 @@ import "github.com/hashicorp/memberlist"
 
 type Resolver struct {
 	Memberlist *memberlist.Memberlist
+	Storage    *store.Storage
 }

@@ -54,12 +54,14 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Cluster func(childComplexity int) int
+		Cluster     func(childComplexity int) int
+		StreamCount func(childComplexity int) int
 	}
 }
 
 type QueryResolver interface {
 	Cluster(ctx context.Context) (*model.Cluster, error)
+	StreamCount(ctx context.Context) (int, error)
 }
 
 type executableSchema struct {
@@ -118,6 +120,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Cluster(childComplexity), true
+
+	case "Query.streamCount":
+		if e.complexity.Query.StreamCount == nil {
+			break
+		}
+
+		return e.complexity.Query.StreamCount(childComplexity), true
 
 	}
 	return 0, false
@@ -182,6 +191,10 @@ type ClusterNode {
 
 extend type Query {
   cluster: Cluster!
+}
+`, BuiltIn: false},
+	{Name: "graph/store.graphqls", Input: `extend type Query {
+  streamCount: Int!
 }
 `, BuiltIn: false},
 }
@@ -452,6 +465,41 @@ func (ec *executionContext) _Query_cluster(ctx context.Context, field graphql.Co
 	res := resTmp.(*model.Cluster)
 	fc.Result = res
 	return ec.marshalNCluster2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐCluster(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_streamCount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().StreamCount(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1713,6 +1761,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_cluster(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "streamCount":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_streamCount(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
