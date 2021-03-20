@@ -16,7 +16,7 @@ message RecordedEvent {
     int64 added_at = 9;
 }
 
-message Stream {
+message RecordedStream {
     bytes id = 1;
     repeated bytes events = 2;
     int64 added_at = 3;
@@ -54,10 +54,20 @@ message StreamCountResponse {
     uint64 count = 1;
 }
 
+message GetStreamsRequest {
+    uint32 skip = 1;
+    uint32 limit = 2;
+}
+
+message Stream {
+    bytes id = 1;
+}
+
 
 service EventStore {
     rpc Add(AddRequest) returns (stream RecordedEvent) {}
     rpc Get(GetRequest) returns (stream RecordedEvent) {}
     rpc Log(LogRequest) returns (stream RecordedEvent) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
+    rpc GetStreams(GetStreamsRequest) returns (stream Stream) {} 
 }
