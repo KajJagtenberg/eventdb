@@ -33,3 +33,12 @@ type RecordedEvent struct {
 	CorrelationID string    `json:"correlation_id"`
 	AddedAt       time.Time `json:"added_at"`
 }
+
+type Stream struct {
+	ID string `json:"id"`
+}
+
+type StreamsInput struct {
+	Skip  int `json:"skip"`
+	Limit int `json:"limit"`
+}

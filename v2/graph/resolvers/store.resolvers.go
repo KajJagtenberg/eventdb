@@ -6,6 +6,7 @@ package resolvers
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -123,4 +124,8 @@ func (r *queryResolver) Log(ctx context.Context, input model.LogInput) ([]*model
 	}
 
 	return result, nil
+}
+
+func (r *queryResolver) Streams(ctx context.Context, input *model.StreamsInput) ([]*model.Stream, error) {
+	panic(fmt.Errorf("not implemented"))
 }

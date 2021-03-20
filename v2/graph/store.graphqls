@@ -22,8 +22,18 @@ input LogInput {
   limit: Int! = 10
 }
 
+input StreamsInput {
+  skip: Int! = 0
+  limit: Int! = 0
+}
+
+type Stream {
+  id: String!
+}
+
 extend type Query {
   streamCount: Int!
   get(input: GetInput! = {}): [RecordedEvent!]!
   log(input: LogInput! = {}): [RecordedEvent!]!
+  streams(input: StreamsInput): [Stream!]!
 }
