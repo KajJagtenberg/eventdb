@@ -7,6 +7,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.6.0
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.1.2
+	github.com/hashicorp/memberlist v0.2.2 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/prometheus/client_golang v1.10.0
 	github.com/stretchr/testify v1.5.1
