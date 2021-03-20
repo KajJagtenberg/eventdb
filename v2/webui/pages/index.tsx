@@ -1,8 +1,9 @@
+import { Box } from '@chakra-ui/react';
 import Head from 'next/head';
 
 const Home = () => {
   return (
-    <div
+    <Box
       style={{
         height: '100vh',
       }}
@@ -11,7 +12,7 @@ const Home = () => {
         <title>EventflowDB</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-    </div>
+    </Box>
   );
 };
 
