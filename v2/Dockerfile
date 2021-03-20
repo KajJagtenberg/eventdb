@@ -13,7 +13,7 @@ COPY . .
 
 RUN go test ./...
 
-RUN GOOS=linux go build -o bin/server -ldflags="-s -w" cmd/server/main.go
+RUN GOOS=linux go build -o bin/server cmd/server/main.go
 
 FROM alpine:3.8
 
