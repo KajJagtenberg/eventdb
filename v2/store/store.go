@@ -3,6 +3,7 @@ package store
 import (
 	"bytes"
 	"errors"
+	"log"
 	"math/rand"
 	"time"
 
@@ -85,6 +86,7 @@ func (s *Storage) Add(req *AddRequest) ([]*RecordedEvent, error) {
 			stream.AddedAt = time.Now().UnixNano()
 		} else {
 			if err := proto.Unmarshal(v, stream); err != nil {
+				log.Printf("Unable to decode stream: %v", err)
 				return err
 			}
 		}
@@ -96,6 +98,7 @@ func (s *Storage) Add(req *AddRequest) ([]*RecordedEvent, error) {
 		for _, record := range records {
 			v, err := proto.Marshal(record)
 			if err != nil {
+				log.Printf("Unable to encode event: %v", err)
 				return err
 			}
 
@@ -145,6 +148,7 @@ func (s *Storage) Get(req *GetRequest) ([]*RecordedEvent, error) {
 		stream := &Stream{}
 
 		if err := proto.Unmarshal(v, stream); err != nil {
+			log.Printf("Unable to decode stream: %v", err)
 			return nil
 		}
 
@@ -162,7 +166,8 @@ func (s *Storage) Get(req *GetRequest) ([]*RecordedEvent, error) {
 			event := &RecordedEvent{}
 
 			if err := proto.Unmarshal(v, event); err != nil {
-				return err // TODO: Add more specific error
+				log.Printf("Unable to decode event: %v", err)
+				return err
 			}
 
 			result = append(result, event)
@@ -179,7 +184,7 @@ func (s *Storage) Get(req *GetRequest) ([]*RecordedEvent, error) {
 func (s *Storage) Log(req *LogRequest) ([]*RecordedEvent, error) {
 	var offset ulid.ULID
 	if err := offset.UnmarshalBinary(req.Offset); err != nil {
-		return nil, err // TODO: Add more specific error
+		return nil, errors.New("Unable to decode offset to a valid ULID")
 	}
 
 	var result []*RecordedEvent
@@ -195,7 +200,8 @@ func (s *Storage) Log(req *LogRequest) ([]*RecordedEvent, error) {
 			event := &RecordedEvent{}
 
 			if err := proto.Unmarshal(v, event); err != nil {
-				return err // TODO: Add more specific error
+				log.Printf("Unable to decode event: %v", err)
+				return err
 			}
 
 			result = append(result, event)
