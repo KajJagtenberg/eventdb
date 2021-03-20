@@ -10,22 +10,22 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/graph/model"
 )
 
-func (r *queryResolver) Cluster(ctx context.Context) (*model.Cluster, error) {
-	list := r.Memberlist
+func (r *queryResolver) Healthscore(ctx context.Context) (int, error) {
+	return r.Memberlist.GetHealthScore(), nil
+}
 
-	result := model.Cluster{
-		Healthscore: list.GetHealthScore(),
-	}
+func (r *queryResolver) Nodes(ctx context.Context) ([]*model.ClusterNode, error) {
+	nodes := []*model.ClusterNode{}
 
-	for _, member := range list.Members() {
-		result.Nodes = append(result.Nodes, &model.ClusterNode{
+	for _, member := range r.Memberlist.Members() {
+		nodes = append(nodes, &model.ClusterNode{
 			IP:      member.Addr.String(),
-			Address: member.Address(),
 			Port:    int(member.Port),
+			Address: member.Address(),
 		})
 	}
 
-	return &result, nil
+	return nodes, nil
 }
 
 // Query returns generated.QueryResolver implementation.

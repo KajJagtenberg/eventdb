@@ -2,11 +2,6 @@
 
 package model
 
-type Cluster struct {
-	Healthscore int            `json:"healthscore"`
-	Nodes       []*ClusterNode `json:"nodes"`
-}
-
 type ClusterNode struct {
 	IP      string `json:"ip"`
 	Port    int    `json:"port"`

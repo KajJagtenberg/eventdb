@@ -42,11 +42,6 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Cluster struct {
-		Healthscore func(childComplexity int) int
-		Nodes       func(childComplexity int) int
-	}
-
 	ClusterNode struct {
 		Address func(childComplexity int) int
 		IP      func(childComplexity int) int
@@ -54,13 +49,15 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Cluster     func(childComplexity int) int
+		Healthscore func(childComplexity int) int
+		Nodes       func(childComplexity int) int
 		StreamCount func(childComplexity int) int
 	}
 }
 
 type QueryResolver interface {
-	Cluster(ctx context.Context) (*model.Cluster, error)
+	Healthscore(ctx context.Context) (int, error)
+	Nodes(ctx context.Context) ([]*model.ClusterNode, error)
 	StreamCount(ctx context.Context) (int, error)
 }
 
@@ -78,20 +75,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "Cluster.healthscore":
-		if e.complexity.Cluster.Healthscore == nil {
-			break
-		}
-
-		return e.complexity.Cluster.Healthscore(childComplexity), true
-
-	case "Cluster.nodes":
-		if e.complexity.Cluster.Nodes == nil {
-			break
-		}
-
-		return e.complexity.Cluster.Nodes(childComplexity), true
 
 	case "ClusterNode.address":
 		if e.complexity.ClusterNode.Address == nil {
@@ -114,12 +97,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ClusterNode.Port(childComplexity), true
 
-	case "Query.cluster":
-		if e.complexity.Query.Cluster == nil {
+	case "Query.healthscore":
+		if e.complexity.Query.Healthscore == nil {
 			break
 		}
 
-		return e.complexity.Query.Cluster(childComplexity), true
+		return e.complexity.Query.Healthscore(childComplexity), true
+
+	case "Query.nodes":
+		if e.complexity.Query.Nodes == nil {
+			break
+		}
+
+		return e.complexity.Query.Nodes(childComplexity), true
 
 	case "Query.streamCount":
 		if e.complexity.Query.StreamCount == nil {
@@ -178,19 +168,15 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/cluster.graphqls", Input: `type Cluster {
-  healthscore: Int!
-  nodes: [ClusterNode!]!
-}
-
-type ClusterNode {
+	{Name: "graph/cluster.graphqls", Input: `type ClusterNode {
   ip: String!
   port: Int!
   address: String!
 }
 
 extend type Query {
-  cluster: Cluster!
+  healthscore: Int!
+  nodes: [ClusterNode!]!
 }
 `, BuiltIn: false},
 	{Name: "graph/store.graphqls", Input: `extend type Query {
@@ -256,76 +242,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
-
-func (ec *executionContext) _Cluster_healthscore(ctx context.Context, field graphql.CollectedField, obj *model.Cluster) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Cluster",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Healthscore, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Cluster_nodes(ctx context.Context, field graphql.CollectedField, obj *model.Cluster) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Cluster",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Nodes, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.ClusterNode)
-	fc.Result = res
-	return ec.marshalNClusterNode2ᚕᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNodeᚄ(ctx, field.Selections, res)
-}
 
 func (ec *executionContext) _ClusterNode_ip(ctx context.Context, field graphql.CollectedField, obj *model.ClusterNode) (ret graphql.Marshaler) {
 	defer func() {
@@ -432,7 +348,7 @@ func (ec *executionContext) _ClusterNode_address(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_cluster(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_healthscore(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -450,7 +366,7 @@ func (ec *executionContext) _Query_cluster(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Cluster(rctx)
+		return ec.resolvers.Query().Healthscore(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -462,9 +378,44 @@ func (ec *executionContext) _Query_cluster(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Cluster)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNCluster2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐCluster(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_nodes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Nodes(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.ClusterNode)
+	fc.Result = res
+	return ec.marshalNClusterNode2ᚕᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNodeᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_streamCount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1668,38 +1619,6 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** object.gotpl ****************************
 
-var clusterImplementors = []string{"Cluster"}
-
-func (ec *executionContext) _Cluster(ctx context.Context, sel ast.SelectionSet, obj *model.Cluster) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, clusterImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Cluster")
-		case "healthscore":
-			out.Values[i] = ec._Cluster_healthscore(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "nodes":
-			out.Values[i] = ec._Cluster_nodes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var clusterNodeImplementors = []string{"ClusterNode"}
 
 func (ec *executionContext) _ClusterNode(ctx context.Context, sel ast.SelectionSet, obj *model.ClusterNode) graphql.Marshaler {
@@ -1752,7 +1671,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "cluster":
+		case "healthscore":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -1760,7 +1679,21 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_cluster(ctx, field)
+				res = ec._Query_healthscore(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "nodes":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_nodes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2053,20 +1986,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNCluster2githubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐCluster(ctx context.Context, sel ast.SelectionSet, v model.Cluster) graphql.Marshaler {
-	return ec._Cluster(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNCluster2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐCluster(ctx context.Context, sel ast.SelectionSet, v *model.Cluster) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Cluster(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalNClusterNode2ᚕᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNodeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ClusterNode) graphql.Marshaler {
