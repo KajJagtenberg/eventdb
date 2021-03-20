@@ -14,8 +14,8 @@ import (
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hashicorp/memberlist"
-	"github.com/kajjagtenberg/eventflowdb/graph"
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
+	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
@@ -117,7 +117,9 @@ func main() {
 	log.Println("Initializing GraphQL")
 
 	httpSrv.Get("/graphql", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/graphql")))
-	httpSrv.Post("/graphql", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))))
+	httpSrv.Post("/graphql", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
+		Memberlist: cluster,
+	}}))))
 
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
@@ -136,7 +138,7 @@ func main() {
 	log.Println("Stopping all services")
 
 	grpcSrv.GracefulStop()
-	httpSrv.Shutdown()
+	// httpSrv.Shutdown()
 	db.Close()
 
 	log.Println("Closed all services")

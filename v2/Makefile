@@ -7,6 +7,9 @@ client:
 pb:
 	protoc --proto_path=proto --go_out=plugins=grpc:store --go_opt=paths=source_relative proto/store.proto
 
+gql:
+	go run github.com/99designs/gqlgen generate
+
 build:
 	docker build -t eventflowdb:latest .
 
