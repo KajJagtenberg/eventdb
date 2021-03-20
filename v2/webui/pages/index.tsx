@@ -1,18 +1,13 @@
 import { Box } from '@chakra-ui/react';
-import Head from 'next/head';
+import { Layout } from '../components/Layout';
 
 const Home = () => {
   return (
-    <Box
-      style={{
-        height: '100vh',
-      }}
-    >
-      <Head>
-        <title>EventflowDB</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-    </Box>
+    <Layout title="EventflowDB">
+      <Box h={'100vh'} bg="purple.700">
+        
+      </Box>
+    </Layout>
   );
 };
 
