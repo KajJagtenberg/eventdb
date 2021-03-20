@@ -76,7 +76,9 @@ func main() {
 
 	log.Println("Initializing Prometheus metrics")
 
-	httpSrv := fiber.New()
+	httpSrv := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	go func() {
