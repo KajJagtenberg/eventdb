@@ -3,6 +3,7 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
+	github.com/99designs/gqlgen v0.13.0 // indirect
 	github.com/gofiber/adaptor/v2 v2.1.1
 	github.com/gofiber/fiber/v2 v2.6.0
 	github.com/golang/protobuf v1.5.1
