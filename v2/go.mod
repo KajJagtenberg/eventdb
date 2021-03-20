@@ -9,7 +9,7 @@ require (
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.1.2
 	github.com/hashicorp/memberlist v0.2.2
-	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/oklog/ulid v1.3.1
 	github.com/prometheus/client_golang v1.10.0
 	github.com/stretchr/testify v1.5.1
