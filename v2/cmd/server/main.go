@@ -5,10 +5,13 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+	"time"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/hashicorp/memberlist"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
@@ -44,6 +47,32 @@ func main() {
 	storage, err := store.NewStorage(db)
 	if err != nil {
 		log.Fatalf("Failed to initialize Storage service: %v", err)
+	}
+
+	///////////////
+	//  Cluster  //
+	///////////////
+
+	log.Println("Setting up a cluster")
+
+	conf := memberlist.DefaultLocalConfig()
+
+	cluster, err := memberlist.Create(conf)
+	if err != nil {
+		log.Fatalf("Failed to create cluster: %v", err)
+	}
+	defer cluster.Leave(time.Second * 5)
+
+	var existing []string
+
+	if v := os.Getenv("EXISTING_NODES"); len(v) > 0 {
+		existing = strings.Split(v, ",")
+	}
+
+	if joined, err := cluster.Join(existing); err != nil {
+		log.Fatalf("Failed to join a cluster: %v", err)
+	} else {
+		log.Printf("Successfully joined a cluster with %d nodes", joined)
 	}
 
 	////////////

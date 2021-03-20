@@ -3,5 +3,5 @@
 .dockerignore
 Dockerfile
 Makefile
-
+docker-compose.yml
 *.db

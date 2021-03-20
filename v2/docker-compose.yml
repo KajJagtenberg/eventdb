@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  node1:
+    container_name: eventflowdb1
+    build: .
+    restart: unless-stopped
+    environment:
+      - EXISTING_NODES=node2,node3
+
+  node2:
+    container_name: eventflowdb2
+    build: .
+    restart: unless-stopped
+    environment:
+      - EXISTING_NODES=node1,node3
+
+  node3:
+    container_name: eventflowdb3
+    build: .
+    restart: unless-stopped
+    environment:
+      - EXISTING_NODES=node1,node2
