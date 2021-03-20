@@ -9,9 +9,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hashicorp/memberlist"
+	"github.com/kajjagtenberg/eventflowdb/graph"
+	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
@@ -109,6 +113,11 @@ func main() {
 		DisableStartupMessage: true,
 	})
 	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+
+	log.Println("Initializing GraphQL")
+
+	httpSrv.Get("/graphql", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/graphql")))
+	httpSrv.Post("/graphql", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))))
 
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
