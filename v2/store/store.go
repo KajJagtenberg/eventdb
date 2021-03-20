@@ -77,7 +77,7 @@ func (s *Storage) Add(req *AddRequest) ([]*RecordedEvent, error) {
 		streams := t.Bucket([]byte("streams"))
 		events := t.Bucket([]byte("events"))
 
-		stream := &Stream{}
+		stream := &RecordedStream{}
 
 		v := streams.Get(req.Stream)
 
@@ -145,7 +145,7 @@ func (s *Storage) Get(req *GetRequest) ([]*RecordedEvent, error) {
 			return nil
 		}
 
-		stream := &Stream{}
+		stream := &RecordedStream{}
 
 		if err := proto.Unmarshal(v, stream); err != nil {
 			log.Printf("Unable to decode stream: %v", err)
@@ -234,6 +234,35 @@ func (s *Storage) StreamCount() (int64, error) {
 	}
 
 	return count, nil
+}
+
+func (s *Storage) GetStreams(skip uint32, limit uint32) ([]*Stream, error) {
+	var result []*Stream
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		streams := t.Bucket([]byte("streams")).Cursor()
+
+		for k, v := streams.First(); k != nil && (limit == 0 || len(result) < int(limit)); k, v = streams.Next() {
+			if skip > 0 {
+				skip--
+				continue
+			}
+
+			stream := &Stream{}
+
+			if err := proto.Unmarshal(v, stream); err != nil {
+				return nil
+			}
+
+			result = append(result, stream)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func NewStorage(db *bbolt.DB) (*Storage, error) {

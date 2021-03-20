@@ -19,67 +19,28 @@ func main() {
 
 	conn, err := grpc.Dial(":6543", grpc.WithInsecure(), grpc.WithTimeout(time.Second*10))
 	if err != nil {
-		log.Fatalf("Unable to connect: %v", err)
+		log.Fatalf("Failed to connect: %v", err)
 	}
 	defer conn.Close()
 
+	ctx := context.Background()
+
 	c := store.NewEventStoreClient(conn)
 
-	stream, err := uuid.New().MarshalBinary()
+	result, err := c.GetStreams(ctx, &store.GetStreamsRequest{})
 	if err != nil {
-		log.Fatalf("Unable to marshal stream: %v", err)
+		log.Fatalf("Failed to perform request: %v", err)
 	}
 
-	if res, err := c.Add(context.Background(), &store.AddRequest{
-		Stream:  stream,
-		Version: 0,
-		Events: []*store.AddRequest_Event{
-			{
-				Type: "ProductAdded",
-				Data: []byte(`{"name":"Samsung Galaxy S8","version":80000}`),
-			},
-			{
-				Type: "ProductAdded",
-				Data: []byte(`{"name":"Samsung Galaxy S8","version":80000}`),
-			},
-			{
-				Type: "ProductAdded",
-				Data: []byte(`{"name":"Samsung Galaxy S8","version":80000}`),
-			},
-		},
-	}); err != nil {
-		log.Fatalf("Unable to perform request: %v", err)
-	} else {
-		for {
-			event, err := res.Recv()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Fatalf("Unable to receive message: %v", err)
-			}
-
-			enc.Encode(event)
+	for {
+		stream, err := result.Recv()
+		if err == io.EOF {
+			break
 		}
-	}
-
-	if res, err := c.Get(context.Background(), &store.GetRequest{
-		Stream:  stream,
-		Version: 1,
-		Limit:   1,
-	}); err != nil {
-		log.Fatalf("Unable to perform request: %v", err)
-	} else {
-		for {
-			event, err := res.Recv()
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				log.Fatalf("Unable to receive message: %v", err)
-			}
-
-			enc.Encode(event)
+		if err != nil {
+			log.Fatalf("Failed to receive message: %v", err)
 		}
+
+		log.Println(uuid.FromBytes(stream.Id))
 	}
 }

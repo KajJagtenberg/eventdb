@@ -60,6 +60,21 @@ func (s *StoreService) StreamCount(ctx context.Context, req *StreamCountRequest)
 	return &StreamCountResponse{Count: uint64(count)}, nil
 }
 
+func (s *StoreService) GetStreams(req *GetStreamsRequest, result EventStore_GetStreamsServer) error {
+	streams, err := s.storage.GetStreams(req.Skip, req.Limit)
+	if err != nil {
+		return err
+	}
+
+	for _, stream := range streams {
+		if err := result.Send(stream); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func NewStoreService(storage *Storage) *StoreService {
 	return &StoreService{storage}
 }
