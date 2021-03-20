@@ -24,7 +24,7 @@ input LogInput {
 
 input StreamsInput {
   skip: Int! = 0
-  limit: Int! = 0
+  limit: Int! = 25
 }
 
 type Stream {
@@ -35,5 +35,5 @@ extend type Query {
   streamCount: Int!
   get(input: GetInput! = {}): [RecordedEvent!]!
   log(input: LogInput! = {}): [RecordedEvent!]!
-  streams(input: StreamsInput): [Stream!]!
+  streams(input: StreamsInput! = {}): [Stream!]!
 }

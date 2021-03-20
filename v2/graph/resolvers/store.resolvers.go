@@ -6,7 +6,6 @@ package resolvers
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -126,6 +125,24 @@ func (r *queryResolver) Log(ctx context.Context, input model.LogInput) ([]*model
 	return result, nil
 }
 
-func (r *queryResolver) Streams(ctx context.Context, input *model.StreamsInput) ([]*model.Stream, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Streams(ctx context.Context, input model.StreamsInput) ([]*model.Stream, error) {
+	streams, err := r.Storage.GetStreams(uint32(input.Skip), uint32(input.Limit))
+	if err != nil {
+		return nil, err
+	}
+
+	result := []*model.Stream{}
+
+	for _, stream := range streams {
+		id, err := uuid.FromBytes(stream.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, &model.Stream{
+			ID: id.String(),
+		})
+	}
+
+	return result, nil
 }
