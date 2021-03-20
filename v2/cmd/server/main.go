@@ -85,10 +85,10 @@ func main() {
 		IdleTimeout:           time.Second * 10,
 	})
 	httpSrv.Use(logger.New())
-	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 	httpSrv.Static("/", "webui/out", fiber.Static{
 		Compress: true,
 	})
+	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
