@@ -1,5 +1,7 @@
 package store
 
+import "context"
+
 type StoreService struct {
 	storage *Storage
 }
@@ -47,6 +49,15 @@ func (s *StoreService) Log(req *LogRequest, stream EventStore_LogServer) error {
 	}
 
 	return nil
+}
+
+func (s *StoreService) StreamCount(ctx context.Context, req *StreamCountRequest) (*StreamCountResponse, error) {
+	count, err := s.storage.StreamCount()
+	if err != nil {
+		return nil, err
+	}
+
+	return &StreamCountResponse{Count: uint64(count)}, nil
 }
 
 func NewStoreService(storage *Storage) *StoreService {

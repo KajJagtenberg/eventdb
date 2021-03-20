@@ -215,8 +215,8 @@ func (s *Storage) Log(req *LogRequest) ([]*RecordedEvent, error) {
 	return result, nil
 }
 
-func (s *Storage) StreamCount() (int, error) {
-	var count int
+func (s *Storage) StreamCount() (int64, error) {
+	var count int64
 
 	if err := s.db.View(func(t *bbolt.Tx) error {
 		streams := t.Bucket([]byte("streams")).Cursor()
