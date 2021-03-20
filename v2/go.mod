@@ -12,6 +12,7 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/oklog/ulid v1.3.1
 	github.com/prometheus/client_golang v1.10.0
+	github.com/rs/cors v1.6.0
 	github.com/stretchr/testify v1.5.1
 	github.com/vektah/gqlparser/v2 v2.1.0
 	go.etcd.io/bbolt v1.3.5

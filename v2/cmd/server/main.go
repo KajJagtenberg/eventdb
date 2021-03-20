@@ -13,6 +13,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/hashicorp/memberlist"
 	"github.com/joho/godotenv"
@@ -122,6 +123,7 @@ func main() {
 		WriteTimeout:          time.Second * 10,
 		IdleTimeout:           time.Second * 10,
 	})
+	httpSrv.Use(cors.New())
 	httpSrv.Static("/", "webui/out", fiber.Static{
 		Compress: true,
 	})
