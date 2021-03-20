@@ -1,5 +1,7 @@
 FROM golang:1.16-alpine AS build
 
+RUN apk add g++
+
 WORKDIR /src
 
 COPY go.mod .
@@ -8,6 +10,8 @@ COPY go.sum .
 RUN go mod download
 
 COPY . .
+
+RUN go test ./...
 
 RUN GOOS=linux go build -o bin/server -ldflags="-s -w" cmd/server/main.go
 
