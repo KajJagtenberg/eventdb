@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
@@ -79,6 +80,9 @@ func main() {
 
 	httpSrv := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
+		ReadTimeout:           time.Second * 10,
+		WriteTimeout:          time.Second * 10,
+		IdleTimeout:           time.Second * 10,
 	})
 	httpSrv.Use(logger.New())
 	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
