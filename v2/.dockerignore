@@ -3,5 +3,5 @@
 .dockerignore
 Dockerfile
 Makefile
-
+webui/node_modules
 *.db
