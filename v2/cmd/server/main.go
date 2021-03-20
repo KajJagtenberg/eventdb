@@ -80,6 +80,9 @@ func main() {
 		DisableStartupMessage: true,
 	})
 	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+	httpSrv.Static("/", "webui/out", fiber.Static{
+		Compress: true,
+	})
 
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
