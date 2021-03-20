@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hashicorp/memberlist"
+	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
 	"github.com/kajjagtenberg/eventflowdb/store"
@@ -32,6 +33,8 @@ func main() {
 	//////////////
 	//  Config  //
 	//////////////
+
+	godotenv.Load()
 
 	grpcAddr := ":6543"
 	httpAddr := ":16543"
