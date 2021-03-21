@@ -33,7 +33,7 @@ export const Navbar = () => {
         {links.map(({ text, href }, index) => (
           <Link href={href} key={index}>
             <a>
-              <Text fontWeight="semibold" mx={2} fontSize={14}>
+              <Text fontWeight="semibold" mx={2} fontSize={"sm"}>
                 {text}
               </Text>
             </a>
