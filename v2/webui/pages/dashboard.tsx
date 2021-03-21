@@ -17,6 +17,7 @@ const Dashboard = () => {
   const { data } = useQuery(gql`
     {
       streamCount
+      eventCount
     }
   `);
 
