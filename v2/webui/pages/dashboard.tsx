@@ -14,12 +14,17 @@ import { Navbar } from '../components/Navbar';
 const tabList = ['Overview', 'Projections', 'Cluster', 'Security'];
 
 const Dashboard = () => {
-  const { data } = useQuery(gql`
+  const { data } = useQuery(
+    gql`
+      {
+        streamCount
+        eventCount
+      }
+    `,
     {
-      streamCount
-      eventCount
+      pollInterval: 1000,
     }
-  `);
+  );
 
   return (
     <Layout title="EventflowDB">
