@@ -236,6 +236,24 @@ func (s *Storage) StreamCount() (int64, error) {
 	return count, nil
 }
 
+func (s *Storage) EventCount() (int64, error) {
+	var count int64
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		events := t.Bucket([]byte("events")).Cursor()
+
+		for k, _ := events.First(); k != nil; k, _ = events.Next() {
+			count++
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (s *Storage) GetStreams(skip uint32, limit uint32) ([]*Stream, error) {
 	var result []*Stream
 
