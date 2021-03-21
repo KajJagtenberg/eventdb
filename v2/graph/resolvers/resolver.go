@@ -3,7 +3,7 @@ package resolvers
 import (
 	"time"
 
-	"github.com/hashicorp/memberlist"
+	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
@@ -12,7 +12,7 @@ import (
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	Memberlist *memberlist.Memberlist
-	Storage    *store.Storage
-	Start      time.Time
+	Cluster *cluster.Cluster
+	Storage *store.Storage
+	Start   time.Time
 }

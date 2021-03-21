@@ -11,13 +11,13 @@ import (
 )
 
 func (r *queryResolver) Healthscore(ctx context.Context) (int, error) {
-	return r.Memberlist.GetHealthScore(), nil
+	return r.Cluster.GetList().GetHealthScore(), nil
 }
 
 func (r *queryResolver) Nodes(ctx context.Context) ([]*model.ClusterNode, error) {
 	nodes := []*model.ClusterNode{}
 
-	for _, member := range r.Memberlist.Members() {
+	for _, member := range r.Cluster.GetList().Members() {
 		nodes = append(nodes, &model.ClusterNode{
 			IP:      member.Addr.String(),
 			Port:    int(member.Port),

@@ -5,7 +5,6 @@ import (
 	"net"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 
@@ -14,8 +13,8 @@ import (
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/hashicorp/memberlist"
 	"github.com/joho/godotenv"
+	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
@@ -41,7 +40,6 @@ func main() {
 	grpcAddr := env.GetEnv("GRPC_LISTENER", ":6543")
 	httpAddr := env.GetEnv("HTTP_LISTENER", ":16543")
 	eventsFile := env.GetEnv("EVENTS_FILE", "events.db")
-	existingNodes := env.GetEnv("EXISTING_NODES", "")
 
 	///////////////
 	//  Storage  //
@@ -66,24 +64,14 @@ func main() {
 
 	log.Println("Setting up a cluster")
 
-	conf := memberlist.DefaultLocalConfig()
-
-	cluster, err := memberlist.Create(conf)
+	cluster, err := cluster.NewCluster()
 	if err != nil {
 		log.Fatalf("Failed to create cluster: %v", err)
 	}
-	defer cluster.Leave(time.Second * 5)
+	defer cluster.Leave()
 
-	var existing []string
-
-	if len(existingNodes) > 0 {
-		existing = strings.Split(existingNodes, ",")
-	}
-
-	if joined, err := cluster.Join(existing); err != nil {
-		log.Fatalf("Failed to join a cluster: %v", err)
-	} else {
-		log.Printf("Successfully joined a cluster with %d nodes", joined)
+	if err := cluster.Join(); err != nil {
+		log.Fatalf("Failed to join cluster: %v", err)
 	}
 
 	////////////
@@ -129,9 +117,9 @@ func main() {
 
 	httpSrv.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/")))
 	httpSrv.Post("/", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
-		Memberlist: cluster,
-		Storage:    storage,
-		Start:      time.Now(),
+		Cluster: cluster,
+		Storage: storage,
+		Start:   time.Now(),
 	}}))))
 	httpSrv.Get("/backup", func(c *fiber.Ctx) error {
 		c.Set("Content-Type", "application/octet-stream")
