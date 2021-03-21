@@ -1,5 +1,14 @@
 import { gql, useQuery } from '@apollo/client';
-import { Flex, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
+import {
+  Flex,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Link as UILink,
+} from '@chakra-ui/react';
 import Link from 'next/link';
 
 export const StreamsTable = () => {
@@ -24,9 +33,11 @@ export const StreamsTable = () => {
           {data?.streams.map(({ id }, index) => (
             <Tr key={index}>
               <Td>
-                <Link href={`/streams/${id}`}>
-                  <a>{id}</a>
-                </Link>
+                <UILink color="blue.400">
+                  <Link href={`/streams/${id}`}>
+                    <a>{id}</a>
+                  </Link>
+                </UILink>
               </Td>
             </Tr>
           ))}

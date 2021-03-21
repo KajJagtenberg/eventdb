@@ -1,6 +1,15 @@
 import { Layout } from '../../components/Layout';
 import { Navbar } from '../../components/Navbar';
-import { Flex, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
+import {
+  Flex,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Link as UILink,
+} from '@chakra-ui/react';
 import { useRouter } from 'next/router';
 import { gql, useQuery } from '@apollo/client';
 import Link from 'next/link';
@@ -67,23 +76,29 @@ const Stream = () => {
                 ) => (
                   <Tr key={index}>
                     <Td>
-                      <Link href={`/events/${id}`}>
-                        <a>{id}</a>
-                      </Link>
+                      <UILink color="blue.400">
+                        <Link href={`/events/${id}`}>
+                          <a>{id}</a>
+                        </Link>
+                      </UILink>
                     </Td>
                     <Td>{version}</Td>
                     <Td>{type}</Td>
                     <Td>{atob(data)}</Td>
                     <Td>{atob(metadata) || '-'}</Td>
                     <Td>
-                      <Link href={`/events/${causation_id}`}>
-                        <a>{causation_id}</a>
-                      </Link>
+                      <UILink color="blue.400">
+                        <Link href={`/events/${causation_id}`}>
+                          <a>{causation_id}</a>
+                        </Link>
+                      </UILink>
                     </Td>
                     <Td>
-                      <Link href={`/events/${correlation_id}`}>
-                        <a>{correlation_id}</a>
-                      </Link>
+                      <UILink color="blue.400">
+                        <Link href={`/events/${correlation_id}`}>
+                          <a>{correlation_id}</a>
+                        </Link>
+                      </UILink>
                     </Td>
                     <Td>{added_at}</Td>
                   </Tr>
