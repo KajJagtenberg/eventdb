@@ -29,7 +29,7 @@ func (c *Cluster) Join() error {
 }
 
 func (c *Cluster) Leave() error {
-	return c.list.Leave(time.Second * 5) // TODO: Change to customizable timeout
+	return c.list.Leave(time.Second * 10) // TODO: Change to customizable timeout
 }
 
 func (c *Cluster) GetList() *memberlist.Memberlist {

@@ -45,9 +45,9 @@ func main() {
 	//  Storage  //
 	///////////////
 
-	log.Println("Initializing Storage service")
+	log.Printf("Initializing Storage service at: %v", eventsFile)
 
-	db, err := bbolt.Open(eventsFile, 0666, nil)
+	db, err := bbolt.Open(eventsFile, 0777, nil)
 	if err != nil {
 		log.Fatalf("Failed to initialize Storage service: %v", err)
 	}

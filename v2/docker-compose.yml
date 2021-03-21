@@ -7,9 +7,12 @@ services:
     restart: unless-stopped
     environment:
       - EXISTING_NODES=node2,node3
+      - EVENTS_FILE=/var/lib/eventflowdb/events.db
     ports:
       - 6543:6543
       - 16543:16543
+    volumes:
+      - node1:/var/lib/eventflowdb/
 
   node2:
     container_name: eventflowdb2
@@ -17,6 +20,11 @@ services:
     restart: unless-stopped
     environment:
       - EXISTING_NODES=node1,node3
+      - EVENTS_FILE=/var/lib/eventflowdb/events.db
+    volumes:
+      - node2:/var/lib/eventflowdb/
+    depends_on:
+      - node1
 
   node3:
     container_name: eventflowdb3
@@ -24,3 +32,11 @@ services:
     restart: unless-stopped
     environment:
       - EXISTING_NODES=node1,node2
+      - EVENTS_FILE=/var/lib/eventflowdb/events.db
+    volumes:
+      - node3:/var/lib/eventflowdb/
+
+volumes:
+  node1:
+  node2:
+  node3:
