@@ -23,6 +23,15 @@ func (r *queryResolver) StreamCount(ctx context.Context) (int, error) {
 	return int(streamCount), nil
 }
 
+func (r *queryResolver) EventCount(ctx context.Context) (int, error) {
+	streamCount, err := r.Storage.EventCount()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(streamCount), nil
+}
+
 func (r *queryResolver) Get(ctx context.Context, input model.GetInput) ([]*model.RecordedEvent, error) {
 	stream, err := uuid.Parse(input.Stream)
 	if err != nil {

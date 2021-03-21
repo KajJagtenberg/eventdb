@@ -34,6 +34,7 @@ type Stream {
 
 extend type Query {
   streamCount: Int!
+  eventCount: Int!
   get(input: GetInput! = {}): [RecordedEvent!]!
   log(input: LogInput! = {}): [RecordedEvent!]!
   streams(input: StreamsInput! = {}): [Stream!]!
