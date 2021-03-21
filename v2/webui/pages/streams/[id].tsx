@@ -74,7 +74,7 @@ const Stream = () => {
                     <Td>{version}</Td>
                     <Td>{type}</Td>
                     <Td>{atob(data)}</Td>
-                    <Td>{atob(metadata)}</Td>
+                    <Td>{atob(metadata) || '-'}</Td>
                     <Td>{causation_id}</Td>
                     <Td>{correlation_id}</Td>
                     <Td>{added_at}</Td>

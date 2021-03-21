@@ -17,7 +17,7 @@ export const StreamsTable = () => {
         <Thead>
           <Tr>
             <Th>ID</Th>
-            <Th>Size</Th>
+            {/* <Th>Size</Th> */}
           </Tr>
         </Thead>
         <Tbody>
