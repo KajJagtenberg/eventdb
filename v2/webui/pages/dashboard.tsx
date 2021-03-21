@@ -11,6 +11,8 @@ import { ClusterTab } from '../components/ClusterTab';
 import { Layout } from '../components/Layout';
 import { Navbar } from '../components/Navbar';
 import { OverviewTab } from '../components/OverviewTab';
+import { ProjectionTab } from '../components/ProjectionTab';
+import { SecurityTab } from '../components/SecurityTab';
 
 const tabList = ['Overview', 'Projections', 'Cluster', 'Security'];
 
@@ -40,11 +42,15 @@ const Dashboard = () => {
               </TabPanel>
 
               <TabPanel>
-                <p>two!</p>
+                <ProjectionTab />
               </TabPanel>
 
               <TabPanel>
                 <ClusterTab />
+              </TabPanel>
+
+              <TabPanel>
+                <SecurityTab />
               </TabPanel>
             </TabPanels>
           </Tabs>
