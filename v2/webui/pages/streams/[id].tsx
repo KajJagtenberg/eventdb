@@ -67,7 +67,7 @@ const Stream = () => {
                 ) => (
                   <Tr key={index}>
                     <Td>
-                      <Link href={`/streams/${id}`}>
+                      <Link href={`/events/${id}`}>
                         <a>{id}</a>
                       </Link>
                     </Td>
@@ -75,8 +75,16 @@ const Stream = () => {
                     <Td>{type}</Td>
                     <Td>{atob(data)}</Td>
                     <Td>{atob(metadata) || '-'}</Td>
-                    <Td>{causation_id}</Td>
-                    <Td>{correlation_id}</Td>
+                    <Td>
+                      <Link href={`/events/${causation_id}`}>
+                        <a>{causation_id}</a>
+                      </Link>
+                    </Td>
+                    <Td>
+                      <Link href={`/events/${correlation_id}`}>
+                        <a>{correlation_id}</a>
+                      </Link>
+                    </Td>
                     <Td>{added_at}</Td>
                   </Tr>
                 )
