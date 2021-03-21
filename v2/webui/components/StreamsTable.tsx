@@ -10,12 +10,14 @@ import {
   Link as UILink,
 } from '@chakra-ui/react';
 import Link from 'next/link';
+import dayjs from 'dayjs';
 
 export const StreamsTable = () => {
   const { data } = useQuery(gql`
     {
       streams {
         id
+        added_at
       }
     }
   `);
@@ -26,11 +28,11 @@ export const StreamsTable = () => {
         <Thead>
           <Tr>
             <Th>ID</Th>
-            {/* <Th>Size</Th> */}
+            <Th>Added At (D/M/Y)</Th>
           </Tr>
         </Thead>
         <Tbody>
-          {data?.streams.map(({ id }, index) => (
+          {data?.streams.map(({ id, added_at }, index) => (
             <Tr key={index}>
               <Td>
                 <UILink color="blue.400">
@@ -39,6 +41,7 @@ export const StreamsTable = () => {
                   </Link>
                 </UILink>
               </Td>
+              <Td>{dayjs(added_at).format('HH:mm:ss DD-MM-YYYY')}</Td>
             </Tr>
           ))}
         </Tbody>
