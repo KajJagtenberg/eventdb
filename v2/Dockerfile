@@ -19,6 +19,4 @@ FROM alpine:3.8
 
 COPY --from=build /src/bin/server /bin/eventflowdb
 
-COPY --from=webui /src/out/ webui/out
-
 CMD ["eventflowdb"]
