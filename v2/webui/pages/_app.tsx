@@ -3,7 +3,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { theme } from '../theme';
 
 const client = new ApolloClient({
-  uri: 'http://127.0.0.1:16543/graphql',
+  uri: 'http://127.0.0.1:16543/',
   cache: new InMemoryCache(),
 });
 

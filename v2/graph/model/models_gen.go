@@ -27,6 +27,7 @@ type RecordedEvent struct {
 	ID            string    `json:"id"`
 	Stream        string    `json:"stream"`
 	Version       int       `json:"version"`
+	Type          string    `json:"type"`
 	Data          string    `json:"data"`
 	Metadata      string    `json:"metadata"`
 	CausationID   string    `json:"causation_id"`

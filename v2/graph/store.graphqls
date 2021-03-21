@@ -2,6 +2,7 @@ type RecordedEvent {
   id: String!
   stream: String!
   version: Int!
+  type: String!
   data: String!
   metadata: String!
   causation_id: String!

@@ -13,8 +13,8 @@ export const StreamsTable = () => {
 
   return (
     <Flex m={4} p={4} bg="white">
-      <Table variant="simple">
-        <Thead size="sm">
+      <Table variant="simple" size="sm">
+        <Thead>
           <Tr>
             <Th>ID</Th>
             <Th>Size</Th>
