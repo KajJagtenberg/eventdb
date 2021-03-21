@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'next/router';
 import { gql, useQuery } from '@apollo/client';
 import Link from 'next/link';
+import dayjs from 'dayjs';
 
 const Stream = () => {
   const router = useRouter();
@@ -71,8 +72,17 @@ const Stream = () => {
                     causation_id,
                     correlation_id,
                     added_at,
+                  }: {
+                    id: string;
+                    version: number;
+                    type: string;
+                    data: string;
+                    metadata: string;
+                    causation_id: string;
+                    correlation_id: string;
+                    added_at: number;
                   },
-                  index
+                  index: number
                 ) => (
                   <Tr key={index}>
                     <Td>
@@ -100,7 +110,7 @@ const Stream = () => {
                         </Link>
                       </UILink>
                     </Td>
-                    <Td>{added_at}</Td>
+                    <Td>{dayjs(added_at).format('HH:mm:ss DD-MM-YYYY')}</Td>
                   </Tr>
                 )
               )}
