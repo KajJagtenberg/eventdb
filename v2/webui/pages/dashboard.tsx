@@ -7,6 +7,7 @@ import {
   Tab,
   TabPanel,
   Text,
+  Heading,
 } from '@chakra-ui/react';
 import { Layout } from '../components/Layout';
 import { Navbar } from '../components/Navbar';
@@ -32,7 +33,11 @@ const Dashboard = () => {
       <Flex h="100vh" bg="brand.500" flexDirection="column">
         <Navbar />
 
-        <Flex bg="white" m={4} p={4}>
+        <Flex bg="white" m={4} p={4} flexDirection="column">
+          <Heading size="md" mb={4} color="brand.400">
+            Dashboard
+          </Heading>
+
           <Tabs>
             <TabList>
               {tabList.map((name, index) => (
@@ -45,21 +50,21 @@ const Dashboard = () => {
             <TabPanels>
               <TabPanel>
                 <Flex>
-                  <Text fontWeight="semibold" mr={2}>
+                  <Text fontWeight="semibold" mr={2} color="brand.500">
                     Uptime:
                   </Text>
                   <Text>{data?.uptime}</Text>
                 </Flex>
 
                 <Flex>
-                  <Text fontWeight="semibold" mr={2}>
+                  <Text fontWeight="semibold" mr={2} color="brand.500">
                     Stream Count:
                   </Text>
                   <Text>{data?.streamCount}</Text>
                 </Flex>
 
                 <Flex>
-                  <Text fontWeight="semibold" mr={2}>
+                  <Text fontWeight="semibold" mr={2} color="brand.500">
                     Event Count:
                   </Text>
                   <Text>{data?.eventCount}</Text>
