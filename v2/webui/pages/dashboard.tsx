@@ -17,6 +17,7 @@ const Dashboard = () => {
   const { data } = useQuery(
     gql`
       {
+        uptime
         streamCount
         eventCount
       }
@@ -43,6 +44,13 @@ const Dashboard = () => {
 
             <TabPanels>
               <TabPanel>
+                <Flex>
+                  <Text fontWeight="semibold" mr={2}>
+                    Uptime:
+                  </Text>
+                  <Text>{data?.uptime}</Text>
+                </Flex>
+
                 <Flex>
                   <Text fontWeight="semibold" mr={2}>
                     Stream Count:

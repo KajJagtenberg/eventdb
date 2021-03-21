@@ -266,13 +266,16 @@ func (s *Storage) GetStreams(skip uint32, limit uint32) ([]*Stream, error) {
 				continue
 			}
 
-			stream := &Stream{}
+			stream := &RecordedStream{}
 
 			if err := proto.Unmarshal(v, stream); err != nil {
 				return nil
 			}
 
-			result = append(result, stream)
+			result = append(result, &Stream{
+				Id:      stream.Id,
+				AddedAt: stream.AddedAt,
+			})
 		}
 
 		return nil

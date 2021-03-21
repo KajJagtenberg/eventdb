@@ -61,6 +61,7 @@ message GetStreamsRequest {
 
 message Stream {
     bytes id = 1;
+    int64 added_at = 2;
 }
 
 message EventCountRequest {
