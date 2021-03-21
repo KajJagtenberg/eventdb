@@ -64,13 +64,13 @@ func main() {
 
 	log.Println("Setting up a cluster")
 
-	cluster, err := cluster.NewCluster()
+	cl, err := cluster.NewCluster()
 	if err != nil {
 		log.Fatalf("Failed to create cluster: %v", err)
 	}
-	defer cluster.Leave()
+	defer cl.Leave()
 
-	if err := cluster.Join(); err != nil {
+	if err := cl.Join(); err != nil {
 		log.Fatalf("Failed to join cluster: %v", err)
 	}
 
@@ -89,6 +89,7 @@ func main() {
 	log.Println("Initializing gRPC services")
 
 	store.RegisterEventStoreServer(grpcSrv, store.NewStoreService(storage))
+	cluster.RegisterClusterServiceServer(grpcSrv, cluster.NewClusterService(cl))
 
 	go func() {
 		log.Printf("Starting gRPC server on %s", grpcAddr)
@@ -117,7 +118,7 @@ func main() {
 
 	httpSrv.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/")))
 	httpSrv.Post("/", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
-		Cluster: cluster,
+		Cluster: cl,
 		Storage: storage,
 		Start:   time.Now(),
 	}}))))
