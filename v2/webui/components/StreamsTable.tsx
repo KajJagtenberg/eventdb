@@ -40,7 +40,7 @@ export const StreamsTable = () => {
 
   const result = data || previousData;
 
-  const lastPage = Math.ceil(result?.streamCount / limit);
+  const lastPage = Math.floor(result?.streamCount / limit);
 
   return (
     <Flex m={4} p={4} bg="white" flexDirection="column">

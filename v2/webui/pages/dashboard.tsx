@@ -1,4 +1,3 @@
-import { gql, useQuery } from '@apollo/client';
 import {
   Flex,
   Tabs,
@@ -6,28 +5,16 @@ import {
   TabPanels,
   Tab,
   TabPanel,
-  Text,
   Heading,
 } from '@chakra-ui/react';
+import { ClusterTab } from '../components/ClusterTab';
 import { Layout } from '../components/Layout';
 import { Navbar } from '../components/Navbar';
+import { OverviewTab } from '../components/OverviewTab';
 
 const tabList = ['Overview', 'Projections', 'Cluster', 'Security'];
 
 const Dashboard = () => {
-  const { data } = useQuery(
-    gql`
-      {
-        uptime
-        streamCount
-        eventCount
-      }
-    `,
-    {
-      pollInterval: 1000,
-    }
-  );
-
   return (
     <Layout title="EventflowDB">
       <Flex h="100vh" bg="brand.500" flexDirection="column">
@@ -49,32 +36,15 @@ const Dashboard = () => {
 
             <TabPanels>
               <TabPanel>
-                <Flex>
-                  <Text fontWeight="semibold" mr={2} color="brand.500">
-                    Uptime:
-                  </Text>
-                  <Text>{data?.uptime}</Text>
-                </Flex>
-
-                <Flex>
-                  <Text fontWeight="semibold" mr={2} color="brand.500">
-                    Stream Count:
-                  </Text>
-                  <Text>{data?.streamCount}</Text>
-                </Flex>
-
-                <Flex>
-                  <Text fontWeight="semibold" mr={2} color="brand.500">
-                    Event Count:
-                  </Text>
-                  <Text>{data?.eventCount}</Text>
-                </Flex>
+                <OverviewTab />
               </TabPanel>
+
               <TabPanel>
                 <p>two!</p>
               </TabPanel>
+
               <TabPanel>
-                <p>three!</p>
+                <ClusterTab />
               </TabPanel>
             </TabPanels>
           </Tabs>
