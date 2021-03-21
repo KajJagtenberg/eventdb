@@ -14,12 +14,8 @@ import (
 	"github.com/oklog/ulid"
 )
 
-var (
-	start = time.Now()
-)
-
 func (r *queryResolver) Uptime(ctx context.Context) (int, error) {
-	uptime := time.Now().Sub(start).Seconds()
+	uptime := time.Now().Sub(r.Start).Seconds()
 
 	return int(uptime), nil
 }
@@ -161,7 +157,8 @@ func (r *queryResolver) Streams(ctx context.Context, input model.StreamsInput) (
 		}
 
 		result = append(result, &model.Stream{
-			ID: id.String(),
+			ID:      id.String(),
+			AddedAt: time.Unix(0, stream.AddedAt),
 		})
 	}
 

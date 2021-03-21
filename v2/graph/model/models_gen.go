@@ -36,7 +36,8 @@ type RecordedEvent struct {
 }
 
 type Stream struct {
-	ID string `json:"id"`
+	ID      string    `json:"id"`
+	AddedAt time.Time `json:"added_at"`
 }
 
 type StreamsInput struct {

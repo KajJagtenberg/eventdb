@@ -131,6 +131,7 @@ func main() {
 	httpSrv.Post("/", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
 		Memberlist: cluster,
 		Storage:    storage,
+		Start:      time.Now(),
 	}}))))
 
 	go func() {

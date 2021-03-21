@@ -1,6 +1,8 @@
 package resolvers
 
 import (
+	"time"
+
 	"github.com/hashicorp/memberlist"
 	"github.com/kajjagtenberg/eventflowdb/store"
 )
@@ -12,4 +14,5 @@ import (
 type Resolver struct {
 	Memberlist *memberlist.Memberlist
 	Storage    *store.Storage
+	Start      time.Time
 }

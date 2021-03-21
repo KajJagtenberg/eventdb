@@ -30,6 +30,7 @@ input StreamsInput {
 
 type Stream {
   id: String!
+  added_at: Time!
 }
 
 extend type Query {
