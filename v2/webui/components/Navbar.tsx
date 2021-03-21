@@ -18,7 +18,7 @@ const links = [
 
 export const Navbar = () => {
   return (
-    <Flex bg="brand.600" h={10} color="white">
+    <Flex bg="brand.600" minH={10} color="white">
       <Flex alignItems="center" mx={4}>
         <Heading size="md">
           <Link href="/dashboard">
