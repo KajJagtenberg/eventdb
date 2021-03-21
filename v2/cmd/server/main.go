@@ -88,7 +88,7 @@ func main() {
 
 	log.Println("Initializing gRPC services")
 
-	store.RegisterEventStoreServer(grpcSrv, store.NewStoreService(storage))
+	store.RegisterStreamsServer(grpcSrv, store.NewEventStoreService(storage))
 	cluster.RegisterClusterServiceServer(grpcSrv, cluster.NewClusterService(cl))
 
 	go func() {

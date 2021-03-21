@@ -10,17 +10,13 @@ message ClusterNode {
     string address = 3;
 }
 
-message GetHealthScoreRequest {
-
-}
+message GetHealthScoreRequest {}
 
 message GetHealthScoreResponse {
     int32 healthscore = 1;
 }
 
-message GetNodesRequest {
-
-}
+message GetNodesRequest {}
 
 message GetNodesResponse {
     repeated ClusterNode nodes = 1;

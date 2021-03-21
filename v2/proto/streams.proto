@@ -46,9 +46,7 @@ message LogRequest {
     uint32 limit = 2;
 }
 
-message StreamCountRequest {
-
-}
+message StreamCountRequest {}
 
 message StreamCountResponse {
     uint64 count = 1;
@@ -64,19 +62,17 @@ message Stream {
     int64 added_at = 2;
 }
 
-message EventCountRequest {
-
-}
+message EventCountRequest {}
 
 message EventCountResponse {
     uint64 count = 1;
 }
 
-service EventStore {
+service Streams {
     rpc Add(AddRequest) returns (stream RecordedEvent) {}
     rpc Get(GetRequest) returns (stream RecordedEvent) {}
     rpc Log(LogRequest) returns (stream RecordedEvent) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
-    rpc GetStreams(GetStreamsRequest) returns (stream Stream) {} 
+    rpc GetStreams(GetStreamsRequest) returns (stream Stream) {}
 }

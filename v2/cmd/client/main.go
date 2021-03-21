@@ -25,22 +25,34 @@ func main() {
 
 	ctx := context.Background()
 
-	c := store.NewEventStoreClient(conn)
+	c := store.NewStreamsClient(conn)
 
-	result, err := c.GetStreams(ctx, &store.GetStreamsRequest{})
+	stream := uuid.New()
+
+	result, err := c.Add(ctx, &store.AddRequest{
+		Stream:  stream[:],
+		Version: 0,
+		Events: []*store.AddRequest_Event{
+			{
+				Type:     "TestEvent",
+				Data:     []byte("abcdefghijklmnopqrstuvw"),
+				Metadata: []byte("metadata"),
+			},
+		},
+	})
 	if err != nil {
-		log.Fatalf("Failed to perform request: %v", err)
+		log.Fatalf("Failed to add: %v", err)
 	}
 
 	for {
-		stream, err := result.Recv()
+		m, err := result.Recv()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Failed to receive message: %v", err)
+			log.Fatalf("Failed to read message: %v", err)
 		}
 
-		log.Println(uuid.FromBytes(stream.Id))
+		log.Println(m.String())
 	}
 }

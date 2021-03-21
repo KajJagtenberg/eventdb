@@ -1,12 +1,14 @@
 package store
 
-import "context"
+import (
+	"context"
+)
 
-type StoreService struct {
+type EventStoreService struct {
 	storage *Storage
 }
 
-func (s *StoreService) Add(req *AddRequest, stream EventStore_AddServer) error {
+func (s *EventStoreService) Add(req *AddRequest, stream Streams_AddServer) error {
 	events, err := s.storage.Add(req)
 	if err != nil {
 		return err
@@ -21,7 +23,7 @@ func (s *StoreService) Add(req *AddRequest, stream EventStore_AddServer) error {
 	return nil
 }
 
-func (s *StoreService) Get(req *GetRequest, stream EventStore_GetServer) error {
+func (s *EventStoreService) Get(req *GetRequest, stream Streams_GetServer) error {
 	events, err := s.storage.Get(req)
 	if err != nil {
 		return err
@@ -36,7 +38,7 @@ func (s *StoreService) Get(req *GetRequest, stream EventStore_GetServer) error {
 	return nil
 }
 
-func (s *StoreService) Log(req *LogRequest, stream EventStore_LogServer) error {
+func (s *EventStoreService) Log(req *LogRequest, stream Streams_LogServer) error {
 	events, err := s.storage.Log(req)
 	if err != nil {
 		return err
@@ -51,7 +53,7 @@ func (s *StoreService) Log(req *LogRequest, stream EventStore_LogServer) error {
 	return nil
 }
 
-func (s *StoreService) StreamCount(ctx context.Context, req *StreamCountRequest) (*StreamCountResponse, error) {
+func (s *EventStoreService) StreamCount(ctx context.Context, req *StreamCountRequest) (*StreamCountResponse, error) {
 	count, err := s.storage.StreamCount()
 	if err != nil {
 		return nil, err
@@ -60,7 +62,7 @@ func (s *StoreService) StreamCount(ctx context.Context, req *StreamCountRequest)
 	return &StreamCountResponse{Count: uint64(count)}, nil
 }
 
-func (s *StoreService) EventCount(ctx context.Context, req *EventCountRequest) (*EventCountResponse, error) {
+func (s *EventStoreService) EventCount(ctx context.Context, req *EventCountRequest) (*EventCountResponse, error) {
 	count, err := s.storage.EventCount()
 	if err != nil {
 		return nil, err
@@ -69,7 +71,7 @@ func (s *StoreService) EventCount(ctx context.Context, req *EventCountRequest) (
 	return &EventCountResponse{Count: uint64(count)}, nil
 }
 
-func (s *StoreService) GetStreams(req *GetStreamsRequest, result EventStore_GetStreamsServer) error {
+func (s *EventStoreService) GetStreams(req *GetStreamsRequest, result Streams_GetStreamsServer) error {
 	streams, err := s.storage.GetStreams(req.Skip, req.Limit)
 	if err != nil {
 		return err
@@ -84,6 +86,6 @@ func (s *StoreService) GetStreams(req *GetStreamsRequest, result EventStore_GetS
 	return nil
 }
 
-func NewStoreService(storage *Storage) *StoreService {
-	return &StoreService{storage}
+func NewEventStoreService(storage *Storage) *EventStoreService {
+	return &EventStoreService{storage}
 }
