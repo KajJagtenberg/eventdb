@@ -14,6 +14,16 @@ import (
 	"github.com/oklog/ulid"
 )
 
+var (
+	start = time.Now()
+)
+
+func (r *queryResolver) Uptime(ctx context.Context) (int, error) {
+	uptime := time.Now().Sub(start).Seconds()
+
+	return int(uptime), nil
+}
+
 func (r *queryResolver) StreamCount(ctx context.Context) (int, error) {
 	streamCount, err := r.Storage.StreamCount()
 	if err != nil {

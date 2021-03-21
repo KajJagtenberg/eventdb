@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		Nodes       func(childComplexity int) int
 		StreamCount func(childComplexity int) int
 		Streams     func(childComplexity int, input model.StreamsInput) int
+		Uptime      func(childComplexity int) int
 	}
 
 	RecordedEvent struct {
@@ -79,6 +80,7 @@ type ComplexityRoot struct {
 type QueryResolver interface {
 	Healthscore(ctx context.Context) (int, error)
 	Nodes(ctx context.Context) ([]*model.ClusterNode, error)
+	Uptime(ctx context.Context) (int, error)
 	StreamCount(ctx context.Context) (int, error)
 	EventCount(ctx context.Context) (int, error)
 	Get(ctx context.Context, input model.GetInput) ([]*model.RecordedEvent, error)
@@ -185,6 +187,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Streams(childComplexity, args["input"].(model.StreamsInput)), true
+
+	case "Query.uptime":
+		if e.complexity.Query.Uptime == nil {
+			break
+		}
+
+		return e.complexity.Query.Uptime(childComplexity), true
 
 	case "RecordedEvent.added_at":
 		if e.complexity.RecordedEvent.AddedAt == nil {
@@ -352,6 +361,7 @@ type Stream {
 }
 
 extend type Query {
+  uptime: Int!
   streamCount: Int!
   eventCount: Int!
   get(input: GetInput! = {}): [RecordedEvent!]!
@@ -637,6 +647,41 @@ func (ec *executionContext) _Query_nodes(ctx context.Context, field graphql.Coll
 	res := resTmp.([]*model.ClusterNode)
 	fc.Result = res
 	return ec.marshalNClusterNode2ᚕᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNodeᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_uptime(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Uptime(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_streamCount(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2526,6 +2571,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_nodes(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "uptime":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_uptime(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
