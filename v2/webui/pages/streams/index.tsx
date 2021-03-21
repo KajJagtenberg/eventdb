@@ -1,7 +1,7 @@
 import { Flex } from '@chakra-ui/react';
-import { Layout } from '../components/Layout';
-import { Navbar } from '../components/Navbar';
-import { StreamsTable } from '../components/StreamsTable';
+import { Layout } from '../../components/Layout';
+import { Navbar } from '../../components/Navbar';
+import { StreamsTable } from '../../components/StreamsTable';
 
 const Streams = () => {
   return (

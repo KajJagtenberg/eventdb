@@ -14,7 +14,6 @@ import (
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/hashicorp/memberlist"
 	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/env"
@@ -124,10 +123,6 @@ func main() {
 		IdleTimeout:           time.Second * 10,
 	})
 	httpSrv.Use(cors.New())
-	httpSrv.Static("/", "webui/out", fiber.Static{
-		Compress: true,
-	})
-	httpSrv.Use(logger.New())
 	httpSrv.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	log.Println("Initializing GraphQL")
@@ -138,9 +133,13 @@ func main() {
 		Storage:    storage,
 	}}))))
 
-	httpSrv.Get("*", func(c *fiber.Ctx) error {
-		return c.Redirect("/404")
+	httpSrv.Static("/", "webui/out", fiber.Static{
+		Compress: true,
 	})
+
+	// httpSrv.Get("*", func(c *fiber.Ctx) error {
+	// 	return c.SendFile("webui/out/index.html")
+	// })
 
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
