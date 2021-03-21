@@ -133,12 +133,87 @@ func main() {
 		Storage:    storage,
 		Start:      time.Now(),
 	}}))))
+	httpSrv.Get("/backup", func(c *fiber.Ctx) error {
+		c.Set("Content-Type", "application/octet-stream")
+		c.Set("Content-Disposition", "attachment;filename=backup.db")
+
+		return storage.Backup(c.Response().BodyWriter())
+	})
 
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
 
 		httpSrv.Listen(httpAddr)
 	}()
+
+	/*go func() {
+		types := []string{"ProductAdded", "UserRegistered", "CashDeposited", "CashWithdrawn", "UserLocked", "UserDeleted", "ProductDiscontinued"}
+
+		faker := faker.New(rand.Int63())
+
+		for {
+			stream := uuid.New()
+
+			event := &store.AddRequest_Event{
+				Type: types[rand.Intn(len(types))],
+			}
+
+			var data interface{}
+
+			switch event.Type {
+			case "ProductAdded":
+				data = struct {
+					Name  string `fake:"{carModel}" json:"name"`
+					Brand string `fake:"{company}" json:"brand"`
+					Price int    `fake:"{price:100,10000}" json:"price"`
+				}{}
+			case "UserRegistered":
+				data = struct {
+					Firstname string `fake:"{firstname}" json:"firstname"`
+					Lastname  string `fake:"{lastname}" json:"lastname"`
+					Email     string `fake:"{email}" json:"email"`
+					Phone     string `fake:"{phone}" json:"phone"`
+				}{}
+			case "CashDeposited":
+				data = struct {
+					Amount int `fake:"{price:100,10000}" json:"amount"`
+				}{}
+			case "CashWithdrawn":
+				data = struct {
+					Amount int `fake:"{price:100,10000}" json:"amount"`
+				}{}
+			case "UserLocked":
+				data = struct{}{}
+			case "UserDeleted":
+				data = struct{}{}
+			case "ProductDiscontinued":
+				data = struct{}{}
+			default:
+				data = struct{}{}
+			}
+
+			faker.Struct(&data)
+			raw, err := json.Marshal(&data)
+			if err != nil {
+				log.Fatalf("Failed to marshal: %v", err)
+			}
+			event.Data = raw
+
+			go func() {
+				if _, err := storage.Add(&store.AddRequest{
+					Stream:  stream[:],
+					Version: 0,
+					Events: []*store.AddRequest_Event{
+						event,
+					},
+				}); err != nil {
+					log.Fatalf("Failed to add event: %v", err)
+				}
+			}()
+
+			time.Sleep(time.Millisecond * 1)
+		}
+	}()*/
 
 	////////////////
 	//  Shutdown  //

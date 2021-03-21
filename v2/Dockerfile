@@ -13,7 +13,7 @@ COPY . .
 
 RUN go test ./tests
 
-RUN GOOS=linux go build -o bin/server cmd/server/main.go
+RUN go build -o bin/server cmd/server/main.go
 
 FROM alpine:3.8
 

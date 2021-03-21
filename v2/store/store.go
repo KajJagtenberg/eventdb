@@ -3,6 +3,7 @@ package store
 import (
 	"bytes"
 	"errors"
+	"io"
 	"log"
 	"math/rand"
 	"time"
@@ -284,6 +285,13 @@ func (s *Storage) GetStreams(skip uint32, limit uint32) ([]*Stream, error) {
 	}
 
 	return result, nil
+}
+
+func (s *Storage) Backup(dst io.Writer) error {
+	return s.db.View(func(t *bbolt.Tx) error {
+		_, err := t.WriteTo(dst)
+		return err
+	})
 }
 
 func NewStorage(db *bbolt.DB) (*Storage, error) {
