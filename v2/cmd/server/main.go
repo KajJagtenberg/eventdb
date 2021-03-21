@@ -133,14 +133,6 @@ func main() {
 		Storage:    storage,
 	}}))))
 
-	httpSrv.Static("/", "webui/out", fiber.Static{
-		Compress: true,
-	})
-
-	// httpSrv.Get("*", func(c *fiber.Ctx) error {
-	// 	return c.SendFile("webui/out/index.html")
-	// })
-
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
 
