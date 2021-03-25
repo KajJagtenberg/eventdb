@@ -7,3 +7,4 @@ webui/node_modules
 docker-compose.yml
 *.db
 webui
+data

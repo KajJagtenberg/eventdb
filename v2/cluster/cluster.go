@@ -14,7 +14,7 @@ type Cluster struct {
 	raft *raft.Raft
 }
 
-func NewCluster(localID string, bindAddr string, advrAddr string, fsm raft.FSM) (*Cluster, error) {
+func NewCluster(localID string, bindAddr string, advrAddr string, fsm raft.FSM, bootstrap bool) (*Cluster, error) {
 	config := raft.DefaultConfig()
 	config.LocalID = raft.ServerID(localID)
 
@@ -48,6 +48,20 @@ func NewCluster(localID string, bindAddr string, advrAddr string, fsm raft.FSM) 
 		if err != nil {
 			return nil, fmt.Errorf("Failed to create Raft: %v", err)
 		}
+	}
+
+	if bootstrap {
+		configuration := raft.Configuration{
+			Servers: []raft.Server{
+				{
+					Suffrage: raft.Voter,
+					ID:       raft.ServerID(localID),
+					Address:  raft.ServerAddress(advrAddr),
+				},
+			},
+		}
+
+		raftServer.BootstrapCluster(configuration)
 	}
 
 	return &Cluster{raftServer}, nil
