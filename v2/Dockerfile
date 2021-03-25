@@ -17,7 +17,9 @@ RUN go build -o bin/server cmd/server/main.go
 
 FROM alpine:3.8
 
-RUN mkdir /var/lib/eventflowdb
+WORKDIR /var/lib/eventflowdb
+
+RUN mkdir data
 
 COPY --from=build /src/bin/server /bin/eventflowdb
 

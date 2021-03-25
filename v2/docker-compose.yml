@@ -3,33 +3,34 @@ version: "3"
 services:
   node1:
     container_name: eventflowdb1
-    build: .
-    restart: unless-stopped
+    image: eventflowdb
+    # restart: unless-stopped
     environment:
-      - EXISTING_NODES=node2,node3
-      - EVENTS_FILE=/var/lib/eventflowdb/events.db
+      - RAFT_LOCAL_ID=node1
+      - RAFT_ADVR_ADDR=node1:6542
     volumes:
       - node1:/var/lib/eventflowdb
 
   node2:
     container_name: eventflowdb2
-    build: .
-    restart: unless-stopped
+    image: eventflowdb
+    # restart: unless-stopped
     environment:
-      - EXISTING_NODES=node1,node3
-      - EVENTS_FILE=/var/lib/eventflowdb/events.db
+      - RAFT_LOCAL_ID=node2
+      - RAFT_ADVR_ADDR=node2:6542
     volumes:
       - node2:/var/lib/eventflowdb
 
-  # node3:
-  #   container_name: eventflowdb3
-  #   build: .
-  #   restart: unless-stopped
-  #   environment:
-  #     - EXISTING_NODES=node1,node2
-  #     - EVENTS_FILE=/var/lib/eventflowdb/events.db
-  #   volumes:
-  #     - node3:/var/lib/eventflowdb
+  node3:
+    container_name: eventflowdb3
+    image: eventflowdb
+    # restart: unless-stopped
+    environment:
+      - RAFT_LOCAL_ID=node3
+      - RAFT_ADVR_ADDR=node3:6542
+      - RAFT_BOOTSTRAP=true
+    volumes:
+      - node3:/var/lib/eventflowdb
 
 volumes:
   node1:

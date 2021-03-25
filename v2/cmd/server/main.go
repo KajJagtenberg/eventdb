@@ -46,7 +46,7 @@ func main() {
 
 	grpcAddr := env.GetEnv("GRPC_LISTENER", ":6543")
 	httpAddr := env.GetEnv("HTTP_LISTENER", ":16543")
-	eventsFile := env.GetEnv("EVENTS_FILE", "events.db")
+	eventsFile := env.GetEnv("EVENTS_FILE", "data/events.db")
 
 	///////////////
 	//  Storage  //
@@ -54,9 +54,9 @@ func main() {
 
 	log.Printf("Initializing Storage service at: %v", eventsFile)
 
-	db, err := bbolt.Open(eventsFile, 0777, nil)
+	db, err := bbolt.Open(eventsFile, 0666, nil)
 	if err != nil {
-		log.Fatalf("Failed to initialize Storage service: %v", err)
+		log.Fatalf("Failed to initialize database file: %v", err)
 	}
 	defer db.Close()
 
