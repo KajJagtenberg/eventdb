@@ -1,7 +1,9 @@
 package cluster
 
+import "github.com/hashicorp/raft"
+
 type FSM struct{}
 
-func NewFSM() (*FSM, error) {
-	return &FSM{}, nil
+func NewFSM() (raft.FSM, error) {
+	return &raft.MockFSM{}, nil
 }

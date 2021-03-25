@@ -10,11 +10,7 @@ import (
 	raftboltdb "github.com/hashicorp/raft-boltdb"
 )
 
-type Cluster struct {
-	raft *raft.Raft
-}
-
-func NewCluster(localID string, bindAddr string, advrAddr string, fsm raft.FSM, bootstrap bool) (*Cluster, error) {
+func NewRaftServer(localID string, bindAddr string, advrAddr string, fsm raft.FSM, bootstrap bool) (*raft.Raft, error) {
 	config := raft.DefaultConfig()
 	config.LocalID = raft.ServerID(localID)
 
@@ -64,5 +60,5 @@ func NewCluster(localID string, bindAddr string, advrAddr string, fsm raft.FSM, 
 		raftServer.BootstrapCluster(configuration)
 	}
 
-	return &Cluster{raftServer}, nil
+	return raftServer, nil
 }

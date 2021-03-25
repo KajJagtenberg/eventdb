@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
+	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
@@ -21,6 +22,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
 	"google.golang.org/grpc"
+)
+
+var (
+	localID   = env.GetEnv("RAFT_LOCAL_ID", "")
+	bindAddr  = env.GetEnv("RAFT_BIND_ADDR", ":6542")
+	advrAddr  = env.GetEnv("RAFT_ADVR_ADDR", bindAddr)
+	bootstrap = env.GetEnv("RAFT_BOOTSTRAP", "false") == "true"
 )
 
 func main() {
@@ -61,7 +69,19 @@ func main() {
 	//  Cluster  //
 	///////////////
 
-	// TODO: Add Raft
+	if len(bindAddr) == 0 {
+		log.Fatal("RAFT_BIND_ADDR cannot be empty")
+	}
+
+	fsm, err := cluster.NewFSM()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	raftServer, err := cluster.NewRaftServer(localID, bindAddr, advrAddr, fsm, bootstrap)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	////////////
 	//  gRPC  //
@@ -116,80 +136,19 @@ func main() {
 		return storage.Backup(c.Response().BodyWriter())
 	})
 
+	//
+
+	httpSrv.Get("/cluster", func(c *fiber.Ctx) error {
+		return c.JSON(raftServer.Stats())
+	})
+
+	//
+
 	go func() {
 		log.Printf("Starting HTTP server on %s", httpAddr)
 
 		httpSrv.Listen(httpAddr)
 	}()
-
-	/*go func() {
-		types := []string{"ProductAdded", "UserRegistered", "CashDeposited", "CashWithdrawn", "UserLocked", "UserDeleted", "ProductDiscontinued"}
-
-		faker := faker.New(rand.Int63())
-
-		for {
-			stream := uuid.New()
-
-			event := &store.AddRequest_Event{
-				Type: types[rand.Intn(len(types))],
-			}
-
-			var data interface{}
-
-			switch event.Type {
-			case "ProductAdded":
-				data = struct {
-					Name  string `fake:"{carModel}" json:"name"`
-					Brand string `fake:"{company}" json:"brand"`
-					Price int    `fake:"{price:100,10000}" json:"price"`
-				}{}
-			case "UserRegistered":
-				data = struct {
-					Firstname string `fake:"{firstname}" json:"firstname"`
-					Lastname  string `fake:"{lastname}" json:"lastname"`
-					Email     string `fake:"{email}" json:"email"`
-					Phone     string `fake:"{phone}" json:"phone"`
-				}{}
-			case "CashDeposited":
-				data = struct {
-					Amount int `fake:"{price:100,10000}" json:"amount"`
-				}{}
-			case "CashWithdrawn":
-				data = struct {
-					Amount int `fake:"{price:100,10000}" json:"amount"`
-				}{}
-			case "UserLocked":
-				data = struct{}{}
-			case "UserDeleted":
-				data = struct{}{}
-			case "ProductDiscontinued":
-				data = struct{}{}
-			default:
-				data = struct{}{}
-			}
-
-			faker.Struct(&data)
-			raw, err := json.Marshal(&data)
-			if err != nil {
-				log.Fatalf("Failed to marshal: %v", err)
-			}
-			event.Data = raw
-
-			go func() {
-				if _, err := storage.Add(&store.AddRequest{
-					Stream:  stream[:],
-					Version: 0,
-					Events: []*store.AddRequest_Event{
-						event,
-					},
-				}); err != nil {
-					log.Fatalf("Failed to add event: %v", err)
-				}
-			}()
-
-			time.Sleep(time.Millisecond * 1)
-		}
-	}()*/
 
 	////////////////
 	//  Shutdown  //
