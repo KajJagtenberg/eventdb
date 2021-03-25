@@ -1,9 +1,32 @@
 package cluster
 
-import "github.com/hashicorp/raft"
+import (
+	"io"
+	"log"
+
+	"github.com/hashicorp/raft"
+)
 
 type FSM struct{}
 
+func (fsm *FSM) Apply(applyLog *raft.Log) interface{} {
+	switch applyLog.Type {
+	case raft.LogCommand:
+	default:
+		log.Println("Type:", applyLog.Type)
+	}
+
+	return nil
+}
+
+func (fsm *FSM) Snapshot() (raft.FSMSnapshot, error) {
+	return nil, nil
+}
+
+func (fsm *FSM) Restore(io.ReadCloser) error {
+	return nil
+}
+
 func NewFSM() (raft.FSM, error) {
-	return &raft.MockFSM{}, nil
+	return &FSM{}, nil
 }
