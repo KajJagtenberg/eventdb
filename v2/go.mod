@@ -8,7 +8,6 @@ require (
 	github.com/gofiber/fiber/v2 v2.6.0
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
-	github.com/hashicorp/memberlist v0.2.2
 	github.com/hashicorp/raft v1.2.0
 	github.com/hashicorp/raft-boltdb v0.0.0-20191021154308-4207f1bf0617
 	github.com/joho/godotenv v1.3.0
