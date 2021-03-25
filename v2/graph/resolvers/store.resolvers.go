@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/model"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
@@ -164,3 +165,8 @@ func (r *queryResolver) Streams(ctx context.Context, input model.StreamsInput) (
 
 	return result, nil
 }
+
+// Query returns generated.QueryResolver implementation.
+func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
+
+type queryResolver struct{ *Resolver }

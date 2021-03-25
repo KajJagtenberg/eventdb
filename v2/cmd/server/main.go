@@ -14,7 +14,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
-	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
@@ -62,17 +61,7 @@ func main() {
 	//  Cluster  //
 	///////////////
 
-	log.Println("Setting up a cluster")
-
-	cl, err := cluster.NewCluster()
-	if err != nil {
-		log.Fatalf("Failed to create cluster: %v", err)
-	}
-	defer cl.Leave()
-
-	if err := cl.Join(); err != nil {
-		log.Fatalf("Failed to join cluster: %v", err)
-	}
+	// TODO: Add Raft
 
 	////////////
 	//  gRPC  //
@@ -89,7 +78,6 @@ func main() {
 	log.Println("Initializing gRPC services")
 
 	store.RegisterStreamsServer(grpcSrv, store.NewEventStoreService(storage))
-	cluster.RegisterClusterServiceServer(grpcSrv, cluster.NewClusterService(cl))
 
 	go func() {
 		log.Printf("Starting gRPC server on %s", grpcAddr)
@@ -118,7 +106,6 @@ func main() {
 
 	httpSrv.Get("/", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/")))
 	httpSrv.Post("/", adaptor.HTTPHandler(handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &resolvers.Resolver{
-		Cluster: cl,
 		Storage: storage,
 		Start:   time.Now(),
 	}}))))

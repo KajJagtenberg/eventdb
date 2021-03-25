@@ -6,12 +6,6 @@ import (
 	"time"
 )
 
-type ClusterNode struct {
-	IP      string `json:"ip"`
-	Port    int    `json:"port"`
-	Address string `json:"address"`
-}
-
 type GetInput struct {
 	Stream  string `json:"stream"`
 	Version int    `json:"version"`

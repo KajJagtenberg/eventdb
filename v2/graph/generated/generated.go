@@ -43,18 +43,10 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	ClusterNode struct {
-		Address func(childComplexity int) int
-		IP      func(childComplexity int) int
-		Port    func(childComplexity int) int
-	}
-
 	Query struct {
 		EventCount  func(childComplexity int) int
 		Get         func(childComplexity int, input model.GetInput) int
-		Healthscore func(childComplexity int) int
 		Log         func(childComplexity int, input model.LogInput) int
-		Nodes       func(childComplexity int) int
 		StreamCount func(childComplexity int) int
 		Streams     func(childComplexity int, input model.StreamsInput) int
 		Uptime      func(childComplexity int) int
@@ -79,8 +71,6 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
-	Healthscore(ctx context.Context) (int, error)
-	Nodes(ctx context.Context) ([]*model.ClusterNode, error)
 	Uptime(ctx context.Context) (int, error)
 	StreamCount(ctx context.Context) (int, error)
 	EventCount(ctx context.Context) (int, error)
@@ -104,27 +94,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "ClusterNode.address":
-		if e.complexity.ClusterNode.Address == nil {
-			break
-		}
-
-		return e.complexity.ClusterNode.Address(childComplexity), true
-
-	case "ClusterNode.ip":
-		if e.complexity.ClusterNode.IP == nil {
-			break
-		}
-
-		return e.complexity.ClusterNode.IP(childComplexity), true
-
-	case "ClusterNode.port":
-		if e.complexity.ClusterNode.Port == nil {
-			break
-		}
-
-		return e.complexity.ClusterNode.Port(childComplexity), true
-
 	case "Query.eventCount":
 		if e.complexity.Query.EventCount == nil {
 			break
@@ -144,13 +113,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Get(childComplexity, args["input"].(model.GetInput)), true
 
-	case "Query.healthscore":
-		if e.complexity.Query.Healthscore == nil {
-			break
-		}
-
-		return e.complexity.Query.Healthscore(childComplexity), true
-
 	case "Query.log":
 		if e.complexity.Query.Log == nil {
 			break
@@ -162,13 +124,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Log(childComplexity, args["input"].(model.LogInput)), true
-
-	case "Query.nodes":
-		if e.complexity.Query.Nodes == nil {
-			break
-		}
-
-		return e.complexity.Query.Nodes(childComplexity), true
 
 	case "Query.streamCount":
 		if e.complexity.Query.StreamCount == nil {
@@ -323,17 +278,6 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/cluster.graphqls", Input: `type ClusterNode {
-  ip: String!
-  port: Int!
-  address: String!
-}
-
-extend type Query {
-  healthscore: Int!
-  nodes: [ClusterNode!]!
-}
-`, BuiltIn: false},
 	{Name: "graph/store.graphqls", Input: `type RecordedEvent {
   id: String!
   stream: String!
@@ -482,181 +426,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
-
-func (ec *executionContext) _ClusterNode_ip(ctx context.Context, field graphql.CollectedField, obj *model.ClusterNode) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ClusterNode",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.IP, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ClusterNode_port(ctx context.Context, field graphql.CollectedField, obj *model.ClusterNode) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ClusterNode",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Port, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _ClusterNode_address(ctx context.Context, field graphql.CollectedField, obj *model.ClusterNode) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "ClusterNode",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Address, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_healthscore(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Healthscore(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_nodes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Nodes(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*model.ClusterNode)
-	fc.Result = res
-	return ec.marshalNClusterNode2ᚕᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNodeᚄ(ctx, field.Selections, res)
-}
 
 func (ec *executionContext) _Query_uptime(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
@@ -2540,43 +2309,6 @@ func (ec *executionContext) unmarshalInputStreamsInput(ctx context.Context, obj 
 
 // region    **************************** object.gotpl ****************************
 
-var clusterNodeImplementors = []string{"ClusterNode"}
-
-func (ec *executionContext) _ClusterNode(ctx context.Context, sel ast.SelectionSet, obj *model.ClusterNode) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, clusterNodeImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("ClusterNode")
-		case "ip":
-			out.Values[i] = ec._ClusterNode_ip(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "port":
-			out.Values[i] = ec._ClusterNode_port(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "address":
-			out.Values[i] = ec._ClusterNode_address(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -2592,34 +2324,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "healthscore":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_healthscore(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "nodes":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_nodes(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
 		case "uptime":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -3076,53 +2780,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) marshalNClusterNode2ᚕᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNodeᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.ClusterNode) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNClusterNode2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNode(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-	return ret
-}
-
-func (ec *executionContext) marshalNClusterNode2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐClusterNode(ctx context.Context, sel ast.SelectionSet, v *model.ClusterNode) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._ClusterNode(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNGetInput2githubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐGetInput(ctx context.Context, v interface{}) (model.GetInput, error) {
