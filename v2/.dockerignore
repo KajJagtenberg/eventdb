@@ -3,7 +3,6 @@
 .dockerignore
 Dockerfile
 Makefile
-webui/node_modules
 docker-compose.yml
 webui
 data
