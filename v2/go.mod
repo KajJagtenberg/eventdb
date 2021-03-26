@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/gofiber/adaptor/v2 v2.1.1
 	github.com/gofiber/fiber/v2 v2.6.0
+	github.com/gofiber/helmet/v2 v2.1.0
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/raft v1.2.0

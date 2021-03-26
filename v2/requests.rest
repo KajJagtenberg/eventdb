@@ -1,0 +1,7 @@
+POST http://127.0.0.1:3000/set
+Content-Type: application/json
+
+{
+    "key": "x",
+    "value": "Hello, world!"
+}
