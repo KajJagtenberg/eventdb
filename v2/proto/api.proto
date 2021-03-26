@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package="api";
+
+package api;
+
+message AddEventsRequest {}
+
+message AddEventsResponse {}
+
+message GetEventsRequest {}
+
+message GetEventsResponse {}
+
+message LogEventsRequest {}
+
+message LogEventsResponse {}
+
+service StreamService {
+    rpc AddEvents(AddEventsRequest) returns (AddEventsResponse) {}
+    rpc GetEvents(GetEventsRequest) returns (GetEventsResponse) {}
+    rpc LogEvents(LogEventsRequest) returns (LogEventsResponse) {}
+}
