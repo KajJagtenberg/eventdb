@@ -1,6 +1,7 @@
 package cluster
 
 import (
+	"errors"
 	"io"
 	"log"
 
@@ -35,11 +36,11 @@ func (fsm *FSM) Apply(applyLog *raft.Log) interface{} {
 }
 
 func (fsm *FSM) Snapshot() (raft.FSMSnapshot, error) {
-	return nil, nil
+	return nil, errors.New("Not implemented")
 }
 
 func (fsm *FSM) Restore(io.ReadCloser) error {
-	return nil
+	return errors.New("Not implemented")
 }
 
 func NewFSM(db *bbolt.DB) (*FSM, error) {
