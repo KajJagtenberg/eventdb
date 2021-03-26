@@ -12,6 +12,7 @@ type FSM struct{}
 func (fsm *FSM) Apply(applyLog *raft.Log) interface{} {
 	switch applyLog.Type {
 	case raft.LogCommand:
+		log.Println("Log command")
 	default:
 		log.Println("Type:", applyLog.Type)
 	}
