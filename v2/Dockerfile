@@ -11,15 +11,13 @@ RUN go mod download
 
 COPY . .
 
-RUN go test ./tests
-
 RUN go build -o bin/server cmd/server/main.go
 
 FROM alpine:3.8
 
 WORKDIR /var/lib/eventflowdb
 
-RUN mkdir data
+RUN mkdir data -p
 
 COPY --from=build /src/bin/server /bin/eventflowdb
 
