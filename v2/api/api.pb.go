@@ -24,17 +24,123 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type AddEventsRequest struct {
+type Event struct {
+	Id                   []byte   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Stream               []byte   `protobuf:"bytes,2,opt,name=stream,proto3" json:"stream,omitempty"`
+	Version              uint32   `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
+	Type                 string   `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
+	Data                 []byte   `protobuf:"bytes,5,opt,name=data,proto3" json:"data,omitempty"`
+	Metadata             []byte   `protobuf:"bytes,6,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	CausationId          []byte   `protobuf:"bytes,7,opt,name=causation_id,json=causationId,proto3" json:"causation_id,omitempty"`
+	CorrelationId        []byte   `protobuf:"bytes,8,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"`
+	AddedAt              int64    `protobuf:"varint,9,opt,name=added_at,json=addedAt,proto3" json:"added_at,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Event) Reset()         { *m = Event{} }
+func (m *Event) String() string { return proto.CompactTextString(m) }
+func (*Event) ProtoMessage()    {}
+func (*Event) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{0}
+}
+
+func (m *Event) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Event.Unmarshal(m, b)
+}
+func (m *Event) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Event.Marshal(b, m, deterministic)
+}
+func (m *Event) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Event.Merge(m, src)
+}
+func (m *Event) XXX_Size() int {
+	return xxx_messageInfo_Event.Size(m)
+}
+func (m *Event) XXX_DiscardUnknown() {
+	xxx_messageInfo_Event.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Event proto.InternalMessageInfo
+
+func (m *Event) GetId() []byte {
+	if m != nil {
+		return m.Id
+	}
+	return nil
+}
+
+func (m *Event) GetStream() []byte {
+	if m != nil {
+		return m.Stream
+	}
+	return nil
+}
+
+func (m *Event) GetVersion() uint32 {
+	if m != nil {
+		return m.Version
+	}
+	return 0
+}
+
+func (m *Event) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
+func (m *Event) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *Event) GetMetadata() []byte {
+	if m != nil {
+		return m.Metadata
+	}
+	return nil
+}
+
+func (m *Event) GetCausationId() []byte {
+	if m != nil {
+		return m.CausationId
+	}
+	return nil
+}
+
+func (m *Event) GetCorrelationId() []byte {
+	if m != nil {
+		return m.CorrelationId
+	}
+	return nil
+}
+
+func (m *Event) GetAddedAt() int64 {
+	if m != nil {
+		return m.AddedAt
+	}
+	return 0
+}
+
+type AddEventsRequest struct {
+	Stream               []byte                        `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
+	Version              uint32                        `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	Events               []*AddEventsRequest_EventData `protobuf:"bytes,3,rep,name=events,proto3" json:"events,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
+	XXX_unrecognized     []byte                        `json:"-"`
+	XXX_sizecache        int32                         `json:"-"`
 }
 
 func (m *AddEventsRequest) Reset()         { *m = AddEventsRequest{} }
 func (m *AddEventsRequest) String() string { return proto.CompactTextString(m) }
 func (*AddEventsRequest) ProtoMessage()    {}
 func (*AddEventsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{0}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{1}
 }
 
 func (m *AddEventsRequest) XXX_Unmarshal(b []byte) error {
@@ -55,7 +161,100 @@ func (m *AddEventsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_AddEventsRequest proto.InternalMessageInfo
 
+func (m *AddEventsRequest) GetStream() []byte {
+	if m != nil {
+		return m.Stream
+	}
+	return nil
+}
+
+func (m *AddEventsRequest) GetVersion() uint32 {
+	if m != nil {
+		return m.Version
+	}
+	return 0
+}
+
+func (m *AddEventsRequest) GetEvents() []*AddEventsRequest_EventData {
+	if m != nil {
+		return m.Events
+	}
+	return nil
+}
+
+type AddEventsRequest_EventData struct {
+	Type                 string   `protobuf:"bytes,1,opt,name=type,proto3" json:"type,omitempty"`
+	Data                 []byte   `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	Metadata             []byte   `protobuf:"bytes,3,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	CausationId          []byte   `protobuf:"bytes,4,opt,name=causation_id,json=causationId,proto3" json:"causation_id,omitempty"`
+	CorrelationId        []byte   `protobuf:"bytes,5,opt,name=correlation_id,json=correlationId,proto3" json:"correlation_id,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *AddEventsRequest_EventData) Reset()         { *m = AddEventsRequest_EventData{} }
+func (m *AddEventsRequest_EventData) String() string { return proto.CompactTextString(m) }
+func (*AddEventsRequest_EventData) ProtoMessage()    {}
+func (*AddEventsRequest_EventData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{1, 0}
+}
+
+func (m *AddEventsRequest_EventData) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_AddEventsRequest_EventData.Unmarshal(m, b)
+}
+func (m *AddEventsRequest_EventData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_AddEventsRequest_EventData.Marshal(b, m, deterministic)
+}
+func (m *AddEventsRequest_EventData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_AddEventsRequest_EventData.Merge(m, src)
+}
+func (m *AddEventsRequest_EventData) XXX_Size() int {
+	return xxx_messageInfo_AddEventsRequest_EventData.Size(m)
+}
+func (m *AddEventsRequest_EventData) XXX_DiscardUnknown() {
+	xxx_messageInfo_AddEventsRequest_EventData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_AddEventsRequest_EventData proto.InternalMessageInfo
+
+func (m *AddEventsRequest_EventData) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
+func (m *AddEventsRequest_EventData) GetData() []byte {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+func (m *AddEventsRequest_EventData) GetMetadata() []byte {
+	if m != nil {
+		return m.Metadata
+	}
+	return nil
+}
+
+func (m *AddEventsRequest_EventData) GetCausationId() []byte {
+	if m != nil {
+		return m.CausationId
+	}
+	return nil
+}
+
+func (m *AddEventsRequest_EventData) GetCorrelationId() []byte {
+	if m != nil {
+		return m.CorrelationId
+	}
+	return nil
+}
+
 type AddEventsResponse struct {
+	Events               []*Event `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -65,7 +264,7 @@ func (m *AddEventsResponse) Reset()         { *m = AddEventsResponse{} }
 func (m *AddEventsResponse) String() string { return proto.CompactTextString(m) }
 func (*AddEventsResponse) ProtoMessage()    {}
 func (*AddEventsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{1}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{2}
 }
 
 func (m *AddEventsResponse) XXX_Unmarshal(b []byte) error {
@@ -86,7 +285,17 @@ func (m *AddEventsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_AddEventsResponse proto.InternalMessageInfo
 
+func (m *AddEventsResponse) GetEvents() []*Event {
+	if m != nil {
+		return m.Events
+	}
+	return nil
+}
+
 type GetEventsRequest struct {
+	Stream               []byte   `protobuf:"bytes,1,opt,name=stream,proto3" json:"stream,omitempty"`
+	Version              uint32   `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	Limit                uint32   `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -96,7 +305,7 @@ func (m *GetEventsRequest) Reset()         { *m = GetEventsRequest{} }
 func (m *GetEventsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetEventsRequest) ProtoMessage()    {}
 func (*GetEventsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{2}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{3}
 }
 
 func (m *GetEventsRequest) XXX_Unmarshal(b []byte) error {
@@ -117,7 +326,29 @@ func (m *GetEventsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetEventsRequest proto.InternalMessageInfo
 
+func (m *GetEventsRequest) GetStream() []byte {
+	if m != nil {
+		return m.Stream
+	}
+	return nil
+}
+
+func (m *GetEventsRequest) GetVersion() uint32 {
+	if m != nil {
+		return m.Version
+	}
+	return 0
+}
+
+func (m *GetEventsRequest) GetLimit() uint32 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
 type GetEventsResponse struct {
+	Events               []*Event `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -127,7 +358,7 @@ func (m *GetEventsResponse) Reset()         { *m = GetEventsResponse{} }
 func (m *GetEventsResponse) String() string { return proto.CompactTextString(m) }
 func (*GetEventsResponse) ProtoMessage()    {}
 func (*GetEventsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{3}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{4}
 }
 
 func (m *GetEventsResponse) XXX_Unmarshal(b []byte) error {
@@ -148,7 +379,16 @@ func (m *GetEventsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GetEventsResponse proto.InternalMessageInfo
 
+func (m *GetEventsResponse) GetEvents() []*Event {
+	if m != nil {
+		return m.Events
+	}
+	return nil
+}
+
 type LogEventsRequest struct {
+	Offset               []byte   `protobuf:"bytes,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	Limit                uint32   `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -158,7 +398,7 @@ func (m *LogEventsRequest) Reset()         { *m = LogEventsRequest{} }
 func (m *LogEventsRequest) String() string { return proto.CompactTextString(m) }
 func (*LogEventsRequest) ProtoMessage()    {}
 func (*LogEventsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{4}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{5}
 }
 
 func (m *LogEventsRequest) XXX_Unmarshal(b []byte) error {
@@ -179,7 +419,22 @@ func (m *LogEventsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_LogEventsRequest proto.InternalMessageInfo
 
+func (m *LogEventsRequest) GetOffset() []byte {
+	if m != nil {
+		return m.Offset
+	}
+	return nil
+}
+
+func (m *LogEventsRequest) GetLimit() uint32 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
 type LogEventsResponse struct {
+	Events               []*Event `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -189,7 +444,7 @@ func (m *LogEventsResponse) Reset()         { *m = LogEventsResponse{} }
 func (m *LogEventsResponse) String() string { return proto.CompactTextString(m) }
 func (*LogEventsResponse) ProtoMessage()    {}
 func (*LogEventsResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{5}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{6}
 }
 
 func (m *LogEventsResponse) XXX_Unmarshal(b []byte) error {
@@ -210,8 +465,17 @@ func (m *LogEventsResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_LogEventsResponse proto.InternalMessageInfo
 
+func (m *LogEventsResponse) GetEvents() []*Event {
+	if m != nil {
+		return m.Events
+	}
+	return nil
+}
+
 func init() {
+	proto.RegisterType((*Event)(nil), "api.Event")
 	proto.RegisterType((*AddEventsRequest)(nil), "api.AddEventsRequest")
+	proto.RegisterType((*AddEventsRequest_EventData)(nil), "api.AddEventsRequest.EventData")
 	proto.RegisterType((*AddEventsResponse)(nil), "api.AddEventsResponse")
 	proto.RegisterType((*GetEventsRequest)(nil), "api.GetEventsRequest")
 	proto.RegisterType((*GetEventsResponse)(nil), "api.GetEventsResponse")
@@ -222,18 +486,34 @@ func init() {
 func init() { proto.RegisterFile("api.proto", fileDescriptor_00212fb1f9d3bf1c) }
 
 var fileDescriptor_00212fb1f9d3bf1c = []byte{
-	// 170 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4c, 0x2c, 0xc8, 0xd4,
-	0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x4e, 0x2c, 0xc8, 0x54, 0x12, 0xe2, 0x12, 0x70, 0x4c,
-	0x49, 0x71, 0x2d, 0x4b, 0xcd, 0x2b, 0x29, 0x0e, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x51, 0x12,
-	0xe6, 0x12, 0x44, 0x12, 0x2b, 0x2e, 0xc8, 0xcf, 0x2b, 0x4e, 0x05, 0x29, 0x74, 0x4f, 0x2d, 0xc1,
-	0x50, 0x88, 0x24, 0x86, 0x50, 0xe8, 0x93, 0x9f, 0x8e, 0xa1, 0x10, 0x49, 0x0c, 0xa2, 0xd0, 0xe8,
-	0x24, 0x23, 0x17, 0x6f, 0x70, 0x49, 0x51, 0x6a, 0x62, 0x6e, 0x70, 0x6a, 0x51, 0x59, 0x66, 0x72,
-	0xaa, 0x90, 0x0d, 0x17, 0x27, 0xdc, 0x62, 0x21, 0x51, 0x3d, 0x90, 0x53, 0xd1, 0x1d, 0x27, 0x25,
-	0x86, 0x2e, 0x0c, 0xb5, 0x96, 0x01, 0xa4, 0x1b, 0xee, 0x1a, 0xa8, 0x6e, 0x74, 0x17, 0x43, 0x75,
-	0x63, 0x3a, 0x1a, 0xac, 0x1b, 0xee, 0x44, 0xa8, 0x6e, 0x74, 0x6f, 0x40, 0x75, 0x63, 0xf8, 0x44,
-	0x89, 0xc1, 0x89, 0x35, 0x0a, 0x14, 0x9a, 0x49, 0x6c, 0xe0, 0x90, 0x35, 0x06, 0x04, 0x00, 0x00,
-	0xff, 0xff, 0x3f, 0xd3, 0x86, 0x00, 0x66, 0x01, 0x00, 0x00,
+	// 430 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0x4f, 0x8f, 0xd2, 0x40,
+	0x18, 0xc6, 0x77, 0x5a, 0x5a, 0xe8, 0xbb, 0xcb, 0x06, 0x27, 0xba, 0x19, 0xb9, 0x58, 0x9b, 0x98,
+	0xf4, 0xc4, 0x61, 0x3d, 0xec, 0xc5, 0x83, 0x6b, 0x34, 0x86, 0xc4, 0x53, 0xb9, 0x71, 0x21, 0x23,
+	0x33, 0x98, 0x49, 0xa0, 0x53, 0x3b, 0x03, 0x89, 0x1f, 0x85, 0x8f, 0xe4, 0xd7, 0xf1, 0x13, 0x98,
+	0xbe, 0x2d, 0x63, 0x2d, 0x10, 0x31, 0x7b, 0xeb, 0xf3, 0xf4, 0xfd, 0xf7, 0xfc, 0xd2, 0x14, 0x22,
+	0x5e, 0xa8, 0x49, 0x51, 0x6a, 0xab, 0xa9, 0xcf, 0x0b, 0x95, 0xfc, 0x22, 0x10, 0x7c, 0xda, 0xc9,
+	0xdc, 0xd2, 0x5b, 0xf0, 0x94, 0x60, 0x24, 0x26, 0xe9, 0x4d, 0xe6, 0x29, 0x41, 0xef, 0x20, 0x34,
+	0xb6, 0x94, 0x7c, 0xc3, 0x3c, 0xf4, 0x1a, 0x45, 0x19, 0xf4, 0x77, 0xb2, 0x34, 0x4a, 0xe7, 0xcc,
+	0x8f, 0x49, 0x3a, 0xcc, 0x0e, 0x92, 0x52, 0xe8, 0xd9, 0x1f, 0x85, 0x64, 0xbd, 0x98, 0xa4, 0x51,
+	0x86, 0xcf, 0x95, 0x27, 0xb8, 0xe5, 0x2c, 0xc0, 0x19, 0xf8, 0x4c, 0xc7, 0x30, 0xd8, 0x48, 0xcb,
+	0xd1, 0x0f, 0xd1, 0x77, 0x9a, 0xbe, 0x86, 0x9b, 0x25, 0xdf, 0x1a, 0x6e, 0x95, 0xce, 0x17, 0x4a,
+	0xb0, 0x3e, 0xbe, 0xbf, 0x76, 0xde, 0x54, 0xd0, 0x37, 0x70, 0xbb, 0xd4, 0x65, 0x29, 0xd7, 0xae,
+	0x68, 0x80, 0x45, 0xc3, 0x96, 0x3b, 0x15, 0xf4, 0x25, 0x0c, 0xb8, 0x10, 0x52, 0x2c, 0xb8, 0x65,
+	0x51, 0x4c, 0x52, 0x3f, 0xeb, 0xa3, 0x7e, 0xb4, 0xc9, 0xde, 0x83, 0xd1, 0xa3, 0x10, 0x98, 0xdb,
+	0x64, 0xf2, 0xfb, 0x56, 0x1a, 0xdb, 0xca, 0x4b, 0xce, 0xe5, 0xf5, 0xfe, 0xce, 0xfb, 0x00, 0xa1,
+	0xc4, 0x11, 0xcc, 0x8f, 0xfd, 0xf4, 0xfa, 0xfe, 0xd5, 0xa4, 0x82, 0xdb, 0x1d, 0x3c, 0x41, 0xf5,
+	0x91, 0x5b, 0x9e, 0x35, 0xe5, 0xe3, 0x3d, 0x81, 0xc8, 0xb9, 0x0e, 0x1b, 0x39, 0x81, 0xcd, 0x3b,
+	0x83, 0xcd, 0xff, 0x07, 0xb6, 0xde, 0x25, 0xd8, 0x82, 0x13, 0xd8, 0x92, 0x07, 0x78, 0xd6, 0x4a,
+	0x60, 0x0a, 0x9d, 0x1b, 0x49, 0x13, 0x97, 0x94, 0x60, 0x52, 0xc0, 0xa4, 0x58, 0x74, 0x08, 0x95,
+	0xcc, 0x61, 0xf4, 0x59, 0xda, 0xa7, 0x32, 0x7d, 0x0e, 0xc1, 0x5a, 0x6d, 0x94, 0x6d, 0xbe, 0xad,
+	0x5a, 0x54, 0x47, 0xb5, 0x66, 0xff, 0xc7, 0x51, 0xef, 0x61, 0xf4, 0x45, 0x7f, 0x3b, 0x3a, 0x4a,
+	0xaf, 0x56, 0x46, 0xda, 0xc3, 0x51, 0xb5, 0xfa, 0xb3, 0xda, 0xeb, 0xac, 0x6e, 0x4d, 0xb8, 0x7c,
+	0xf5, 0xfd, 0x4f, 0x02, 0xc3, 0x19, 0xc6, 0x9d, 0xc9, 0x72, 0xa7, 0x96, 0x92, 0xbe, 0x83, 0xc8,
+	0xa1, 0xa5, 0x2f, 0x4e, 0x7e, 0x2c, 0xe3, 0xbb, 0xae, 0x5d, 0x6f, 0x4c, 0xae, 0xaa, 0x6e, 0xc7,
+	0xa0, 0xe9, 0xee, 0xf2, 0x6e, 0xba, 0x8f, 0x50, 0xd5, 0xdd, 0x2e, 0x46, 0xd3, 0xdd, 0x05, 0xd3,
+	0x74, 0x1f, 0xa5, 0x4d, 0xae, 0x3e, 0x04, 0xf3, 0xea, 0x67, 0xf1, 0x35, 0xc4, 0x1f, 0xc7, 0xdb,
+	0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x11, 0x54, 0x11, 0x30, 0x45, 0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.

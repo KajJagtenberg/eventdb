@@ -4,7 +4,7 @@ option go_package="api";
 
 package api;
 
-message RecordedEvent {
+message Event {
     bytes id = 1;
     bytes stream = 2;
     uint32 version = 3;
@@ -13,11 +13,11 @@ message RecordedEvent {
     bytes metadata = 6;
     bytes causation_id = 7;
     bytes correlation_id = 8;
-    uint64 added_at = 9;
+    int64 added_at = 9;
 }  
 
 message AddEventsRequest {
-    message Event {
+    message EventData {
         string type = 1;
         bytes data = 2;
         bytes metadata = 3;
@@ -26,11 +26,11 @@ message AddEventsRequest {
     }
     bytes stream = 1;
     uint32 version = 2;
-    repeated Event events = 3;
+    repeated EventData events = 3;
 }
 
 message AddEventsResponse {
-    repeated RecordedEvent events = 1;
+    repeated Event events = 1;
 }
 
 message GetEventsRequest {
@@ -40,7 +40,7 @@ message GetEventsRequest {
 }
 
 message GetEventsResponse {
-    repeated RecordedEvent events = 1;
+    repeated Event events = 1;
 }
 
 message LogEventsRequest {
@@ -49,7 +49,7 @@ message LogEventsRequest {
 }
 
 message LogEventsResponse {
-    repeated RecordedEvent events = 1;
+    repeated Event events = 1;
 }
 
 service StreamService {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"google.golang.org/grpc"
 )
@@ -16,7 +17,17 @@ func main() {
 
 	streamService := api.NewStreamServiceClient(conn)
 
-	request := &api.AddEventsRequest{}
+	stream := uuid.New()
+
+	request := &api.AddEventsRequest{
+		Stream:  stream[:],
+		Version: 0,
+		Events: []*api.AddEventsRequest_EventData{
+			{
+				Type: "TestEvent",
+			},
+		},
+	}
 
 	response, err := streamService.AddEvents(context.Background(), request)
 	if err != nil {

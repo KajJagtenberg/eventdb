@@ -1,9 +1,12 @@
 package api
 
-import "google.golang.org/grpc"
+import (
+	"github.com/hashicorp/raft"
+	"google.golang.org/grpc"
+)
 
-func NewGRPCServer() *grpc.Server {
-	streamService := NewStreamService()
+func NewGRPCServer(raft *raft.Raft) *grpc.Server {
+	streamService := NewStreamService(raft)
 
 	server := grpc.NewServer()
 
