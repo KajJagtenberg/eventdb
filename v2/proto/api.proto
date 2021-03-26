@@ -4,17 +4,53 @@ option go_package="api";
 
 package api;
 
-message AddEventsRequest {}
+message RecordedEvent {
+    bytes id = 1;
+    bytes stream = 2;
+    uint32 version = 3;
+    string type = 4;
+    bytes data = 5;
+    bytes metadata = 6;
+    bytes causation_id = 7;
+    bytes correlation_id = 8;
+    uint64 added_at = 9;
+}  
 
-message AddEventsResponse {}
+message AddEventsRequest {
+    message Event {
+        string type = 1;
+        bytes data = 2;
+        bytes metadata = 3;
+        bytes causation_id = 4;
+        bytes correlation_id = 5;
+    }
+    bytes stream = 1;
+    uint32 version = 2;
+    repeated Event events = 3;
+}
 
-message GetEventsRequest {}
+message AddEventsResponse {
+    repeated RecordedEvent events = 1;
+}
 
-message GetEventsResponse {}
+message GetEventsRequest {
+    bytes stream = 1;
+    uint32 version = 2;
+    uint32 limit = 3;
+}
 
-message LogEventsRequest {}
+message GetEventsResponse {
+    repeated RecordedEvent events = 1;
+}
 
-message LogEventsResponse {}
+message LogEventsRequest {
+    bytes offset = 1;
+    uint32 limit = 2;
+}
+
+message LogEventsResponse {
+    repeated RecordedEvent events = 1;
+}
 
 service StreamService {
     rpc AddEvents(AddEventsRequest) returns (AddEventsResponse) {}
