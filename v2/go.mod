@@ -3,6 +3,7 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
+	github.com/dop251/goja v0.0.0-20210322220816-6fc852574a34 // indirect
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-uuid v1.0.1 // indirect

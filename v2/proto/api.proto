@@ -57,3 +57,15 @@ service StreamService {
     rpc GetEvents(GetEventsRequest) returns (GetEventsResponse) {}
     rpc LogEvents(LogEventsRequest) returns (LogEventsResponse) {}
 }
+
+message ShellRequest {
+    string body = 1;
+}
+
+message ShellResponse {
+    string body = 1;
+}
+
+service ShellService {
+    rpc Execute(ShellRequest) returns (ShellResponse) {}
+}
