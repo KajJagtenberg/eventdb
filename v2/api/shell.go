@@ -1,18 +1,40 @@
 package api
 
 import (
-	"context"
-
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
+	"github.com/hashicorp/raft"
+	"github.com/kajjagtenberg/eventflowdb/shell"
 )
 
-type ShellService struct{}
-
-func (service *ShellService) Execute(ctx context.Context, req *ShellRequest) (*ShellResponse, error) {
-	return nil, grpc.Errorf(codes.Unimplemented, "Not implemented")
+type ShellService struct {
+	raft *raft.Raft
 }
 
-func NewShellService() *ShellService {
-	return &ShellService{}
+func (service *ShellService) Execute(stream ShellService_ExecuteServer) error {
+	shell := shell.NewShell(service.raft)
+
+	for {
+		request, err := stream.Recv()
+		if err != nil {
+			return err
+		}
+
+		output, err := shell.Execute(request.Body)
+
+		var body string
+		if err == nil {
+			body = output
+		} else {
+			body = err.Error()
+		}
+
+		if err := stream.Send(&ShellResponse{
+			Body: body,
+		}); err != nil {
+			return err
+		}
+	}
+}
+
+func NewShellService(raft *raft.Raft) *ShellService {
+	return &ShellService{raft}
 }

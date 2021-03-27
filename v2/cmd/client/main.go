@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"log"
 
-	"github.com/google/uuid"
+	"github.com/chzyer/readline"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"google.golang.org/grpc"
 )
@@ -15,24 +17,46 @@ func main() {
 		log.Fatalf("Failed to connect to gRPC server: %v", err)
 	}
 
-	streamService := api.NewStreamServiceClient(conn)
+	service := api.NewShellServiceClient(conn)
 
-	stream := uuid.New()
-
-	request := &api.AddEventsRequest{
-		Stream:  stream[:],
-		Version: 0,
-		Events: []*api.AddEventsRequest_EventData{
-			{
-				Type: "TestEvent",
-			},
-		},
+	rl, err := readline.New("> ")
+	if err != nil {
+		log.Fatalf("Failed to create readline: %v", err)
 	}
 
-	response, err := streamService.AddEvents(context.Background(), request)
+	stream, err := service.Execute(context.Background())
 	if err != nil {
 		log.Fatalf("Failed to execute request: %v", err)
 	}
 
-	log.Println(response)
+	for {
+		line, err := rl.Readline()
+		if err == io.EOF {
+			break
+		}
+		if err == readline.ErrInterrupt {
+			break
+		}
+
+		if len(line) == 0 {
+			continue
+		}
+
+		if err := stream.Send(&api.ShellRequest{
+			Body: line,
+		}); err != nil {
+			log.Fatalf("Failed to send request: %v", err)
+		}
+
+		response, err := stream.Recv()
+		if err != nil {
+			log.Fatalf("Failed to receive response: %v", err)
+		}
+
+		if len(response.Body) == 0 {
+			continue
+		}
+
+		fmt.Println(response.Body)
+	}
 }

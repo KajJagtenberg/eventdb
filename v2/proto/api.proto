@@ -67,5 +67,5 @@ message ShellResponse {
 }
 
 service ShellService {
-    rpc Execute(ShellRequest) returns (ShellResponse) {}
+    rpc Execute(stream ShellRequest) returns (stream ShellResponse) {}
 }

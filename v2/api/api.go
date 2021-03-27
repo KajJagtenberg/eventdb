@@ -10,7 +10,7 @@ func NewGRPCServer(raft *raft.Raft) *grpc.Server {
 	server := grpc.NewServer()
 
 	RegisterStreamServiceServer(server, NewStreamService(raft))
-	RegisterShellServiceServer(server, NewShellService())
+	RegisterShellServiceServer(server, NewShellService(raft))
 
 	return server
 }
