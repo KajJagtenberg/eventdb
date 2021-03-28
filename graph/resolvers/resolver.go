@@ -9,3 +9,7 @@ import "github.com/hashicorp/raft"
 type Resolver struct {
 	raft *raft.Raft
 }
+
+func NewResolver(raft *raft.Raft) *Resolver {
+	return &Resolver{raft}
+}

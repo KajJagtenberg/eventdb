@@ -28,8 +28,8 @@ services:
       - RAFT_BOOTSTRAP=true
     volumes:
       - node3:/var/lib/eventflowdb
-    ports:
-      - 6543:6543
+    # ports:
+    #   - 6543:6543
 
 volumes:
   node1:

@@ -5,14 +5,24 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/model"
 )
 
 func (r *queryResolver) Cluster(ctx context.Context) (*model.Cluster, error) {
-	panic(fmt.Errorf("not implemented"))
+
+	configFuture := r.raft.GetConfiguration()
+	if err := configFuture.Error(); err != nil {
+		return nil, err
+	}
+
+	config := configFuture.Configuration()
+
+	return &model.Cluster{
+		Leader: string(r.raft.Leader()),
+		Size:   len(config.Servers),
+	}, nil
 }
 
 // Query returns generated.QueryResolver implementation.
