@@ -146,6 +146,38 @@ func (p *Persistence) Get(streamID uuid.UUID, version uint32, limit uint32) ([]E
 	return result, nil
 }
 
+func (p *Persistence) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
+	if limit == 0 {
+		limit = 10
+	}
+
+	var result []Event
+
+	err := p.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte(BUCKET_EVENTS)).Cursor()
+
+		for k, v := cursor.Seek(offset[:]); k != nil && len(result) < int(limit); k, v = cursor.Next() {
+			if bytes.Compare(k, offset[:]) == 0 {
+				continue
+			}
+
+			record := Event{}
+			if err := record.Unmarshal(v); err != nil {
+				return err
+			}
+
+			result = append(result, record)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewPersistence(db *bbolt.DB) (*Persistence, error) {
 	err := db.Update(func(t *bbolt.Tx) error {
 		buckets := []string{BUCKET_STREAMS, BUCKET_EVENTS}

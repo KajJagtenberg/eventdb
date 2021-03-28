@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/raft"
 	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/persistence"
+	"github.com/oklog/ulid"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -135,7 +136,37 @@ func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsReque
 }
 
 func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsRequest) (*LogEventsResponse, error) {
-	return nil, ErrNotImplemented
+	var offset ulid.ULID
+	if err := offset.UnmarshalBinary(req.Offset); err != nil {
+		return nil, err
+	}
+
+	limit := req.Limit
+
+	events, err := service.persistence.Log(offset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var records []*Event
+
+	for _, event := range events {
+		records = append(records, &Event{
+			Id:            event.ID[:],
+			Stream:        event.Stream[:],
+			Version:       event.Version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   event.CausationID[:],
+			CorrelationId: event.CorrelationID[:],
+			AddedAt:       event.AddedAt.UnixNano(),
+		})
+	}
+
+	return &LogEventsResponse{
+		Events: records,
+	}, nil
 }
 
 func NewStreamService(raft *raft.Raft, persistence *persistence.Persistence) *StreamService {
