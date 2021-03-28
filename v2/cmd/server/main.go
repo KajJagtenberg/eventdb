@@ -48,7 +48,7 @@ func main() {
 	}
 	defer lis.Close()
 
-	grpcServer := api.NewGRPCServer(raftServer)
+	grpcServer := api.NewGRPCServer(raftServer, persistence)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve gRPC server: %v", err)

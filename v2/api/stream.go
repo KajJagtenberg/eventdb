@@ -20,7 +20,8 @@ var (
 )
 
 type StreamService struct {
-	raft *raft.Raft
+	raft        *raft.Raft
+	persistence *persistence.Persistence
 }
 
 func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsRequest) (*AddEventsResponse, error) {
@@ -99,6 +100,8 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 }
 
 func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsRequest) (*GetEventsResponse, error) {
+	// service.persistence.Get()
+
 	return nil, ErrNotImplemented
 }
 
@@ -106,6 +109,6 @@ func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsReque
 	return nil, ErrNotImplemented
 }
 
-func NewStreamService(raft *raft.Raft) *StreamService {
-	return &StreamService{raft}
+func NewStreamService(raft *raft.Raft, persistence *persistence.Persistence) *StreamService {
+	return &StreamService{raft, persistence}
 }

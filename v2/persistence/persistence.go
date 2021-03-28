@@ -101,6 +101,51 @@ func (p *Persistence) Add(streamID uuid.UUID, version uint32, events []EventData
 	return result, nil
 }
 
+func (p *Persistence) Get(streamID uuid.UUID, version uint32, limit uint32) ([]Event, error) {
+	var result []Event
+
+	err := p.db.View(func(t *bbolt.Tx) error {
+		streamsBucket := t.Bucket([]byte(BUCKET_STREAMS))
+		eventsBucket := t.Bucket([]byte(BUCKET_EVENTS))
+
+		var stream Stream
+
+		if packed := streamsBucket.Get(streamID[:]); packed != nil {
+			if err := stream.Unmarshal(packed); err != nil {
+				return err
+			}
+		} else {
+			return nil
+		}
+
+		for _, id := range stream.Events {
+			if version > 0 {
+				version--
+				continue
+			}
+			if version != 0 && len(result) >= int(limit) {
+				break
+			}
+
+			packed := eventsBucket.Get(id[:])
+
+			record := Event{}
+			if err := record.Unmarshal(packed); err != nil {
+				return err
+			}
+
+			result = append(result, record)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewPersistence(db *bbolt.DB) (*Persistence, error) {
 	err := db.Update(func(t *bbolt.Tx) error {
 		buckets := []string{BUCKET_STREAMS, BUCKET_EVENTS}
