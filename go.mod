@@ -9,14 +9,14 @@ require (
 	github.com/dop251/goja v0.0.0-20210322220816-6fc852574a34
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
-	github.com/hashicorp/go-uuid v1.0.1 // indirect
-	github.com/hashicorp/golang-lru v0.5.1 // indirect
+	github.com/hashicorp/go-uuid v1.0.2 // indirect
+	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/raft v1.2.0
 	github.com/hashicorp/raft-boltdb v0.0.0-20191021154308-4207f1bf0617
 	github.com/oklog/ulid v1.3.1
 	github.com/stretchr/testify v1.7.0
 	go.etcd.io/bbolt v1.3.5
-	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0 // indirect
-	golang.org/x/sys v0.0.0-20210320140829-1e4c9ba3b0c4 // indirect
+	golang.org/x/net v0.0.0-20210326220855-61e056675ecf // indirect
+	golang.org/x/sys v0.0.0-20210326220804-49726bf1d181 // indirect
 	google.golang.org/grpc v1.36.1
 )
