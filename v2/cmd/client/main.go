@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/chzyer/readline"
+	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"google.golang.org/grpc"
 )
@@ -16,6 +18,27 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to gRPC server: %v", err)
 	}
+
+	func() {
+		stream := uuid.New()
+
+		response, err := api.NewStreamServiceClient(conn).AddEvents(context.Background(), &api.AddEventsRequest{
+			Stream:  stream[:],
+			Version: 0,
+			Events: []*api.AddEventsRequest_EventData{
+				{
+					Type:     "TestEvent",
+					Data:     []byte("data"),
+					Metadata: []byte("metadata"),
+					AddedAt:  time.Now().UnixNano(),
+				},
+			},
+		})
+		if err != nil {
+			log.Fatalf("Failed to add events: %v", err)
+		}
+		log.Println(response.Events)
+	}()
 
 	service := api.NewShellServiceClient(conn)
 

@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/raft"
 	"github.com/kajjagtenberg/eventflowdb/cluster"
+	"github.com/kajjagtenberg/eventflowdb/persistence"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 )
@@ -70,10 +71,30 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 		return nil, err
 	}
 
-	// records := future.Response().([]*RecordedEvent)
+	result := future.Response().(cluster.ApplyResult)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	var records []*Event
+
+	for _, event := range result.Value.([]persistence.Event) {
+		records = append(records, &Event{
+			Id:            event.ID[:],
+			Stream:        event.Stream[:],
+			Version:       event.Version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   event.CausationID[:],
+			CorrelationId: event.CorrelationID[:],
+			AddedAt:       event.AddedAt.UnixNano(),
+		})
+	}
 
 	return &AddEventsResponse{
-		// Events: records,
+		Events: records,
 	}, nil
 }
 

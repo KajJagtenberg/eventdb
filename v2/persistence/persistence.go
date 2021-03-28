@@ -82,6 +82,8 @@ func (p *Persistence) Add(streamID uuid.UUID, version uint32, events []EventData
 			if err := eventsBucket.Put(record.ID[:], packed); err != nil {
 				return err
 			}
+
+			result = append(result, record)
 		}
 
 		packed, err := stream.Marshal()
