@@ -59,9 +59,6 @@ func NewShell(raftServer *raft.Raft, persistence *persistence.Persistence) *Shel
 
 	vm.Set("log", func() (interface{}, error) {
 		events, err := persistence.Log(ulid.ULID{}, 100)
-
-		log.Println(events[0].Type)
-
 		return events, err
 	})
 
