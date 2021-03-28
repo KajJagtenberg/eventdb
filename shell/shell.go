@@ -53,7 +53,7 @@ func NewShell(raftServer *raft.Raft, persistence *persistence.Persistence) *Shel
 		return string(raftServer.Leader())
 	})
 
-	vm.Set("stats", func() interface{} {
+	vm.Set("clusterStats", func() interface{} {
 		return raftServer.Stats()
 	})
 
