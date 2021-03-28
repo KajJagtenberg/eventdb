@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"time"
 
+	proto "github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
 	"go.etcd.io/bbolt"
@@ -139,11 +140,58 @@ type Event struct {
 }
 
 func (e *Event) Marshal() ([]byte, error) {
-	return nil, errors.New("Event Marshal not implemented")
+	var m PersistedEvent
+	m.Id = e.ID[:]
+	m.Stream = e.Stream[:]
+	m.Version = e.Version
+	m.Type = e.Type
+	m.Data = e.Data
+	m.Metadata = e.Metadata
+	m.CausationId = e.CausationID[:]
+	m.CorrelationId = e.CorrelationID[:]
+	m.AddedAt = e.AddedAt.UnixNano()
+
+	return proto.Marshal(&m)
 }
 
 func (e *Event) Unmarshal(data []byte) error {
-	return errors.New("Event Unmarshal not implemented")
+	var m PersistedEvent
+	if err := proto.Unmarshal(data, &m); err != nil {
+		return err
+	}
+
+	var id ulid.ULID
+	if err := id.UnmarshalBinary(m.Id); err != nil {
+		return err
+	}
+	e.ID = id
+
+	var stream uuid.UUID
+	if err := stream.UnmarshalBinary(m.Stream); err != nil {
+		return err
+	}
+	e.Stream = stream
+
+	e.Version = m.Version
+	e.Type = m.Type
+	e.Data = m.Data
+	e.Metadata = m.Metadata
+
+	var causationID ulid.ULID
+	if err := causationID.UnmarshalBinary(m.CausationId); err != nil {
+		return err
+	}
+	e.CausationID = causationID
+
+	var correlationID ulid.ULID
+	if err := correlationID.UnmarshalBinary(m.CorrelationId); err != nil {
+		return err
+	}
+	e.CorrelationID = correlationID
+
+	e.AddedAt = time.Unix(0, m.AddedAt)
+
+	return nil
 }
 
 type Stream struct {
