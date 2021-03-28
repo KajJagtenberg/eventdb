@@ -7,11 +7,10 @@ import (
 )
 
 func NewGRPCServer(raft *raft.Raft, persistence *persistence.Persistence) *grpc.Server {
-
 	server := grpc.NewServer()
 
 	RegisterStreamServiceServer(server, NewStreamService(raft, persistence))
-	RegisterShellServiceServer(server, NewShellService(raft))
+	RegisterShellServiceServer(server, NewShellService(raft, persistence))
 
 	return server
 }

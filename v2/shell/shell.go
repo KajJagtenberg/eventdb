@@ -8,6 +8,8 @@ import (
 	"github.com/dop251/goja"
 	"github.com/hashicorp/raft"
 	"github.com/kajjagtenberg/eventflowdb/constants"
+	"github.com/kajjagtenberg/eventflowdb/persistence"
+	"github.com/oklog/ulid"
 )
 
 //go:embed shell.js
@@ -38,7 +40,7 @@ func (shell *Shell) Execute(src string) (string, error) {
 	return body, nil
 }
 
-func NewShell(raft *raft.Raft) *Shell {
+func NewShell(raft *raft.Raft, persistence *persistence.Persistence) *Shell {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 
@@ -52,6 +54,14 @@ func NewShell(raft *raft.Raft) *Shell {
 
 	vm.Set("stats", func() interface{} {
 		return raft.Stats()
+	})
+
+	vm.Set("log", func() (interface{}, error) {
+		events, err := persistence.Log(ulid.ULID{}, 100)
+
+		log.Println(events[0].Type)
+
+		return events, err
 	})
 
 	babel := NewBabel()

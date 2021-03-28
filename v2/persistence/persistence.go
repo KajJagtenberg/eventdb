@@ -57,6 +57,7 @@ func (p *Persistence) Add(streamID uuid.UUID, version uint32, events []EventData
 			record.ID = id
 			record.Stream = streamID
 			record.Version = version + uint32(i)
+			record.Type = event.Type
 			record.Data = event.Data
 			record.Metadata = event.Metadata
 			record.CausationID = event.CausationID
@@ -207,15 +208,15 @@ type EventData struct {
 }
 
 type Event struct {
-	ID            ulid.ULID
-	Stream        uuid.UUID
-	Version       uint32
-	Type          string
-	Data          []byte
-	Metadata      []byte
-	CausationID   ulid.ULID
-	CorrelationID ulid.ULID
-	AddedAt       time.Time
+	ID            ulid.ULID `json:"id"`
+	Stream        uuid.UUID `json:"stream"`
+	Version       uint32    `json:"version"`
+	Type          string    `json:"type"`
+	Data          []byte    `json:"data"`
+	Metadata      []byte    `json:"metadata"`
+	CausationID   ulid.ULID `json:"causation_id"`
+	CorrelationID ulid.ULID `json:"correlation_id"`
+	AddedAt       time.Time `json:"added_at"`
 }
 
 func (e *Event) Marshal() ([]byte, error) {

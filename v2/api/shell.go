@@ -2,15 +2,17 @@ package api
 
 import (
 	"github.com/hashicorp/raft"
+	"github.com/kajjagtenberg/eventflowdb/persistence"
 	"github.com/kajjagtenberg/eventflowdb/shell"
 )
 
 type ShellService struct {
-	raft *raft.Raft
+	raft        *raft.Raft
+	persistence *persistence.Persistence
 }
 
 func (service *ShellService) Execute(stream ShellService_ExecuteServer) error {
-	shell := shell.NewShell(service.raft)
+	shell := shell.NewShell(service.raft, service.persistence)
 
 	for {
 
@@ -36,6 +38,6 @@ func (service *ShellService) Execute(stream ShellService_ExecuteServer) error {
 	}
 }
 
-func NewShellService(raft *raft.Raft) *ShellService {
-	return &ShellService{raft}
+func NewShellService(raft *raft.Raft, persistence *persistence.Persistence) *ShellService {
+	return &ShellService{raft, persistence}
 }
