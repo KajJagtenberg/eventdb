@@ -1,4 +1,4 @@
-name: CICD
+name: CI
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
           go version
           go get -u golang.org/x/lint/golint
       - name: Run build
-        run: go build cmd/server/main.go -o server
+        run: go build -o server cmd/server/main.go
       - name: Vet and lint
         run: |
           go vet cmd/server/main.go
