@@ -23,6 +23,7 @@ message AddEventsRequest {
         bytes metadata = 3;
         bytes causation_id = 4;
         bytes correlation_id = 5;
+        int64 added_at = 6;
     }
     bytes stream = 1;
     uint32 version = 2;

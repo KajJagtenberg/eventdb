@@ -39,15 +39,16 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 		return nil, errors.New("List of events cannot be empty")
 	}
 
-	var events []*cluster.AddCommand_Event
+	var events []*cluster.AddCommand_EventData
 
 	for _, event := range req.Events {
-		events = append(events, &cluster.AddCommand_Event{
+		events = append(events, &cluster.AddCommand_EventData{
 			Type:          event.Type,
 			Data:          event.Data,
 			Metadata:      event.Metadata,
 			CausationId:   event.CausationId,
 			CorrelationId: event.CorrelationId,
+			AddedAt:       event.AddedAt,
 		})
 	}
 

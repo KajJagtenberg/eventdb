@@ -8,9 +8,10 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/google/uuid"
 	"github.com/hashicorp/raft"
+	"github.com/kajjagtenberg/eventflowdb/persistence"
 	"github.com/oklog/ulid"
-	"go.etcd.io/bbolt"
 )
 
 const (
@@ -28,7 +29,7 @@ type ApplyResult struct {
 }
 
 type FSM struct {
-	db *bbolt.DB
+	persistence *persistence.Persistence
 }
 
 func (fsm *FSM) Apply(applyLog *raft.Log) interface{} {
@@ -48,10 +49,50 @@ func (fsm *FSM) Apply(applyLog *raft.Log) interface{} {
 
 		switch cmd := cmd.Command.(type) {
 		case *ApplyLog_Add:
-			events, err := fsm.add(cmd.Add)
+			var streamID uuid.UUID
+			if err := streamID.UnmarshalBinary(cmd.Add.Stream); err != nil {
+				result.Error = err
 
-			result.Value = events
-			result.Error = err
+				return result
+			}
+
+			version := cmd.Add.Version
+
+			var events []persistence.EventData
+
+			for _, event := range cmd.Add.Events {
+				var causationID ulid.ULID
+				if event.CausationId != nil {
+					if err := causationID.UnmarshalBinary(event.CausationId); err != nil {
+						return err
+					}
+				}
+
+				var correlationID ulid.ULID
+				if event.CorrelationId != nil {
+					if err := correlationID.UnmarshalBinary(event.CorrelationId); err != nil {
+						return err
+					}
+				}
+
+				events = append(events, persistence.EventData{
+					Type:          event.Type,
+					Data:          event.Data,
+					Metadata:      event.Metadata,
+					CausationID:   causationID,
+					CorrelationID: correlationID,
+					AddedAt:       time.Unix(0, event.AddedAt),
+				})
+			}
+
+			records, err := fsm.persistence.Add(streamID, version, events)
+			if err != nil {
+				result.Error = err
+
+				return result
+			}
+
+			result.Value = records
 		}
 	default:
 		log.Println("Type:", applyLog.Type)
@@ -68,95 +109,6 @@ func (fsm *FSM) Restore(io.ReadCloser) error {
 	return errors.New("Not implemented")
 }
 
-func (fsm *FSM) add(cmd *AddCommand) ([]Event, error) {
-	var events []Event
-
-	err := fsm.db.Update(func(t *bbolt.Tx) error {
-		streams := t.Bucket([]byte(BUCKET_STREAMS))
-		events := t.Bucket([]byte(BUCKET_EVENTS))
-
-		var stream Stream
-
-		if packed := streams.Get(cmd.Stream); packed != nil {
-			if err := proto.Unmarshal(packed, &stream); err != nil {
-				return err
-			}
-		} else {
-			stream.AddedAt = time.Now().UnixNano()
-			stream.Id = cmd.Stream
-		}
-
-		if len(stream.Events) != int(cmd.Version) {
-			return errors.New("Concurrent stream modification")
-		}
-
-		for i, event := range cmd.Events {
-			id, err := ulid.New(ulid.Now(), entropy)
-			if err != nil {
-				return err
-			}
-
-			record := Event{}
-			record.Id = id[:]
-			record.Stream = cmd.Stream
-			record.Version = cmd.Version + uint32(i)
-			record.Data = event.Data
-			record.Metadata = event.Metadata
-			record.CausationId = event.CausationId
-			record.CorrelationId = event.CorrelationId
-
-			if record.CausationId == nil {
-				record.CausationId = record.Id
-			}
-
-			if record.CorrelationId == nil {
-				record.CorrelationId = record.Id
-			}
-
-			record.AddedAt = time.Now().UnixNano()
-
-			stream.Events = append(stream.Events, record.Id)
-
-			packed, err := proto.Marshal(&record)
-			if err != nil {
-				return err
-			}
-
-			if err := events.Put(record.Id[:], packed); err != nil {
-				return err
-			}
-		}
-
-		packed, err := proto.Marshal(&stream)
-		if err != nil {
-			return err
-		}
-
-		return streams.Put(stream.Id[:], packed)
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return events, nil
-}
-
-func NewFSM(db *bbolt.DB) (*FSM, error) {
-	err := db.Update(func(t *bbolt.Tx) error {
-		buckets := []string{BUCKET_STREAMS, BUCKET_EVENTS}
-
-		for _, bucket := range buckets {
-			if _, err := t.CreateBucketIfNotExists([]byte(bucket)); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &FSM{db}, nil
+func NewFSM(persistence *persistence.Persistence) (*FSM, error) {
+	return &FSM{persistence}, nil
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/env"
+	"github.com/kajjagtenberg/eventflowdb/persistence"
 	"go.etcd.io/bbolt"
 )
 
@@ -25,7 +26,12 @@ func main() {
 	}
 	defer db.Close()
 
-	fsm, err := cluster.NewFSM(db)
+	persistence, err := persistence.NewPersistence(db)
+	if err != nil {
+		log.Fatalf("Failed to create persistence: %v", err)
+	}
+
+	fsm, err := cluster.NewFSM(persistence)
 	if err != nil {
 		log.Fatalf("Failed to create FSM: %v", err)
 	}
