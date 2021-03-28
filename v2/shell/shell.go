@@ -7,7 +7,6 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/hashicorp/raft"
-	babel "github.com/jvatic/goja-babel"
 	"github.com/kajjagtenberg/eventflowdb/constants"
 )
 
@@ -15,15 +14,12 @@ import (
 var runtime string
 
 type Shell struct {
-	vm *goja.Runtime
+	vm    *goja.Runtime
+	babel *Babel
 }
 
 func (shell *Shell) Execute(src string) (string, error) {
-	compiled, err := babel.TransformString(src, map[string]interface{}{
-		"presets": []string{
-			"env",
-		},
-	})
+	compiled, err := shell.babel.Compile(src)
 	if err != nil {
 		return "", nil
 	}
@@ -58,7 +54,9 @@ func NewShell(raft *raft.Raft) *Shell {
 		return raft.Stats()
 	})
 
-	shell := &Shell{vm}
+	babel := NewBabel()
+
+	shell := &Shell{vm, babel}
 
 	if _, err := shell.Execute(runtime); err != nil {
 		log.Fatalf("Cannot execute shell runtime. This is a bug: %v", err)
