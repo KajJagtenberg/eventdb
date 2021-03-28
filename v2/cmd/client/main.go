@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/chzyer/readline"
+	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"google.golang.org/grpc"
 )
@@ -18,13 +20,36 @@ func main() {
 	}
 
 	func() {
-		response, err := api.NewStreamServiceClient(conn).LogEvents(context.Background(), &api.LogEventsRequest{
-			Limit: 10,
+		service := api.NewStreamServiceClient(conn)
+
+		stream := uuid.New()
+
+		addResponse, err := service.AddEvents(context.Background(), &api.AddEventsRequest{
+			Stream:  stream[:],
+			Version: 0,
+			Events: []*api.AddEventsRequest_EventData{
+				{
+					Type:     "TestEvent",
+					Data:     []byte("data"),
+					Metadata: []byte("metadata"),
+					AddedAt:  time.Now().UnixNano(),
+				},
+			},
 		})
 		if err != nil {
 			log.Fatalf("Failed to add events: %v", err)
 		}
-		log.Println(response.Events)
+		log.Println(addResponse.Events)
+
+		getResponse, err := service.GetEvents(context.Background(), &api.GetEventsRequest{
+			Stream:  stream[:],
+			Version: 0,
+			Limit:   0,
+		})
+		if err != nil {
+			log.Fatalf("Failed to get events: %v", err)
+		}
+		log.Println(getResponse.Events)
 	}()
 
 	service := api.NewShellServiceClient(conn)

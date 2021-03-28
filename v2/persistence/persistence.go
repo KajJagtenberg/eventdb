@@ -290,5 +290,5 @@ func (s *Stream) Unmarshal(data []byte) error {
 
 	s.AddedAt = time.Unix(0, m.AddedAt)
 
-	return errors.New("Stream Unmarshal not implemented")
+	return nil
 }
