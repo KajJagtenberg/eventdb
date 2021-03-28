@@ -1,0 +1,8 @@
+type Cluster {
+  leader: String!
+  size: Int!
+}
+
+extend type Query {
+  cluster: Cluster!
+}

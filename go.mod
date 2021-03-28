@@ -8,6 +8,9 @@ require (
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1 // indirect
 	github.com/dop251/goja v0.0.0-20210322220816-6fc852574a34
+	github.com/gofiber/adaptor/v2 v2.1.1
+	github.com/gofiber/fiber/v2 v2.6.0
+	github.com/gofiber/helmet/v2 v2.1.0
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
