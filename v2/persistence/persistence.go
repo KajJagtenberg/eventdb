@@ -201,9 +201,47 @@ type Stream struct {
 }
 
 func (s *Stream) Marshal() ([]byte, error) {
-	return nil, errors.New("Stream Marshal not implemented")
+	var m PersistedStream
+
+	m.Id = s.ID[:]
+
+	for _, event := range s.Events {
+		id, err := event.MarshalBinary()
+		if err != nil {
+			return nil, err
+		}
+		m.Events = append(m.Events, id)
+	}
+
+	m.AddedAt = s.AddedAt.UnixNano()
+
+	return proto.Marshal(&m)
 }
 
 func (s *Stream) Unmarshal(data []byte) error {
+	var m PersistedStream
+
+	if err := proto.Unmarshal(data, &m); err != nil {
+		return err
+	}
+
+	var id uuid.UUID
+	if err := id.UnmarshalBinary(m.Id); err != nil {
+		return err
+	}
+
+	s.ID = id
+	s.Events = []ulid.ULID{}
+
+	for _, id := range m.Events {
+		var event ulid.ULID
+		if err := event.UnmarshalBinary(id); err != nil {
+			return err
+		}
+		s.Events = append(s.Events, event)
+	}
+
+	s.AddedAt = time.Unix(0, m.AddedAt)
+
 	return errors.New("Stream Unmarshal not implemented")
 }
