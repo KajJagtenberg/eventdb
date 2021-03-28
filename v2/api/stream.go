@@ -100,9 +100,38 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 }
 
 func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsRequest) (*GetEventsResponse, error) {
-	// service.persistence.Get()
+	var stream uuid.UUID
+	if err := stream.UnmarshalBinary(req.Stream); err != nil {
+		return nil, err
+	}
 
-	return nil, ErrNotImplemented
+	version := req.Version
+	limit := req.Limit
+
+	events, err := service.persistence.Get(stream, version, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var records []*Event
+
+	for _, event := range events {
+		records = append(records, &Event{
+			Id:            event.ID[:],
+			Stream:        event.Stream[:],
+			Version:       event.Version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   event.CausationID[:],
+			CorrelationId: event.CorrelationID[:],
+			AddedAt:       event.AddedAt.UnixNano(),
+		})
+	}
+
+	return &GetEventsResponse{
+		Events: records,
+	}, nil
 }
 
 func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsRequest) (*LogEventsResponse, error) {
