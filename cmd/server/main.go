@@ -17,7 +17,7 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
-	graph "github.com/kajjagtenberg/eventflowdb/graph/resolvers"
+	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
 	"github.com/kajjagtenberg/eventflowdb/persistence"
 	"go.etcd.io/bbolt"
 )
@@ -69,7 +69,7 @@ func main() {
 		}
 	}()
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: graph.NewResolver(raftServer)}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolvers.NewResolver(raftServer)}))
 
 	http.Handle("/query", srv)
 
