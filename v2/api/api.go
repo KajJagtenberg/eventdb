@@ -11,6 +11,7 @@ func NewGRPCServer(raft *raft.Raft, persistence *persistence.Persistence) *grpc.
 
 	RegisterStreamServiceServer(server, NewStreamService(raft, persistence))
 	RegisterShellServiceServer(server, NewShellService(raft, persistence))
+	RegisterRaftServiceServer(server, NewRaftService(raft))
 
 	return server
 }

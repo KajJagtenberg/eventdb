@@ -2,6 +2,7 @@ package shell
 
 import (
 	"log"
+	"time"
 
 	_ "embed"
 
@@ -40,7 +41,7 @@ func (shell *Shell) Execute(src string) (string, error) {
 	return body, nil
 }
 
-func NewShell(raft *raft.Raft, persistence *persistence.Persistence) *Shell {
+func NewShell(raftServer *raft.Raft, persistence *persistence.Persistence) *Shell {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 
@@ -49,11 +50,11 @@ func NewShell(raft *raft.Raft, persistence *persistence.Persistence) *Shell {
 	})
 
 	vm.Set("leader", func() string {
-		return string(raft.Leader())
+		return string(raftServer.Leader())
 	})
 
 	vm.Set("stats", func() interface{} {
-		return raft.Stats()
+		return raftServer.Stats()
 	})
 
 	vm.Set("log", func() (interface{}, error) {
@@ -62,6 +63,15 @@ func NewShell(raft *raft.Raft, persistence *persistence.Persistence) *Shell {
 		log.Println(events[0].Type)
 
 		return events, err
+	})
+
+	vm.Set("joinCluster", func(id string, address string) error {
+		future := raftServer.AddVoter(raft.ServerID(id), raft.ServerAddress(address), 0, time.Second*5)
+		return future.Error()
+	})
+
+	vm.Set("clusterSize", func() int {
+		return len(raftServer.GetConfiguration().Configuration().Servers)
 	})
 
 	babel := NewBabel()

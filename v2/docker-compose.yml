@@ -4,7 +4,6 @@ services:
   node1:
     container_name: eventflowdb1
     image: eventflowdb
-    # restart: unless-stopped
     environment:
       - RAFT_LOCAL_ID=node1
       - RAFT_ADVR_ADDR=node1:6542
@@ -14,7 +13,6 @@ services:
   node2:
     container_name: eventflowdb2
     image: eventflowdb
-    # restart: unless-stopped
     environment:
       - RAFT_LOCAL_ID=node2
       - RAFT_ADVR_ADDR=node2:6542
@@ -24,13 +22,14 @@ services:
   node3:
     container_name: eventflowdb3
     image: eventflowdb
-    # restart: unless-stopped
     environment:
       - RAFT_LOCAL_ID=node3
       - RAFT_ADVR_ADDR=node3:6542
       - RAFT_BOOTSTRAP=true
     volumes:
       - node3:/var/lib/eventflowdb
+    ports:
+      - 6543:6543
 
 volumes:
   node1:
