@@ -49,7 +49,7 @@ func NewShell(raftServer *raft.Raft, persistence *persistence.Persistence) *Shel
 		return constants.Version
 	})
 
-	vm.Set("leader", func() string {
+	vm.Set("clusterLeader", func() string {
 		return string(raftServer.Leader())
 	})
 
