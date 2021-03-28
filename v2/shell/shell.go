@@ -59,6 +59,7 @@ func NewShell(raft *raft.Raft) *Shell {
 	})
 
 	shell := &Shell{vm}
+
 	if _, err := shell.Execute(runtime); err != nil {
 		log.Fatalf("Cannot execute shell runtime. This is a bug: %v", err)
 	}
