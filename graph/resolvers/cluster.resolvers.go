@@ -11,7 +11,6 @@ import (
 )
 
 func (r *queryResolver) Cluster(ctx context.Context) (*model.Cluster, error) {
-
 	configFuture := r.raft.GetConfiguration()
 	if err := configFuture.Error(); err != nil {
 		return nil, err
