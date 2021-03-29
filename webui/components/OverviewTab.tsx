@@ -6,8 +6,6 @@ export const OverviewTab = () => {
     gql`
       {
         uptime
-        streamCount
-        eventCount
       }
     `,
     {
@@ -21,14 +19,7 @@ export const OverviewTab = () => {
         <Text fontWeight="semibold" mr={2} color="brand.500">
           Uptime:
         </Text>
-        <Text>{data?.uptime}</Text>
-      </Flex>
-
-      <Flex>
-        <Text fontWeight="semibold" mr={2} color="brand.500">
-          Stream Count:
-        </Text>
-        <Text>{data?.streamCount}</Text>
+        <Text>{data?.uptime}(s)</Text>
       </Flex>
 
       <Flex>

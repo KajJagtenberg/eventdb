@@ -6,3 +6,8 @@ type Cluster struct {
 	Leader string `json:"leader"`
 	Size   int    `json:"size"`
 }
+
+type Diagnostics struct {
+	Uptime   int `json:"uptime"`
+	UptimeMs int `json:"uptimeMs"`
+}

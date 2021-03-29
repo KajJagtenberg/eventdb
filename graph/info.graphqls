@@ -1,4 +1,0 @@
-extend type Query {
-    uptime: Int!
-    uptimeMs: Int!
-}

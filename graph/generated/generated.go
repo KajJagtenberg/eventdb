@@ -47,17 +47,20 @@ type ComplexityRoot struct {
 		Size   func(childComplexity int) int
 	}
 
-	Query struct {
-		Cluster  func(childComplexity int) int
+	Diagnostics struct {
 		Uptime   func(childComplexity int) int
 		UptimeMs func(childComplexity int) int
+	}
+
+	Query struct {
+		Cluster     func(childComplexity int) int
+		Diagnostics func(childComplexity int) int
 	}
 }
 
 type QueryResolver interface {
 	Cluster(ctx context.Context) (*model.Cluster, error)
-	Uptime(ctx context.Context) (int, error)
-	UptimeMs(ctx context.Context) (int, error)
+	Diagnostics(ctx context.Context) (*model.Diagnostics, error)
 }
 
 type executableSchema struct {
@@ -89,6 +92,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Cluster.Size(childComplexity), true
 
+	case "Diagnostics.uptime":
+		if e.complexity.Diagnostics.Uptime == nil {
+			break
+		}
+
+		return e.complexity.Diagnostics.Uptime(childComplexity), true
+
+	case "Diagnostics.uptimeMs":
+		if e.complexity.Diagnostics.UptimeMs == nil {
+			break
+		}
+
+		return e.complexity.Diagnostics.UptimeMs(childComplexity), true
+
 	case "Query.cluster":
 		if e.complexity.Query.Cluster == nil {
 			break
@@ -96,19 +113,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Cluster(childComplexity), true
 
-	case "Query.uptime":
-		if e.complexity.Query.Uptime == nil {
+	case "Query.diagnostics":
+		if e.complexity.Query.Diagnostics == nil {
 			break
 		}
 
-		return e.complexity.Query.Uptime(childComplexity), true
-
-	case "Query.uptimeMs":
-		if e.complexity.Query.UptimeMs == nil {
-			break
-		}
-
-		return e.complexity.Query.UptimeMs(childComplexity), true
+		return e.complexity.Query.Diagnostics(childComplexity), true
 
 	}
 	return 0, false
@@ -169,9 +179,13 @@ extend type Query {
   cluster: Cluster!
 }
 `, BuiltIn: false},
-	{Name: "graph/info.graphqls", Input: `extend type Query {
+	{Name: "graph/diagnostics.graphqls", Input: `type Diagnostics {
     uptime: Int!
     uptimeMs: Int!
+}
+
+extend type Query {
+    diagnostics: Diagnostics!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -303,6 +317,76 @@ func (ec *executionContext) _Cluster_size(ctx context.Context, field graphql.Col
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Diagnostics_uptime(ctx context.Context, field graphql.CollectedField, obj *model.Diagnostics) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Diagnostics",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Uptime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Diagnostics_uptimeMs(ctx context.Context, field graphql.CollectedField, obj *model.Diagnostics) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Diagnostics",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UptimeMs, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_cluster(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -338,7 +422,7 @@ func (ec *executionContext) _Query_cluster(ctx context.Context, field graphql.Co
 	return ec.marshalNCluster2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐCluster(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_uptime(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_diagnostics(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -356,7 +440,7 @@ func (ec *executionContext) _Query_uptime(ctx context.Context, field graphql.Col
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Uptime(rctx)
+		return ec.resolvers.Query().Diagnostics(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -368,44 +452,9 @@ func (ec *executionContext) _Query_uptime(ctx context.Context, field graphql.Col
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*model.Diagnostics)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_uptimeMs(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().UptimeMs(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNDiagnostics2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐDiagnostics(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1606,6 +1655,38 @@ func (ec *executionContext) _Cluster(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var diagnosticsImplementors = []string{"Diagnostics"}
+
+func (ec *executionContext) _Diagnostics(ctx context.Context, sel ast.SelectionSet, obj *model.Diagnostics) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, diagnosticsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Diagnostics")
+		case "uptime":
+			out.Values[i] = ec._Diagnostics_uptime(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "uptimeMs":
+			out.Values[i] = ec._Diagnostics_uptimeMs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -1635,7 +1716,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "uptime":
+		case "diagnostics":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -1643,21 +1724,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_uptime(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			})
-		case "uptimeMs":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_uptimeMs(ctx, field)
+				res = ec._Query_diagnostics(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -1950,6 +2017,20 @@ func (ec *executionContext) marshalNCluster2ᚖgithubᚗcomᚋkajjagtenbergᚋev
 		return graphql.Null
 	}
 	return ec._Cluster(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNDiagnostics2githubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐDiagnostics(ctx context.Context, sel ast.SelectionSet, v model.Diagnostics) graphql.Marshaler {
+	return ec._Diagnostics(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDiagnostics2ᚖgithubᚗcomᚋkajjagtenbergᚋeventflowdbᚋgraphᚋmodelᚐDiagnostics(ctx context.Context, sel ast.SelectionSet, v *model.Diagnostics) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Diagnostics(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
