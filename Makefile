@@ -15,6 +15,10 @@ gql:
 build:
 	docker build -t eventflowdb:latest .
 
+push: build
+	docker tag eventflowdb:latest ghcr.io/kajjagtenberg.nl/eventflowdb:latest
+	docker push ghcr.io/kajjagtenberg.nl/eventflowdb:latest
+
 compose_up:
 	docker-compose up -d --build
 
