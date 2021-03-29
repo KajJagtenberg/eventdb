@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/helmet/v2"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/cluster"
@@ -77,6 +78,7 @@ func main() {
 		DisableStartupMessage: true,
 	})
 	app.Use(helmet.New())
+	app.Use(cors.New())
 	app.Get("/graphql", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/graphql")))
 	app.Post("/graphql", adaptor.HTTPHandler(srv))
 
