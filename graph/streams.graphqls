@@ -1,0 +1,4 @@
+
+extend type Query {
+    streams(skip: Int! = 0, limit: Int! = 20): [String!]!
+}

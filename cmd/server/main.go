@@ -70,7 +70,7 @@ func main() {
 		}
 	}()
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolvers.NewResolver(raftServer)}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolvers.NewResolver(raftServer, persistence)}))
 
 	http.Handle("/query", srv)
 
