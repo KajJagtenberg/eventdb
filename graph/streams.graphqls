@@ -13,9 +13,12 @@ type Event {
 extend type Query {
   streams(skip: Int! = 0, limit: Int! = 20): [String!]!
   eventsFromStream(
-    stream: String
+    stream: String!
     version: Int! = 0
     limit: Int! = 0
   ): [Event!]!
-  eventsFromLog(offset: String, limit: Int! = 10): [Event!]!
+  eventsFromLog(offset: String!, limit: Int! = 10): [Event!]!
 }
+
+
+scalar Time
