@@ -17,8 +17,10 @@ extend type Query {
     version: Int! = 0
     limit: Int! = 0
   ): [Event!]!
-  eventsFromLog(offset: String!, limit: Int! = 10): [Event!]!
+  eventsFromLog(
+    offset: String! = "00000000000000000000000000"
+    limit: Int! = 10
+  ): [Event!]!
 }
-
 
 scalar Time
