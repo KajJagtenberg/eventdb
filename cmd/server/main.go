@@ -20,7 +20,6 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/graph/generated"
 	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
 	"github.com/kajjagtenberg/eventflowdb/persistence"
-	"github.com/oklog/ulid"
 	"go.etcd.io/bbolt"
 )
 
@@ -88,9 +87,6 @@ func main() {
 			log.Fatalf("Failed to serve Graphql: %v", err)
 		}
 	}()
-
-	var u ulid.ULID
-	log.Println(u)
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
