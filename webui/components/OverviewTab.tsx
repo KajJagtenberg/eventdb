@@ -5,9 +5,10 @@ export const OverviewTab = () => {
   const { data } = useQuery(
     gql`
       {
-        uptime
-        streamCount
-        eventCount
+        diagnostics {
+          uptime
+          uptimeMs
+        }
       }
     `,
     {
@@ -21,21 +22,14 @@ export const OverviewTab = () => {
         <Text fontWeight="semibold" mr={2} color="brand.500">
           Uptime:
         </Text>
-        <Text>{data?.uptime}</Text>
-      </Flex>
-
-      <Flex>
-        <Text fontWeight="semibold" mr={2} color="brand.500">
-          Stream Count:
-        </Text>
-        <Text>{data?.streamCount}</Text>
+        <Text>{data?.diagnostics.uptime}(s)</Text>
       </Flex>
 
       <Flex>
         <Text fontWeight="semibold" mr={2} color="brand.500">
           Event Count:
         </Text>
-        <Text>{data?.eventCount}</Text>
+        <Text>{data?.diagnostics.eventCount}</Text>
       </Flex>
     </>
   );

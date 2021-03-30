@@ -179,6 +179,39 @@ func (p *Persistence) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
 	return result, nil
 }
 
+func (p *Persistence) Streams(skip int, limit int) ([]string, error) {
+	if skip < 0 {
+		skip = 0
+	}
+	if limit <= 0 {
+		limit = 20
+	}
+
+	var streams []string
+
+	if err := p.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte(BUCKET_STREAMS)).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			if skip > 0 {
+				skip--
+				continue
+			}
+			if len(streams) >= limit {
+				break
+			}
+
+			streams = append(streams, string(k))
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return streams, nil
+}
+
 func NewPersistence(db *bbolt.DB) (*Persistence, error) {
 	err := db.Update(func(t *bbolt.Tx) error {
 		buckets := []string{BUCKET_STREAMS, BUCKET_EVENTS}

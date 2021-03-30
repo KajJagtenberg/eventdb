@@ -15,7 +15,6 @@ func (service *ShellService) Execute(stream ShellService_ExecuteServer) error {
 	shell := shell.NewShell(service.raft, service.persistence)
 
 	for {
-
 		request, err := stream.Recv()
 		if err != nil {
 			return err

@@ -1,5 +1,10 @@
 package constants
 
-const (
-	Version = "0.1.0"
+import (
+	_ "embed"
+)
+
+var (
+	//go:embed version
+	Version string
 )
