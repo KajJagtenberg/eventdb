@@ -5,10 +5,10 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/graph/model"
+	"github.com/oklog/ulid"
 )
 
 func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]string, error) {
@@ -46,5 +46,31 @@ func (r *queryResolver) EventsFromStream(ctx context.Context, stream string, ver
 }
 
 func (r *queryResolver) EventsFromLog(ctx context.Context, offset string, limit int) ([]*model.Event, error) {
-	panic(fmt.Errorf("not implemented"))
+	offsetId, err := ulid.Parse(offset)
+	if err != nil {
+		return nil, err
+	}
+
+	events, err := r.persistence.Log(offsetId, uint32(limit))
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*model.Event
+
+	for _, event := range events {
+		result = append(result, &model.Event{
+			ID:            event.ID.String(),
+			Stream:        event.Stream.String(),
+			Version:       int(event.Version),
+			Type:          event.Type,
+			Data:          string(event.Data),
+			Metadata:      string(event.Metadata),
+			CausationID:   event.CausationID.String(),
+			CorrelationID: event.CorrelationID.String(),
+			AddedAt:       event.AddedAt,
+		})
+	}
+
+	return result, nil
 }
