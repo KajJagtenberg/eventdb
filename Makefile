@@ -15,11 +15,10 @@ gql:
 	go run github.com/99designs/gqlgen generate
 
 build:
-	docker build -t eventflowdb:$(VERSION) .
+	docker build -t ghcr.io/kajjagtenberg/eventflowdb:$(VERSION) .
 
 push: build
-	docker tag eventflowdb:$(VERSION) ghcr.io/kajjagtenberg/eventflowdb:$(VERSION)
-	docker tag eventflowdb:$(VERSION) ghcr.io/kajjagtenberg/eventflowdb:latest
+	docker tag ghcr.io/kajjagtenberg/eventflowdb:$(VERSION) ghcr.io/kajjagtenberg/eventflowdb:latest
 	docker push ghcr.io/kajjagtenberg/eventflowdb:$(VERSION)
 	docker push ghcr.io/kajjagtenberg/eventflowdb:latest
 
