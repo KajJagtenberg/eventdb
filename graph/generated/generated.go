@@ -49,8 +49,10 @@ type ComplexityRoot struct {
 	}
 
 	Diagnostics struct {
-		Uptime   func(childComplexity int) int
-		UptimeMs func(childComplexity int) int
+		HeapIdle  func(childComplexity int) int
+		HeapInUse func(childComplexity int) int
+		Uptime    func(childComplexity int) int
+		UptimeMs  func(childComplexity int) int
 	}
 
 	Event struct {
@@ -110,6 +112,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Cluster.Size(childComplexity), true
+
+	case "Diagnostics.heapIdle":
+		if e.complexity.Diagnostics.HeapIdle == nil {
+			break
+		}
+
+		return e.complexity.Diagnostics.HeapIdle(childComplexity), true
+
+	case "Diagnostics.heapInUse":
+		if e.complexity.Diagnostics.HeapInUse == nil {
+			break
+		}
+
+		return e.complexity.Diagnostics.HeapInUse(childComplexity), true
 
 	case "Diagnostics.uptime":
 		if e.complexity.Diagnostics.Uptime == nil {
@@ -300,6 +316,8 @@ extend type Query {
 	{Name: "graph/diagnostics.graphqls", Input: `type Diagnostics {
     uptime: Int!
     uptimeMs: Int!
+    heapInUse: Int!
+    heapIdle: Int!
 }
 
 extend type Query {
@@ -594,6 +612,76 @@ func (ec *executionContext) _Diagnostics_uptimeMs(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return obj.UptimeMs, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Diagnostics_heapInUse(ctx context.Context, field graphql.CollectedField, obj *model.Diagnostics) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Diagnostics",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HeapInUse, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Diagnostics_heapIdle(ctx context.Context, field graphql.CollectedField, obj *model.Diagnostics) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Diagnostics",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HeapIdle, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2337,6 +2425,16 @@ func (ec *executionContext) _Diagnostics(ctx context.Context, sel ast.SelectionS
 			}
 		case "uptimeMs":
 			out.Values[i] = ec._Diagnostics_uptimeMs(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "heapInUse":
+			out.Values[i] = ec._Diagnostics_heapInUse(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "heapIdle":
+			out.Values[i] = ec._Diagnostics_heapIdle(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}

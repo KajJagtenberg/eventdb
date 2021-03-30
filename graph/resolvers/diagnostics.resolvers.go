@@ -5,15 +5,21 @@ package resolvers
 
 import (
 	"context"
+	"runtime"
 	"time"
 
 	"github.com/kajjagtenberg/eventflowdb/graph/model"
 )
 
 func (r *queryResolver) Diagnostics(ctx context.Context) (*model.Diagnostics, error) {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+
 	return &model.Diagnostics{
-		Uptime:   int(time.Now().Sub(start).Seconds()),
-		UptimeMs: int(time.Now().Sub(start).Milliseconds()),
+		Uptime:    int(time.Now().Sub(start).Seconds()),
+		UptimeMs:  int(time.Now().Sub(start).Milliseconds()),
+		HeapInUse: int(m.HeapInuse),
+		HeapIdle:  int(m.HeapIdle),
 	}, nil
 }
 

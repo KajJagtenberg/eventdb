@@ -12,8 +12,10 @@ type Cluster struct {
 }
 
 type Diagnostics struct {
-	Uptime   int `json:"uptime"`
-	UptimeMs int `json:"uptimeMs"`
+	Uptime    int `json:"uptime"`
+	UptimeMs  int `json:"uptimeMs"`
+	HeapInUse int `json:"heapInUse"`
+	HeapIdle  int `json:"heapIdle"`
 }
 
 type Event struct {

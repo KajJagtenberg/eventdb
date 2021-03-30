@@ -1,7 +1,8 @@
 type Diagnostics {
     uptime: Int!
     uptimeMs: Int!
-    memoryUsage: Int!
+    heapInUse: Int!
+    heapIdle: Int!
 }
 
 extend type Query {
