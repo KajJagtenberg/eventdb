@@ -1,4 +1,21 @@
+type Event {
+  id: String!
+  stream: String!
+  version: Int!
+  type: String!
+  data: String!
+  metadata: String!
+  causation_id: String!
+  correlation_id: String!
+  added_at: Time!
+}
 
 extend type Query {
-    streams(skip: Int! = 0, limit: Int! = 20): [String!]!
+  streams(skip: Int! = 0, limit: Int! = 20): [String!]!
+  eventsFromStream(
+    stream: String
+    version: Int! = 0
+    limit: Int! = 0
+  ): [Event!]!
+  eventsFromLog(offset: String, limit: Int! = 10): [Event!]!
 }
