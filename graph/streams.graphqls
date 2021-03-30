@@ -12,12 +12,8 @@ type Event {
 
 extend type Query {
   streams(skip: Int! = 0, limit: Int! = 20): [String!]!
-  eventsFromStream(
-    stream: String!
-    version: Int! = 0
-    limit: Int! = 0
-  ): [Event!]!
-  eventsFromLog(
+  get(stream: String!, version: Int! = 0, limit: Int! = 0): [Event!]!
+  log(
     offset: String! = "00000000000000000000000000"
     limit: Int! = 10
   ): [Event!]!

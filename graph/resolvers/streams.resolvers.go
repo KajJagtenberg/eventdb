@@ -15,7 +15,7 @@ func (r *queryResolver) Streams(ctx context.Context, skip int, limit int) ([]str
 	return r.persistence.Streams(skip, limit)
 }
 
-func (r *queryResolver) EventsFromStream(ctx context.Context, stream string, version int, limit int) ([]*model.Event, error) {
+func (r *queryResolver) Get(ctx context.Context, stream string, version int, limit int) ([]*model.Event, error) {
 	streamId, err := uuid.Parse(stream)
 	if err != nil {
 		return nil, err
@@ -44,8 +44,7 @@ func (r *queryResolver) EventsFromStream(ctx context.Context, stream string, ver
 
 	return result, nil
 }
-
-func (r *queryResolver) EventsFromLog(ctx context.Context, offset string, limit int) ([]*model.Event, error) {
+func (r *queryResolver) Log(ctx context.Context, offset string, limit int) ([]*model.Event, error) {
 	offsetId, err := ulid.Parse(offset)
 	if err != nil {
 		return nil, err
