@@ -1,3 +1,5 @@
+VERSION := $(shell cat constants/version)
+
 server:
 	go run cmd/server/main.go
 
@@ -13,11 +15,13 @@ gql:
 	go run github.com/99designs/gqlgen generate
 
 build:
-	docker build -t eventflowdb:latest .
+	docker build -t eventflowdb:$(VERSION) .
 
 push: build
-	docker tag eventflowdb:latest ghcr.io/kajjagtenberg.nl/eventflowdb:latest
-	docker push ghcr.io/kajjagtenberg.nl/eventflowdb:latest
+	docker tag eventflowdb:$(VERSION) ghcr.io/kajjagtenberg/eventflowdb:$(VERSION)
+	docker tag eventflowdb:$(VERSION) ghcr.io/kajjagtenberg/eventflowdb:latest
+	docker push ghcr.io/kajjagtenberg/eventflowdb:$(VERSION)
+	docker push ghcr.io/kajjagtenberg/eventflowdb:latest
 
 compose_up:
 	docker-compose up -d --build
