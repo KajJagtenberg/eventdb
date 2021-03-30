@@ -1,10 +1,10 @@
 type Diagnostics {
-    uptime: Int!
-    uptimeMs: Int!
-    heapInUse: Int!
-    heapIdle: Int!
+  uptime: Int!
+  uptimeMs: Int!
+  heapInUse: Int!
+  heapIdle: Int!
 }
 
 extend type Query {
-    diagnostics: Diagnostics!
+  diagnostics: Diagnostics!
 }
