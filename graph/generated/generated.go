@@ -314,15 +314,16 @@ extend type Query {
 }
 `, BuiltIn: false},
 	{Name: "graph/diagnostics.graphqls", Input: `type Diagnostics {
-    uptime: Int!
-    uptimeMs: Int!
-    heapInUse: Int!
-    heapIdle: Int!
+  uptime: Int!
+  uptimeMs: Int!
+  heapInUse: Int!
+  heapIdle: Int!
 }
 
 extend type Query {
-    diagnostics: Diagnostics!
-}`, BuiltIn: false},
+  diagnostics: Diagnostics!
+}
+`, BuiltIn: false},
 	{Name: "graph/streams.graphqls", Input: `type Event {
   id: String!
   stream: String!
@@ -342,11 +343,14 @@ extend type Query {
     version: Int! = 0
     limit: Int! = 0
   ): [Event!]!
-  eventsFromLog(offset: String!, limit: Int! = 10): [Event!]!
+  eventsFromLog(
+    offset: String! = "00000000000000000000000000"
+    limit: Int! = 10
+  ): [Event!]!
 }
 
-
-scalar Time`, BuiltIn: false},
+scalar Time
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
