@@ -2,13 +2,14 @@ package util
 
 import (
 	"crypto/rand"
+	"log"
 	"time"
 
-	"github.com/kajjagtenberg/eventflowdb/persistence"
+	"github.com/kajjagtenberg/eventflowdb/api"
 )
 
-func GenerateEvents(n int) chan persistence.EventData {
-	result := make(chan persistence.EventData)
+func GenerateEvents(n int) chan api.AddEventsRequest_EventData {
+	result := make(chan api.AddEventsRequest_EventData)
 
 	go func() {
 		for i := 0; i < n; i++ {
@@ -18,13 +19,17 @@ func GenerateEvents(n int) chan persistence.EventData {
 			rand.Read(data)
 			rand.Read(metadata)
 
-			result <- persistence.EventData{
+			result <- api.AddEventsRequest_EventData{
 				Type:     "Random",
 				Data:     data,
 				Metadata: metadata,
-				AddedAt:  time.Now(),
+				AddedAt:  time.Now().UnixNano(),
 			}
 		}
+
+		close(result)
+
+		log.Println("Closed")
 	}()
 
 	return result
