@@ -62,6 +62,7 @@ func (p *Persistence) Add(streamID uuid.UUID, version uint32, events []EventData
 			record.Metadata = event.Metadata
 			record.CausationID = event.CausationID
 			record.CorrelationID = event.CorrelationID
+			record.AddedAt = event.AddedAt
 
 			if bytes.Compare(record.CausationID[:], make([]byte, 16)) == 0 {
 				record.CausationID = record.ID
@@ -71,7 +72,9 @@ func (p *Persistence) Add(streamID uuid.UUID, version uint32, events []EventData
 				record.CorrelationID = record.ID
 			}
 
-			record.AddedAt = time.Now()
+			if record.AddedAt.IsZero() {
+				record.AddedAt = time.Now()
+			}
 
 			stream.Events = append(stream.Events, record.ID)
 
