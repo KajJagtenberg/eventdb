@@ -17,6 +17,7 @@ extend type Query {
     offset: String! = "00000000000000000000000000"
     limit: Int! = 10
   ): [Event!]!
+  eventCount: Int!
 }
 
 scalar Time

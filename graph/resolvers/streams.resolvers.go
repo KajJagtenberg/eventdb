@@ -44,6 +44,7 @@ func (r *queryResolver) Get(ctx context.Context, stream string, version int, lim
 
 	return result, nil
 }
+
 func (r *queryResolver) Log(ctx context.Context, offset string, limit int) ([]*model.Event, error) {
 	offsetId, err := ulid.Parse(offset)
 	if err != nil {
@@ -72,4 +73,13 @@ func (r *queryResolver) Log(ctx context.Context, offset string, limit int) ([]*m
 	}
 
 	return result, nil
+}
+
+func (r *queryResolver) EventCount(ctx context.Context) (int, error) {
+	count, err := r.persistence.EventCount()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(count), err
 }
