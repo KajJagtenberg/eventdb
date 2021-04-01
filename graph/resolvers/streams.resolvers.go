@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+	"encoding/hex"
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/graph/model"
@@ -82,4 +83,13 @@ func (r *queryResolver) EventCount(ctx context.Context) (int, error) {
 	}
 
 	return int(count), err
+}
+
+func (r *queryResolver) Checksum(ctx context.Context) (string, error) {
+	checksum, err := r.persistence.Checksum()
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(checksum), nil
 }

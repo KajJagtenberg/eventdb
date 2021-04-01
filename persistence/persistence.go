@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"errors"
 	"math/rand"
 	"time"
@@ -28,7 +29,7 @@ type Persistence struct {
 func (p *Persistence) Add(streamID uuid.UUID, version uint32, events []EventData) ([]Event, error) {
 	var result []Event
 
-	err := p.db.Batch(func(t *bbolt.Tx) error {
+	err := p.db.Update(func(t *bbolt.Tx) error {
 		streamsBucket := t.Bucket([]byte(BUCKET_STREAMS))
 		eventsBucket := t.Bucket([]byte(BUCKET_EVENTS))
 
@@ -231,6 +232,26 @@ func (p *Persistence) EventCount() (uint64, error) {
 	}
 
 	return count, nil
+}
+
+func (p *Persistence) Checksum() ([]byte, error) {
+	h := sha1.New()
+
+	if err := p.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("events")).Cursor()
+
+		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+			if _, err := h.Write(v); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return h.Sum(nil), nil
 }
 
 func NewPersistence(db *bbolt.DB) (*Persistence, error) {

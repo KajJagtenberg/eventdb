@@ -8,13 +8,16 @@ import (
 
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb"
+	mdb "github.com/hashicorp/raft-mdb"
 )
 
 func NewRaftServer(localID string, bindAddr string, advrAddr string, fsm raft.FSM, bootstrap bool) (*raft.Raft, error) {
 	config := raft.DefaultConfig()
 	config.LocalID = raft.ServerID(localID)
+	config.SnapshotThreshold *= 100
 
-	lst, err := raftboltdb.NewBoltStore("data/log.dat")
+	// lst, err := raftboltdb.NewBoltStore("data/log.dat")
+	lst, err := mdb.NewMDBStore("data")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create Raft log store: %v", err)
 	}

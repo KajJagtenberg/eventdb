@@ -18,6 +18,7 @@ extend type Query {
     limit: Int! = 10
   ): [Event!]!
   eventCount: Int!
+  checksum: String!
 }
 
 scalar Time

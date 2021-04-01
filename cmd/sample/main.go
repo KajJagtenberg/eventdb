@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
@@ -20,10 +19,7 @@ func main() {
 
 	service := api.NewStreamServiceClient(conn)
 
-	var wg sync.WaitGroup
-
-	for event := range util.GenerateEvents(1000) {
-		wg.Add(1)
+	for event := range util.GenerateEvents(100000) {
 
 		stream := uuid.New()
 
@@ -35,18 +31,11 @@ func main() {
 
 		log.Printf("Adding event to %v", stream)
 
-		go func() {
-			_, err := service.AddEvents(context.Background(), request)
-			if err != nil {
-				log.Fatalf("Failed to add events: %v", err)
-			}
-			wg.Done()
-		}()
+		_, err := service.AddEvents(context.Background(), request)
+		if err != nil {
+			log.Fatalf("Failed to add events: %v", err)
+		}
 	}
-
-	log.Println("Waiting")
-
-	wg.Wait()
 
 	log.Println("Done")
 }

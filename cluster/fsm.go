@@ -4,7 +4,6 @@ import (
 	"errors"
 	"io"
 	"log"
-	"math/rand"
 	"time"
 
 	"github.com/golang/protobuf/proto"
@@ -14,13 +13,9 @@ import (
 	"github.com/oklog/ulid"
 )
 
-const (
-	BUCKET_STREAMS = "streams"
-	BUCKET_EVENTS  = "events"
-)
-
 var (
-	entropy = ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0)
+	count = 0
+	last  = time.Now()
 )
 
 type ApplyResult struct {
@@ -49,6 +44,7 @@ func (fsm *FSM) Apply(applyLog *raft.Log) interface{} {
 
 		switch cmd := cmd.Command.(type) {
 		case *ApplyLog_Add:
+
 			var streamID uuid.UUID
 			if err := streamID.UnmarshalBinary(cmd.Add.Stream); err != nil {
 				result.Error = err
@@ -93,6 +89,16 @@ func (fsm *FSM) Apply(applyLog *raft.Log) interface{} {
 			}
 
 			result.Value = records
+
+			count++
+
+			if time.Now().Sub(last).Milliseconds() >= 1000 {
+				last = time.Now()
+
+				log.Printf("%d events added", count)
+
+				count = 0
+			}
 		}
 	default:
 		log.Println("Type:", applyLog.Type)
