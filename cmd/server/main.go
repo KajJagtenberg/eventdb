@@ -2,23 +2,11 @@ package main
 
 import (
 	"log"
-	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/gofiber/adaptor/v2"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/helmet/v2"
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/cluster"
 	"github.com/kajjagtenberg/eventflowdb/env"
-	"github.com/kajjagtenberg/eventflowdb/graph/generated"
-	"github.com/kajjagtenberg/eventflowdb/graph/resolvers"
 	"github.com/kajjagtenberg/eventflowdb/persistence"
 	"go.etcd.io/bbolt"
 )
@@ -45,48 +33,7 @@ func main() {
 		log.Fatalf("Failed to create persistence: %v", err)
 	}
 
-	fsm, err := cluster.NewFSM(persistence)
-	if err != nil {
-		log.Fatalf("Failed to create FSM: %v", err)
-	}
-
-	raftServer, err := cluster.NewRaftServer(localID, bindAddr, advrAddr, fsm, true)
-	if err != nil {
-		log.Fatalf("Failed to create Raft: %v", err)
-	}
-	defer raftServer.Shutdown()
-
-	lis, err := net.Listen("tcp", grpcAddr)
-	if err != nil {
-		log.Fatalf("Failed to listen: %v", err)
-	}
-	defer lis.Close()
-
-	grpcServer := api.NewGRPCServer(raftServer, persistence)
-
-	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("Failed to serve gRPC server: %v", err)
-		}
-	}()
-
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: resolvers.NewResolver(raftServer, persistence)}))
-
-	http.Handle("/query", srv)
-
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	app.Use(helmet.New())
-	app.Use(cors.New())
-	app.Get("/graphql", adaptor.HTTPHandler(playground.Handler("GraphQL playground", "/graphql")))
-	app.Post("/graphql", adaptor.HTTPHandler(srv))
-
-	go func() {
-		if err := app.Listen(graphqlAddr); err != nil {
-			log.Fatalf("Failed to serve Graphql: %v", err)
-		}
-	}()
+	log.Println(persistence.Checksum())
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
