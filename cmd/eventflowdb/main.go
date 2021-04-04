@@ -71,6 +71,7 @@ func main() {
 	grpcServer := grpc.NewServer()
 
 	api.RegisterStreamServiceServer(grpcServer, api.NewStreamService(store))
+	api.RegisterShellServiceServer(grpcServer, api.NewShellService())
 
 	go func() {
 		log.Printf("gRPC server listening on %v", grpcAddr)
