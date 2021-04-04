@@ -18,14 +18,9 @@ import (
 )
 
 var (
-	// localID       = env.GetEnv("RAFT_LOCAL_ID", "main")
-	// bindAddr      = env.GetEnv("RAFT_BIND_ADDR", "127.0.0.1:6542")
-	// advrAddr      = env.GetEnv("RAFT_ADVR_ADDR", bindAddr)
-	// bootstrap     = env.GetEnv("RAFT_BOOTSTRAP", "false") == "true"
 	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
 	grpcAddr      = env.GetEnv("GRPC_ADDR", ":6543")
 	httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
-	// graphqlAddr   = env.GetEnv("GRAPHQL_ADDR", ":16543")
 )
 
 func main() {
