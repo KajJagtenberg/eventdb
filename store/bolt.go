@@ -67,7 +67,7 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
 	var result []Event
 
-	if err := s.db.Update(func(t *bbolt.Tx) error {
+	if err := s.db.Batch(func(t *bbolt.Tx) error {
 		streamBucket := t.Bucket([]byte("streams"))
 		eventsBucket := t.Bucket([]byte("events"))
 
@@ -232,6 +232,42 @@ func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
 	logCounter.Add(1)
 
 	return result, nil
+}
+
+func (s *BoltStore) EventCount() (int64, error) {
+	var total int64
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("events")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			total++
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (s *BoltStore) StreamCount() (int64, error) {
+	var total int64
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("streams")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			total++
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
 
 func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
