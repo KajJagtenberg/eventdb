@@ -4,6 +4,7 @@ import (
 	_ "embed"
 
 	"github.com/dop251/goja"
+	"github.com/kajjagtenberg/eventflowdb/constants"
 )
 
 var (
@@ -53,6 +54,10 @@ func NewShell() (*Shell, error) {
 	if _, err := vm.RunString(runtime); err != nil {
 		return nil, err
 	}
+
+	vm.Set("version", func() string {
+		return constants.Version
+	})
 
 	return &Shell{vm}, nil
 }
