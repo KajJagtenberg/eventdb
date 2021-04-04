@@ -27,6 +27,8 @@ var (
 )
 
 func main() {
+	log.Println("Initializing store")
+
 	db, err := bbolt.Open(stateLocation, 0666, bbolt.DefaultOptions)
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
@@ -37,6 +39,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create store: %v", err)
 	}
+
+	log.Println("Initializing HTTP server")
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -55,6 +59,8 @@ func main() {
 			log.Fatalf("Failed to listen: %v", err)
 		}
 	}()
+
+	log.Println("Initializing gRPC server")
 
 	lis, err := net.Listen("tcp", grpcAddr)
 	if err != nil {
@@ -77,4 +83,6 @@ func main() {
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
+
+	log.Println("Shutting down...")
 }
