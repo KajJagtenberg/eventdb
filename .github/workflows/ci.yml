@@ -20,10 +20,10 @@ jobs:
           go version
           go get -u golang.org/x/lint/golint
       - name: Run build
-        run: go build -o server cmd/server/main.go
+        run: go build -o server cmd/eventflowdb/main.go
       - name: Vet and lint
         run: |
-          go vet cmd/server/main.go
-          golint cmd/server/main.go
+          go vet cmd/eventflowdb/main.go
+          golint cmd/eventflowdb/main.go
       - name: Run tests
         run: go test -v ./...
