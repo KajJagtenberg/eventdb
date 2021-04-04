@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/helmet/v2"
+	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -36,8 +37,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create store: %v", err)
 	}
-
-	log.Println(store.Size()) // TODO: Remove when no longer necessary
 
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -64,6 +63,8 @@ func main() {
 	defer lis.Close()
 
 	grpcServer := grpc.NewServer()
+
+	api.RegisterStreamServiceServer(grpcServer, api.NewStreamService(store))
 
 	go func() {
 		log.Printf("gRPC server listening on %v", grpcAddr)
