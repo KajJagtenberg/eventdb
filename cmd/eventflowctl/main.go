@@ -13,10 +13,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	Version = "0.1.0"
-)
-
 func main() {
 	rl, err := readline.New("> ")
 	if err != nil {
@@ -51,8 +47,6 @@ Loop:
 		switch strings.ToLower(parts[0]) {
 		case "exit":
 			break Loop
-		case "version":
-			fmt.Println(Version)
 		default:
 			if err := exec.Send(&api.ShellRequest{
 				Body: line,
