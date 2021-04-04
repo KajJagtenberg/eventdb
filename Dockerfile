@@ -11,6 +11,8 @@ RUN go mod download
 
 COPY . .
 
+RUN go test ./...
+
 RUN go build -o bin/server cmd/server/main.go
 
 FROM alpine:3.8
