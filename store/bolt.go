@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"time"
 
@@ -39,7 +40,9 @@ var (
 )
 
 type BoltStore struct {
-	db *bbolt.DB
+	db                  *bbolt.DB
+	estimateStreamCount int64
+	estimateEventCount  int64
 }
 
 func (s *BoltStore) Size() int64 {
@@ -269,6 +272,13 @@ func (s *BoltStore) StreamCount() (int64, error) {
 
 	return total, nil
 }
+func (s *BoltStore) StreamCountEstimate() (int64, error) {
+	return s.estimateStreamCount, nil
+}
+
+func (s *BoltStore) EventCountEstimate() (int64, error) {
+	return s.estimateEventCount, nil
+}
 
 func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 	if err := db.Update(func(t *bbolt.Tx) error {
@@ -283,5 +293,26 @@ func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 		return nil, err
 	}
 
-	return &BoltStore{db}, nil
+	store := &BoltStore{db, 0, 0}
+
+	go func() {
+		for {
+			streamCount, err := store.StreamCount()
+			if err != nil {
+				log.Fatalf("Failed to get stream count: %v", err)
+			}
+
+			eventCount, err := store.EventCount()
+			if err != nil {
+				log.Fatalf("Failed to get stream count: %v", err)
+			}
+
+			store.estimateStreamCount = streamCount
+			store.estimateEventCount = eventCount
+
+			time.Sleep(time.Second)
+		}
+	}()
+
+	return store, nil
 }

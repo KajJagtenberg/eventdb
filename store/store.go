@@ -45,4 +45,14 @@ type Store interface {
 		Returns the total number of streams in the database
 	*/
 	StreamCount() (int64, error)
+
+	/*
+		Returns an estimate of the total number of events stored in the database
+	*/
+	EventCountEstimate() (int64, error)
+
+	/*
+		Returns an estimate of the total number of streams in the database
+	*/
+	StreamCountEstimate() (int64, error)
 }
