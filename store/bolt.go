@@ -32,6 +32,10 @@ var (
 		Name: "store_log_total",
 		Help: "The amount of log requests performed",
 	})
+	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "store_concurrent_modification_total",
+		Help: "The total amount of concurrent stream modification errors",
+	})
 )
 
 type BoltStore struct {
@@ -79,6 +83,8 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		}
 
 		if len(s.Events) != int(version) {
+			concurrencyCounter.Add(1)
+
 			return errors.New("Concurrent stream modification")
 		}
 
