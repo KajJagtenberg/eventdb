@@ -7,6 +7,9 @@ import (
 
 	"log"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/helmet/v2"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"go.etcd.io/bbolt"
@@ -19,6 +22,7 @@ var (
 	// bootstrap     = env.GetEnv("RAFT_BOOTSTRAP", "false") == "true"
 	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
 	grpcAddr      = env.GetEnv("GRPC_ADDR", ":6543")
+	httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
 	// graphqlAddr   = env.GetEnv("GRAPHQL_ADDR", ":16543")
 )
 
@@ -34,7 +38,17 @@ func main() {
 		log.Fatalf("Failed to create store: %v", err)
 	}
 
-	log.Println("Size: ", store.Size())
+	log.Println(store.Size()) // TODO: Remove when no longer necessary
+
+	app := fiber.New()
+	app.Use(helmet.New())
+	app.Use(cors.New())
+
+	go func() {
+		if err := app.Listen(httpAddr); err != nil {
+			log.Fatalf("Failed to listen: %v", err)
+		}
+	}()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
