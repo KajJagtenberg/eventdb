@@ -3,16 +3,14 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
-	github.com/dop251/goja v0.0.0-20210322220816-6fc852574a34
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
-	github.com/hashicorp/go-hclog v0.15.0 // indirect
-	github.com/hashicorp/go-uuid v1.0.2 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/hashicorp/raft v1.2.0
+	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/stretchr/testify v1.7.0
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/sys v0.0.0-20210326220804-49726bf1d181 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
