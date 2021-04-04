@@ -4,7 +4,7 @@ eventflowdb:
 	go run cmd/eventflowdb/main.go
 
 eventflowctl:
-	go run cmd/client/main.go
+	go run cmd/eventflowctl/main.go
 
 pb:
 	protoc --proto_path=proto --go_out=plugins=grpc:api --go_opt=paths=source_relative proto/api.proto
