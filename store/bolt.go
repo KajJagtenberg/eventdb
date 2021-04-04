@@ -28,6 +28,10 @@ var (
 		Name: "store_get_total",
 		Help: "The amount of get requests performed",
 	})
+	logCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "store_log_total",
+		Help: "The amount of log requests performed",
+	})
 )
 
 type BoltStore struct {
@@ -187,6 +191,39 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 	}
 
 	getCounter.Add(1)
+
+	return result, nil
+}
+
+func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
+	if limit == 0 {
+		limit = 100
+	}
+
+	var result []Event
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("events")).Cursor()
+
+		for k, v := cursor.Seek(offset[:]); k != nil; k, v = cursor.Next() {
+			if len(result) >= int(limit) {
+				break
+			}
+
+			var event Event
+			if err := event.Unmarshal(v); err != nil {
+				return err
+			}
+
+			result = append(result, event)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	logCounter.Add(1)
 
 	return result, nil
 }
