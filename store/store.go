@@ -22,4 +22,10 @@ type Store interface {
 		an error in case of concurrent stream modification.
 	*/
 	Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error)
+
+	/*
+		Returns events for specified stream, offset at given version and limits the resulting set by the given limit.
+		If limit is zero, then all events from given version onwards will be returned.
+	*/
+	Get(stream uuid.UUID, version uint32, limit uint32) ([]Event, error)
 }
