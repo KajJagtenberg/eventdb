@@ -11,7 +11,9 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o bin/server cmd/server/main.go
+RUN go test ./...
+
+RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 
 FROM alpine:3.8
 
@@ -19,6 +21,6 @@ WORKDIR /var/lib/eventflowdb
 
 RUN mkdir data -p
 
-COPY --from=build /src/bin/server /bin/eventflowdb
+COPY --from=build /src/bin/eventflowdb /bin/eventflowdb
 
 CMD ["eventflowdb"]

@@ -1,83 +1,63 @@
 package shell
 
 import (
-	"log"
-	"time"
-
 	_ "embed"
 
 	"github.com/dop251/goja"
-	"github.com/hashicorp/raft"
 	"github.com/kajjagtenberg/eventflowdb/constants"
-	"github.com/kajjagtenberg/eventflowdb/persistence"
-	"github.com/oklog/ulid"
 )
 
-//go:embed shell.js
-var runtime string
+var (
+	//go:embed runtime.js
+	runtime string
+	babel   *Babel
+)
 
 type Shell struct {
-	vm    *goja.Runtime
-	babel *Babel
+	vm *goja.Runtime
 }
 
-func (shell *Shell) Execute(src string) (string, error) {
-	compiled, err := shell.babel.Compile(src)
+func (shell *Shell) Execute(code string) (string, error) {
+	if babel == nil {
+		var err error
+		babel, err = NewBabel()
+		if err != nil {
+			return "", err
+		}
+	}
+
+	compiled, err := babel.Compile(code)
 	if err != nil {
-		return "", nil
+		if err != nil {
+			return "", err
+		}
 	}
 
 	value, err := shell.vm.RunString(compiled)
 	if err != nil {
-		return "", err
+		return err.Error(), nil
 	}
 
-	body := value.String()
+	result := value.String()
 
-	if body == "use strict" {
-		body = ""
+	if result == "use strict" {
+		return "", nil
 	}
 
-	return body, nil
+	return result, nil
 }
 
-func NewShell(raftServer *raft.Raft, persistence *persistence.Persistence) *Shell {
+func NewShell() (*Shell, error) {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
+
+	if _, err := vm.RunString(runtime); err != nil {
+		return nil, err
+	}
 
 	vm.Set("version", func() string {
 		return constants.Version
 	})
 
-	vm.Set("clusterLeader", func() string {
-		return string(raftServer.Leader())
-	})
-
-	vm.Set("clusterStats", func() interface{} {
-		return raftServer.Stats()
-	})
-
-	vm.Set("logEvents", func() (interface{}, error) {
-		events, err := persistence.Log(ulid.ULID{}, 100) // Not permanent
-		return events, err
-	})
-
-	vm.Set("joinCluster", func(id string, address string) error {
-		future := raftServer.AddVoter(raft.ServerID(id), raft.ServerAddress(address), 0, time.Second*5)
-		return future.Error()
-	})
-
-	vm.Set("clusterSize", func() int {
-		return len(raftServer.GetConfiguration().Configuration().Servers)
-	})
-
-	babel := NewBabel()
-
-	shell := &Shell{vm, babel}
-
-	if _, err := shell.Execute(runtime); err != nil {
-		log.Fatalf("Cannot execute shell runtime. This is a bug: %v", err)
-	}
-
-	return shell
+	return &Shell{vm}, nil
 }

@@ -72,16 +72,3 @@ message ShellResponse {
 service ShellService {
     rpc Execute(stream ShellRequest) returns (stream ShellResponse) {}
 }
-
-/**/
-
-message JoinRequest {
-    string id = 1;
-    string address = 2;
-}
-
-message JoinResponse {}
-
-service RaftService {
-    rpc Join(JoinRequest) returns (JoinResponse) {}
-}

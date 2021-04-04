@@ -1,42 +1,42 @@
 package api
 
 import (
-	"github.com/hashicorp/raft"
-	"github.com/kajjagtenberg/eventflowdb/persistence"
+	"io"
+
 	"github.com/kajjagtenberg/eventflowdb/shell"
 )
 
 type ShellService struct {
-	raft        *raft.Raft
-	persistence *persistence.Persistence
 }
 
 func (service *ShellService) Execute(stream ShellService_ExecuteServer) error {
-	shell := shell.NewShell(service.raft, service.persistence)
+	shell, err := shell.NewShell()
+	if err != nil {
+		return err
+	}
 
 	for {
 		request, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
 		if err != nil {
 			return err
 		}
 
-		output, err := shell.Execute(request.Body)
-
-		var body string
-		if err == nil {
-			body = output
-		} else {
-			body = err.Error()
+		result, err := shell.Execute(request.Body)
+		if err != nil {
+			return err
 		}
 
 		if err := stream.Send(&ShellResponse{
-			Body: body,
+			Body: result,
 		}); err != nil {
 			return err
 		}
 	}
 }
 
-func NewShellService(raft *raft.Raft, persistence *persistence.Persistence) *ShellService {
-	return &ShellService{raft, persistence}
+func NewShellService() *ShellService {
+	return &ShellService{}
 }

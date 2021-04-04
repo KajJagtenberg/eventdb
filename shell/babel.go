@@ -1,47 +1,53 @@
 package shell
 
 import (
-	"log"
-
 	_ "embed"
 
 	"github.com/dop251/goja"
 )
 
-//go:embed babel.min.js
-var source string
+var (
+	//go:embed babel.min.js
+	babelSource string
 
-//go:embed babel.env.min.js
-var preset string
+	//go:embed babel.preset.env.min.js
+	babelEnvSource string
+)
 
 type Babel struct {
 	vm *goja.Runtime
 }
 
-func (babel *Babel) Compile(source string) (string, error) {
-	if err := babel.vm.Set("source", source); err != nil {
+func (b *Babel) Compile(code string) (string, error) {
+	if err := b.vm.Set("code", code); err != nil {
 		return "", err
 	}
 
-	value, err := babel.vm.RunString(`Babel.transform(source,{presets:["env"]}).code;`)
-	if err != nil {
-		return "", nil
-	}
-
-	return value.String(), nil
+	result, err := b.vm.RunString("compile()")
+	return result.String(), err
 }
 
-func NewBabel() *Babel {
+func NewBabel() (*Babel, error) {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 
-	if _, err := vm.RunString(source); err != nil {
-		log.Fatalf("Failed to run load babel: %v", err)
+	if _, err := vm.RunString(babelSource); err != nil {
+		return nil, err
 	}
 
-	if _, err := vm.RunString(preset); err != nil {
-		log.Fatalf("Failed to run load babel preset: %v", err)
+	if _, err := vm.RunString(babelEnvSource); err != nil {
+		return nil, err
 	}
 
-	return &Babel{vm}
+	if _, err := vm.RunString(`
+		function compile() {
+			return Babel.transform(code, {
+				presets: ["env"]
+			}).code
+		}
+	`); err != nil {
+		return nil, err
+	}
+
+	return &Babel{vm}, nil
 }

@@ -1,6 +1,7 @@
 package shell_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/kajjagtenberg/eventflowdb/shell"
@@ -10,12 +11,15 @@ import (
 func TestBabel(t *testing.T) {
 	assert := assert.New(t)
 
-	babel := shell.NewBabel()
-
-	compiled, err := babel.Compile("const pow = x => x*x;")
+	babel, err := shell.NewBabel()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	assert.Equal(len(compiled), 61) // Not the best test
+	code, err := babel.Compile("const pow = x => x * x;")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(strings.Contains(code, `function pow(x)`), true)
 }

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option go_package="persistence";
+option go_package="store";
 
-package persistence;
+package store;
 
 message PersistedEvent {
     bytes id = 1;

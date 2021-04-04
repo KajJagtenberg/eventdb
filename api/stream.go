@@ -1,28 +1,16 @@
 package api
 
 import (
-	"context"
-	"errors"
-	"log"
+	context "context"
 	"time"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
-	"github.com/hashicorp/raft"
-	"github.com/kajjagtenberg/eventflowdb/cluster"
-	"github.com/kajjagtenberg/eventflowdb/persistence"
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
-)
-
-var (
-	ErrNotImplemented = grpc.Errorf(codes.Unimplemented, "Not implemented")
 )
 
 type StreamService struct {
-	raft        *raft.Raft
-	persistence *persistence.Persistence
+	store store.Store
 }
 
 func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsRequest) (*AddEventsResponse, error) {
@@ -33,71 +21,44 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 
 	version := req.Version
 
-	if version < 0 {
-		log.Println("Version is negative. This is a bug")
-		return nil, errors.New("Version cannot be negative")
-	}
-
-	if len(req.Events) == 0 {
-		return nil, errors.New("List of events cannot be empty")
-	}
-
-	var events []*cluster.AddCommand_EventData
+	var events []store.EventData
 
 	for _, event := range req.Events {
-		events = append(events, &cluster.AddCommand_EventData{
+		var causationID ulid.ULID
+		var correlationID ulid.ULID
+
+		if id := event.CausationId; id != nil {
+			if err := causationID.UnmarshalBinary(id); err != nil {
+				return nil, err
+			}
+		}
+
+		if id := event.CorrelationId; id != nil {
+			if err := correlationID.UnmarshalBinary(id); err != nil {
+				return nil, err
+			}
+		}
+
+		events = append(events, store.EventData{
 			Type:          event.Type,
 			Data:          event.Data,
 			Metadata:      event.Metadata,
-			CausationId:   event.CausationId,
-			CorrelationId: event.CorrelationId,
-			AddedAt:       event.AddedAt,
+			CausationID:   causationID,
+			CorrelationID: correlationID,
+			AddedAt:       time.Unix(0, event.AddedAt),
 		})
 	}
 
-	cmd, err := proto.Marshal(&cluster.ApplyLog{
-		Command: &cluster.ApplyLog_Add{
-			Add: &cluster.AddCommand{
-				Stream:  stream[:],
-				Version: version,
-				Events:  events,
-			},
-		},
-	})
+	records, err := service.store.Add(stream, version, events)
 	if err != nil {
 		return nil, err
 	}
 
-	future := service.raft.Apply(cmd, time.Second*5)
-	if err := future.Error(); err != nil {
-		return nil, err
+	result := &AddEventsResponse{
+		Events: mapEvents(records),
 	}
 
-	result := future.Response().(cluster.ApplyResult)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	var records []*Event
-
-	for _, event := range result.Value.([]persistence.Event) {
-		records = append(records, &Event{
-			Id:            event.ID[:],
-			Stream:        event.Stream[:],
-			Version:       event.Version,
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   event.CausationID[:],
-			CorrelationId: event.CorrelationID[:],
-			AddedAt:       event.AddedAt.UnixNano(),
-		})
-	}
-
-	return &AddEventsResponse{
-		Events: records,
-	}, nil
+	return result, nil
 }
 
 func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsRequest) (*GetEventsResponse, error) {
@@ -109,30 +70,16 @@ func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsReque
 	version := req.Version
 	limit := req.Limit
 
-	events, err := service.persistence.Get(stream, version, limit)
+	records, err := service.store.Get(stream, version, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	var records []*Event
-
-	for _, event := range events {
-		records = append(records, &Event{
-			Id:            event.ID[:],
-			Stream:        event.Stream[:],
-			Version:       event.Version,
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   event.CausationID[:],
-			CorrelationId: event.CorrelationID[:],
-			AddedAt:       event.AddedAt.UnixNano(),
-		})
+	result := &GetEventsResponse{
+		Events: mapEvents(records),
 	}
 
-	return &GetEventsResponse{
-		Events: records,
-	}, nil
+	return result, nil
 }
 
 func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsRequest) (*LogEventsResponse, error) {
@@ -143,32 +90,37 @@ func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsReque
 
 	limit := req.Limit
 
-	events, err := service.persistence.Log(offset, limit)
+	records, err := service.store.Log(offset, limit)
 	if err != nil {
 		return nil, err
 	}
 
-	var records []*Event
+	result := &LogEventsResponse{
+		Events: mapEvents(records),
+	}
 
-	for _, event := range events {
-		records = append(records, &Event{
-			Id:            event.ID[:],
-			Stream:        event.Stream[:],
-			Version:       event.Version,
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   event.CausationID[:],
-			CorrelationId: event.CorrelationID[:],
-			AddedAt:       event.AddedAt.UnixNano(),
+	return result, nil
+}
+
+func NewStreamService(store store.Store) *StreamService {
+	return &StreamService{store}
+}
+
+func mapEvents(in []store.Event) []*Event {
+	var result []*Event
+	for _, record := range in {
+		result = append(result, &Event{
+			Id:            record.ID[:],
+			Stream:        record.Stream[:],
+			Version:       record.Version,
+			Type:          record.Type,
+			Data:          record.Data,
+			Metadata:      record.Metadata,
+			CausationId:   record.CausationID[:],
+			CorrelationId: record.CorrelationID[:],
+			AddedAt:       record.AddedAt.UnixNano(),
 		})
 	}
 
-	return &LogEventsResponse{
-		Events: records,
-	}, nil
-}
-
-func NewStreamService(raft *raft.Raft, persistence *persistence.Persistence) *StreamService {
-	return &StreamService{raft, persistence}
+	return result
 }

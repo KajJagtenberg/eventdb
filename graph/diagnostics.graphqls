@@ -1,8 +1,0 @@
-type Diagnostics {
-    uptime: Int!
-    uptimeMs: Int!
-}
-
-extend type Query {
-    diagnostics: Diagnostics!
-}
