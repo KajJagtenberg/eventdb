@@ -1,39 +1,15 @@
 package store
 
-import "go.etcd.io/bbolt"
+import "io"
 
-var (
-	buckets = []string{"streams", "events"}
-)
+type Store interface {
+	/*
+		Size of the database in bytes on disk
+	*/
+	Size() int64
 
-type Store struct {
-	db *bbolt.DB
-}
-
-func (s *Store) Size() int64 {
-	var size int64 = 0
-
-	s.db.View(func(t *bbolt.Tx) error {
-		size = t.Size()
-
-		return nil
-	})
-
-	return size
-}
-
-func NewStore(db *bbolt.DB) (*Store, error) {
-	if err := db.Update(func(t *bbolt.Tx) error {
-		for _, bucket := range buckets {
-			if _, err := t.CreateBucketIfNotExists([]byte(bucket)); err != nil {
-				return err
-			}
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
-
-	return &Store{db}, nil
+	/*
+		Writes a snapshot of the database to a writer
+	*/
+	Backup(io.Writer) error
 }

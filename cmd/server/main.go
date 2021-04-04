@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"go.etcd.io/bbolt"
@@ -22,18 +22,20 @@ var (
 )
 
 func main() {
+	log := hclog.New(hclog.DefaultOptions)
+
 	db, err := bbolt.Open(stateLocation, 0666, bbolt.DefaultOptions)
 	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
+		log.Error("Failed to open database: %v", err)
 	}
 	defer db.Close()
 
-	store, err := store.NewStore(db)
+	store, err := store.NewBoltStore(db)
 	if err != nil {
-		log.Fatalf("Failed to create store: %v", err)
+		log.Error("Failed to create store: %v", err)
 	}
 
-	log.Println(store.Size())
+	log.Info("Size: ", store.Size())
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
