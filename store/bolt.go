@@ -128,6 +128,52 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 	return result, nil
 }
 
+func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event, error) {
+	var result []Event
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		streamBucket := t.Bucket([]byte("streams"))
+		eventsBucket := t.Bucket([]byte("events"))
+
+		var s Stream
+
+		if value := streamBucket.Get(stream[:]); value != nil {
+			if err := s.Unmarshal(value); err != nil {
+				return err
+			}
+		} else {
+			return nil
+		}
+
+		for _, id := range s.Events {
+			if version > 0 {
+				version--
+				continue
+			}
+			if len(result) >= int(limit) && limit != 0 {
+				return nil
+			}
+
+			if value := eventsBucket.Get(id[:]); value != nil {
+				var event Event
+				if err := event.Unmarshal(value); err != nil {
+					return err
+				}
+
+				result = append(result, event)
+			} else {
+				return errors.New("Event cannot be found. This should never happen.")
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 	if err := db.Update(func(t *bbolt.Tx) error {
 		for _, bucket := range buckets {
