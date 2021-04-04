@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -54,6 +55,12 @@ func main() {
 			log.Fatalf("Failed to listen: %v", err)
 		}
 	}()
+
+	lis, err := net.Listen("tcp", grpcAddr)
+	if err != nil {
+		log.Fatalf("Failed to listen on socket: %v", err)
+	}
+	defer lis.Close()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
