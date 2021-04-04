@@ -9,12 +9,21 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.etcd.io/bbolt"
 )
 
 var (
 	buckets = []string{"streams", "events"}
 	entropy = ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0)
+)
+
+var (
+	addCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "store_addtions_total",
+		Help: "The amount of events that have been added to the store",
+	})
 )
 
 type BoltStore struct {
@@ -124,6 +133,8 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 	}); err != nil {
 		return nil, err
 	}
+
+	addCounter.Add(float64(len(events)))
 
 	return result, nil
 }
