@@ -4,6 +4,7 @@ import (
 	"io"
 
 	"github.com/google/uuid"
+	"github.com/oklog/ulid"
 )
 
 type Store interface {
@@ -28,4 +29,10 @@ type Store interface {
 		If limit is zero, then all events from given version onwards will be returned.
 	*/
 	Get(stream uuid.UUID, version uint32, limit uint32) ([]Event, error)
+
+	/*
+		Returns amount of events that have been recorded since the given offset. The maximum amount of returned events is specified by the given limit.
+		If the limit is 0, then it will return a maximum of 100 events.
+	*/
+	Log(offset ulid.ULID, limit uint32) ([]Event, error)
 }
