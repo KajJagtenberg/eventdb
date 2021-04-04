@@ -3,6 +3,7 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
+	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e
 	github.com/dop251/goja v0.0.0-20210402105715-96fa0aa6d91e
 	github.com/gofiber/adaptor/v2 v2.1.2
 	github.com/gofiber/fiber/v2 v2.7.1

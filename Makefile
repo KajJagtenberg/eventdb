@@ -3,7 +3,7 @@ VERSION := $(shell cat constants/version)
 eventflowdb:
 	go run cmd/eventflowdb/main.go
 
-client:
+eventflowctl:
 	go run cmd/client/main.go
 
 pb:
