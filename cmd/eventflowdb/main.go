@@ -16,6 +16,7 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -61,6 +62,16 @@ func main() {
 		log.Fatalf("Failed to listen on socket: %v", err)
 	}
 	defer lis.Close()
+
+	grpcServer := grpc.NewServer()
+
+	go func() {
+		log.Printf("gRPC server listening on %v", grpcAddr)
+
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("Failed to listen on gRPC server: %v", err)
+		}
+	}()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
