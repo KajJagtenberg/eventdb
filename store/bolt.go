@@ -48,7 +48,7 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 
 	if err := s.db.Update(func(t *bbolt.Tx) error {
 		streamBucket := t.Bucket([]byte("streams"))
-		eventsBucket := t.Bucket([]byte("streams"))
+		eventsBucket := t.Bucket([]byte("events"))
 
 		var s Stream
 
