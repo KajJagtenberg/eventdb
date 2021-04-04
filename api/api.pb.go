@@ -480,6 +480,286 @@ func (m *LogEventsResponse) GetEvents() []*Event {
 	return nil
 }
 
+type StreamCountRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StreamCountRequest) Reset()         { *m = StreamCountRequest{} }
+func (m *StreamCountRequest) String() string { return proto.CompactTextString(m) }
+func (*StreamCountRequest) ProtoMessage()    {}
+func (*StreamCountRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{7}
+}
+
+func (m *StreamCountRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StreamCountRequest.Unmarshal(m, b)
+}
+func (m *StreamCountRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StreamCountRequest.Marshal(b, m, deterministic)
+}
+func (m *StreamCountRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StreamCountRequest.Merge(m, src)
+}
+func (m *StreamCountRequest) XXX_Size() int {
+	return xxx_messageInfo_StreamCountRequest.Size(m)
+}
+func (m *StreamCountRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_StreamCountRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StreamCountRequest proto.InternalMessageInfo
+
+type StreamCountResponse struct {
+	Count                int64    `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StreamCountResponse) Reset()         { *m = StreamCountResponse{} }
+func (m *StreamCountResponse) String() string { return proto.CompactTextString(m) }
+func (*StreamCountResponse) ProtoMessage()    {}
+func (*StreamCountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{8}
+}
+
+func (m *StreamCountResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StreamCountResponse.Unmarshal(m, b)
+}
+func (m *StreamCountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StreamCountResponse.Marshal(b, m, deterministic)
+}
+func (m *StreamCountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StreamCountResponse.Merge(m, src)
+}
+func (m *StreamCountResponse) XXX_Size() int {
+	return xxx_messageInfo_StreamCountResponse.Size(m)
+}
+func (m *StreamCountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_StreamCountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StreamCountResponse proto.InternalMessageInfo
+
+func (m *StreamCountResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+type EventCountRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EventCountRequest) Reset()         { *m = EventCountRequest{} }
+func (m *EventCountRequest) String() string { return proto.CompactTextString(m) }
+func (*EventCountRequest) ProtoMessage()    {}
+func (*EventCountRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{9}
+}
+
+func (m *EventCountRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EventCountRequest.Unmarshal(m, b)
+}
+func (m *EventCountRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EventCountRequest.Marshal(b, m, deterministic)
+}
+func (m *EventCountRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventCountRequest.Merge(m, src)
+}
+func (m *EventCountRequest) XXX_Size() int {
+	return xxx_messageInfo_EventCountRequest.Size(m)
+}
+func (m *EventCountRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventCountRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventCountRequest proto.InternalMessageInfo
+
+type EventCountResponse struct {
+	Count                int64    `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EventCountResponse) Reset()         { *m = EventCountResponse{} }
+func (m *EventCountResponse) String() string { return proto.CompactTextString(m) }
+func (*EventCountResponse) ProtoMessage()    {}
+func (*EventCountResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{10}
+}
+
+func (m *EventCountResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EventCountResponse.Unmarshal(m, b)
+}
+func (m *EventCountResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EventCountResponse.Marshal(b, m, deterministic)
+}
+func (m *EventCountResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventCountResponse.Merge(m, src)
+}
+func (m *EventCountResponse) XXX_Size() int {
+	return xxx_messageInfo_EventCountResponse.Size(m)
+}
+func (m *EventCountResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventCountResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventCountResponse proto.InternalMessageInfo
+
+func (m *EventCountResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+type StreamCountEstimateRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StreamCountEstimateRequest) Reset()         { *m = StreamCountEstimateRequest{} }
+func (m *StreamCountEstimateRequest) String() string { return proto.CompactTextString(m) }
+func (*StreamCountEstimateRequest) ProtoMessage()    {}
+func (*StreamCountEstimateRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{11}
+}
+
+func (m *StreamCountEstimateRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StreamCountEstimateRequest.Unmarshal(m, b)
+}
+func (m *StreamCountEstimateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StreamCountEstimateRequest.Marshal(b, m, deterministic)
+}
+func (m *StreamCountEstimateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StreamCountEstimateRequest.Merge(m, src)
+}
+func (m *StreamCountEstimateRequest) XXX_Size() int {
+	return xxx_messageInfo_StreamCountEstimateRequest.Size(m)
+}
+func (m *StreamCountEstimateRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_StreamCountEstimateRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StreamCountEstimateRequest proto.InternalMessageInfo
+
+type StreamCountEstimateResponse struct {
+	Count                int64    `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *StreamCountEstimateResponse) Reset()         { *m = StreamCountEstimateResponse{} }
+func (m *StreamCountEstimateResponse) String() string { return proto.CompactTextString(m) }
+func (*StreamCountEstimateResponse) ProtoMessage()    {}
+func (*StreamCountEstimateResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{12}
+}
+
+func (m *StreamCountEstimateResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_StreamCountEstimateResponse.Unmarshal(m, b)
+}
+func (m *StreamCountEstimateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_StreamCountEstimateResponse.Marshal(b, m, deterministic)
+}
+func (m *StreamCountEstimateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_StreamCountEstimateResponse.Merge(m, src)
+}
+func (m *StreamCountEstimateResponse) XXX_Size() int {
+	return xxx_messageInfo_StreamCountEstimateResponse.Size(m)
+}
+func (m *StreamCountEstimateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_StreamCountEstimateResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_StreamCountEstimateResponse proto.InternalMessageInfo
+
+func (m *StreamCountEstimateResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
+type EventCountEstimateRequest struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EventCountEstimateRequest) Reset()         { *m = EventCountEstimateRequest{} }
+func (m *EventCountEstimateRequest) String() string { return proto.CompactTextString(m) }
+func (*EventCountEstimateRequest) ProtoMessage()    {}
+func (*EventCountEstimateRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{13}
+}
+
+func (m *EventCountEstimateRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EventCountEstimateRequest.Unmarshal(m, b)
+}
+func (m *EventCountEstimateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EventCountEstimateRequest.Marshal(b, m, deterministic)
+}
+func (m *EventCountEstimateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventCountEstimateRequest.Merge(m, src)
+}
+func (m *EventCountEstimateRequest) XXX_Size() int {
+	return xxx_messageInfo_EventCountEstimateRequest.Size(m)
+}
+func (m *EventCountEstimateRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventCountEstimateRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventCountEstimateRequest proto.InternalMessageInfo
+
+type EventCountEstimateResponse struct {
+	Count                int64    `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *EventCountEstimateResponse) Reset()         { *m = EventCountEstimateResponse{} }
+func (m *EventCountEstimateResponse) String() string { return proto.CompactTextString(m) }
+func (*EventCountEstimateResponse) ProtoMessage()    {}
+func (*EventCountEstimateResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_00212fb1f9d3bf1c, []int{14}
+}
+
+func (m *EventCountEstimateResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_EventCountEstimateResponse.Unmarshal(m, b)
+}
+func (m *EventCountEstimateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_EventCountEstimateResponse.Marshal(b, m, deterministic)
+}
+func (m *EventCountEstimateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_EventCountEstimateResponse.Merge(m, src)
+}
+func (m *EventCountEstimateResponse) XXX_Size() int {
+	return xxx_messageInfo_EventCountEstimateResponse.Size(m)
+}
+func (m *EventCountEstimateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_EventCountEstimateResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_EventCountEstimateResponse proto.InternalMessageInfo
+
+func (m *EventCountEstimateResponse) GetCount() int64 {
+	if m != nil {
+		return m.Count
+	}
+	return 0
+}
+
 type ShellRequest struct {
 	Body                 string   `protobuf:"bytes,1,opt,name=body,proto3" json:"body,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
@@ -491,7 +771,7 @@ func (m *ShellRequest) Reset()         { *m = ShellRequest{} }
 func (m *ShellRequest) String() string { return proto.CompactTextString(m) }
 func (*ShellRequest) ProtoMessage()    {}
 func (*ShellRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{7}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{15}
 }
 
 func (m *ShellRequest) XXX_Unmarshal(b []byte) error {
@@ -530,7 +810,7 @@ func (m *ShellResponse) Reset()         { *m = ShellResponse{} }
 func (m *ShellResponse) String() string { return proto.CompactTextString(m) }
 func (*ShellResponse) ProtoMessage()    {}
 func (*ShellResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_00212fb1f9d3bf1c, []int{8}
+	return fileDescriptor_00212fb1f9d3bf1c, []int{16}
 }
 
 func (m *ShellResponse) XXX_Unmarshal(b []byte) error {
@@ -567,6 +847,14 @@ func init() {
 	proto.RegisterType((*GetEventsResponse)(nil), "api.GetEventsResponse")
 	proto.RegisterType((*LogEventsRequest)(nil), "api.LogEventsRequest")
 	proto.RegisterType((*LogEventsResponse)(nil), "api.LogEventsResponse")
+	proto.RegisterType((*StreamCountRequest)(nil), "api.StreamCountRequest")
+	proto.RegisterType((*StreamCountResponse)(nil), "api.StreamCountResponse")
+	proto.RegisterType((*EventCountRequest)(nil), "api.EventCountRequest")
+	proto.RegisterType((*EventCountResponse)(nil), "api.EventCountResponse")
+	proto.RegisterType((*StreamCountEstimateRequest)(nil), "api.StreamCountEstimateRequest")
+	proto.RegisterType((*StreamCountEstimateResponse)(nil), "api.StreamCountEstimateResponse")
+	proto.RegisterType((*EventCountEstimateRequest)(nil), "api.EventCountEstimateRequest")
+	proto.RegisterType((*EventCountEstimateResponse)(nil), "api.EventCountEstimateResponse")
 	proto.RegisterType((*ShellRequest)(nil), "api.ShellRequest")
 	proto.RegisterType((*ShellResponse)(nil), "api.ShellResponse")
 }
@@ -574,38 +862,47 @@ func init() {
 func init() { proto.RegisterFile("api.proto", fileDescriptor_00212fb1f9d3bf1c) }
 
 var fileDescriptor_00212fb1f9d3bf1c = []byte{
-	// 489 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0xcf, 0x6e, 0xd3, 0x40,
-	0x10, 0xc6, 0xbb, 0x76, 0xec, 0xc4, 0xd3, 0xa4, 0x4a, 0x57, 0x50, 0x99, 0x5c, 0x30, 0x46, 0x48,
-	0x3e, 0x45, 0x28, 0x48, 0xf4, 0xc2, 0x81, 0x22, 0x0a, 0xaa, 0xc4, 0xc9, 0xb9, 0xf5, 0x52, 0x6d,
-	0xb3, 0x53, 0x58, 0x29, 0x89, 0x8d, 0xbd, 0x89, 0xe8, 0x7b, 0xf5, 0x25, 0x78, 0x1d, 0x9e, 0x00,
-	0x79, 0xb2, 0x5e, 0x5c, 0x27, 0x55, 0x89, 0x7a, 0xdb, 0xf9, 0x3c, 0xff, 0xbe, 0x9f, 0x57, 0x0b,
-	0x81, 0xc8, 0xd5, 0x38, 0x2f, 0x32, 0x9d, 0x71, 0x57, 0xe4, 0x2a, 0xfe, 0xc3, 0xc0, 0x3b, 0x5f,
-	0xe3, 0x52, 0xf3, 0x23, 0x70, 0x94, 0x0c, 0x59, 0xc4, 0x92, 0x7e, 0xea, 0x28, 0xc9, 0x4f, 0xc0,
-	0x2f, 0x75, 0x81, 0x62, 0x11, 0x3a, 0xa4, 0x99, 0x88, 0x87, 0xd0, 0x5d, 0x63, 0x51, 0xaa, 0x6c,
-	0x19, 0xba, 0x11, 0x4b, 0x06, 0x69, 0x1d, 0x72, 0x0e, 0x1d, 0x7d, 0x9b, 0x63, 0xd8, 0x89, 0x58,
-	0x12, 0xa4, 0x74, 0xae, 0x34, 0x29, 0xb4, 0x08, 0x3d, 0xea, 0x41, 0x67, 0x3e, 0x82, 0xde, 0x02,
-	0xb5, 0x20, 0xdd, 0x27, 0xdd, 0xc6, 0xfc, 0x15, 0xf4, 0x67, 0x62, 0x55, 0x0a, 0xad, 0xb2, 0xe5,
-	0x95, 0x92, 0x61, 0x97, 0xbe, 0x1f, 0x5a, 0xed, 0x42, 0xf2, 0x37, 0x70, 0x34, 0xcb, 0x8a, 0x02,
-	0xe7, 0x36, 0xa9, 0x47, 0x49, 0x83, 0x86, 0x7a, 0x21, 0xf9, 0x0b, 0xe8, 0x09, 0x29, 0x51, 0x5e,
-	0x09, 0x1d, 0x06, 0x11, 0x4b, 0xdc, 0xb4, 0x4b, 0xf1, 0x99, 0x8e, 0xef, 0x1c, 0x18, 0x9e, 0x49,
-	0x49, 0xbe, 0xcb, 0x14, 0x7f, 0xae, 0xb0, 0xd4, 0x0d, 0xbf, 0xec, 0x21, 0xbf, 0xce, 0x7d, 0xbf,
-	0xa7, 0xe0, 0x23, 0xb5, 0x08, 0xdd, 0xc8, 0x4d, 0x0e, 0x27, 0x2f, 0xc7, 0x15, 0xdc, 0x76, 0xe3,
-	0x31, 0x45, 0x9f, 0x85, 0x16, 0xa9, 0x49, 0x1f, 0xdd, 0x31, 0x08, 0xac, 0x6a, 0xb1, 0xb1, 0x1d,
-	0xd8, 0x9c, 0x07, 0xb0, 0xb9, 0x8f, 0x60, 0xeb, 0xfc, 0x0f, 0x36, 0xef, 0x31, 0x6c, 0xfe, 0x7d,
-	0x6c, 0xa7, 0x70, 0xdc, 0x30, 0x57, 0xe6, 0xd9, 0xb2, 0x44, 0x1e, 0x5b, 0x08, 0x8c, 0x20, 0x00,
-	0x41, 0xa0, 0xa4, 0xda, 0x6f, 0x7c, 0x09, 0xc3, 0xaf, 0xa8, 0x9f, 0x8a, 0xfb, 0x19, 0x78, 0x73,
-	0xb5, 0x50, 0xda, 0x5c, 0xbb, 0x4d, 0x50, 0x2d, 0xd5, 0xe8, 0xbd, 0xc7, 0x52, 0x1f, 0x61, 0xf8,
-	0x2d, 0xfb, 0xbe, 0xb5, 0x54, 0x76, 0x73, 0x53, 0xa2, 0xae, 0x97, 0xda, 0x44, 0xff, 0x46, 0x3b,
-	0xad, 0xd1, 0x8d, 0x0e, 0x7b, 0x8c, 0x8e, 0xa1, 0x3f, 0xfd, 0x81, 0xf3, 0x79, 0x3d, 0x96, 0x43,
-	0xe7, 0x3a, 0x93, 0xb7, 0xf5, 0x0d, 0xa8, 0xce, 0xf1, 0x6b, 0x18, 0x98, 0x1c, 0xd3, 0x78, 0x47,
-	0xd2, 0xe4, 0x37, 0x83, 0xc1, 0x94, 0xb8, 0x4d, 0xb1, 0x58, 0xab, 0x19, 0xf2, 0x0f, 0x10, 0xd8,
-	0x7f, 0xc4, 0x9f, 0xef, 0xbc, 0x90, 0xa3, 0x93, 0xb6, 0xbc, 0x99, 0x10, 0x1f, 0x54, 0xd5, 0x16,
-	0xa6, 0xa9, 0x6e, 0xff, 0x38, 0x53, 0xbd, 0xc5, 0x7c, 0x53, 0x6d, 0x79, 0x98, 0xea, 0x36, 0x61,
-	0x53, 0xbd, 0x85, 0x2d, 0x3e, 0x98, 0x7c, 0x31, 0x50, 0x6a, 0x27, 0xef, 0xa1, 0x7b, 0xfe, 0x0b,
-	0x67, 0x2b, 0x8d, 0xfc, 0x98, 0x8a, 0x9a, 0xc8, 0x46, 0xbc, 0x29, 0xd5, 0x3d, 0x12, 0xf6, 0x96,
-	0x7d, 0xf2, 0x2e, 0xab, 0x87, 0xed, 0xda, 0xa7, 0x47, 0xee, 0xdd, 0xdf, 0x00, 0x00, 0x00, 0xff,
-	0xff, 0x4c, 0xc2, 0x50, 0xed, 0xf1, 0x04, 0x00, 0x00,
+	// 631 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x55, 0x4d, 0x6f, 0xd3, 0x40,
+	0x10, 0xed, 0xda, 0x71, 0xd2, 0x4c, 0x93, 0x2a, 0xd9, 0x86, 0xd4, 0x75, 0x11, 0x31, 0x46, 0x48,
+	0x16, 0x48, 0x11, 0x4a, 0x25, 0x7a, 0x41, 0x82, 0x16, 0x02, 0xaa, 0xc4, 0xc9, 0x39, 0x20, 0xe5,
+	0x52, 0x6d, 0xb3, 0x5b, 0xb0, 0x94, 0xc4, 0xc1, 0xde, 0x44, 0xf4, 0xcc, 0x5f, 0xea, 0x2f, 0xe3,
+	0x17, 0x20, 0xaf, 0xd7, 0x1b, 0x7f, 0x24, 0x29, 0x15, 0xb7, 0x9d, 0xb7, 0x33, 0x6f, 0x66, 0xde,
+	0x3e, 0xcb, 0x50, 0x27, 0x0b, 0xbf, 0xbf, 0x08, 0x03, 0x1e, 0x60, 0x9d, 0x2c, 0x7c, 0xe7, 0x0f,
+	0x02, 0x63, 0xb8, 0x62, 0x73, 0x8e, 0x0f, 0x41, 0xf3, 0xa9, 0x89, 0x6c, 0xe4, 0x36, 0x3c, 0xcd,
+	0xa7, 0xb8, 0x0b, 0xd5, 0x88, 0x87, 0x8c, 0xcc, 0x4c, 0x4d, 0x60, 0x32, 0xc2, 0x26, 0xd4, 0x56,
+	0x2c, 0x8c, 0xfc, 0x60, 0x6e, 0xea, 0x36, 0x72, 0x9b, 0x5e, 0x1a, 0x62, 0x0c, 0x15, 0x7e, 0xb7,
+	0x60, 0x66, 0xc5, 0x46, 0x6e, 0xdd, 0x13, 0xe7, 0x18, 0xa3, 0x84, 0x13, 0xd3, 0x10, 0x1c, 0xe2,
+	0x8c, 0x2d, 0xd8, 0x9f, 0x31, 0x4e, 0x04, 0x5e, 0x15, 0xb8, 0x8a, 0xf1, 0x73, 0x68, 0x4c, 0xc8,
+	0x32, 0x22, 0xdc, 0x0f, 0xe6, 0xd7, 0x3e, 0x35, 0x6b, 0xe2, 0xfe, 0x40, 0x61, 0x57, 0x14, 0xbf,
+	0x84, 0xc3, 0x49, 0x10, 0x86, 0x6c, 0xaa, 0x92, 0xf6, 0x45, 0x52, 0x33, 0x83, 0x5e, 0x51, 0x7c,
+	0x02, 0xfb, 0x84, 0x52, 0x46, 0xaf, 0x09, 0x37, 0xeb, 0x36, 0x72, 0x75, 0xaf, 0x26, 0xe2, 0x0b,
+	0xee, 0xdc, 0x6b, 0xd0, 0xba, 0xa0, 0x54, 0xec, 0x1d, 0x79, 0xec, 0xe7, 0x92, 0x45, 0x3c, 0xb3,
+	0x2f, 0xda, 0xb6, 0xaf, 0x96, 0xdf, 0xf7, 0x1c, 0xaa, 0x4c, 0x50, 0x98, 0xba, 0xad, 0xbb, 0x07,
+	0x83, 0x5e, 0x3f, 0x16, 0xb7, 0x48, 0xdc, 0x17, 0xd1, 0x27, 0xc2, 0x89, 0x27, 0xd3, 0xad, 0x7b,
+	0x04, 0x75, 0x85, 0x2a, 0xd9, 0xd0, 0x06, 0xd9, 0xb4, 0x2d, 0xb2, 0xe9, 0x0f, 0xc8, 0x56, 0xf9,
+	0x17, 0xd9, 0x8c, 0x87, 0x64, 0xab, 0xe6, 0x65, 0x3b, 0x87, 0x76, 0x66, 0xb9, 0x68, 0x11, 0xcc,
+	0x23, 0x86, 0x1d, 0x25, 0x02, 0x12, 0x22, 0x80, 0x10, 0x41, 0x24, 0xa5, 0xfb, 0x3a, 0x63, 0x68,
+	0x7d, 0x61, 0xfc, 0x7f, 0xe5, 0xee, 0x80, 0x31, 0xf5, 0x67, 0x3e, 0x97, 0xb6, 0x4b, 0x82, 0x78,
+	0xa8, 0x0c, 0xf7, 0x23, 0x86, 0xfa, 0x00, 0xad, 0xaf, 0xc1, 0xf7, 0xd2, 0x50, 0xc1, 0xed, 0x6d,
+	0xc4, 0x78, 0x3a, 0x54, 0x12, 0xad, 0x5b, 0x6b, 0x85, 0xd6, 0x19, 0x86, 0x47, 0xb4, 0xee, 0x00,
+	0x1e, 0x89, 0x6d, 0x3f, 0x06, 0xcb, 0x39, 0x97, 0xcd, 0x9d, 0xd7, 0x70, 0x94, 0x43, 0x25, 0x61,
+	0x07, 0x8c, 0x49, 0x0c, 0x88, 0x91, 0x74, 0x2f, 0x09, 0x9c, 0x23, 0x68, 0x0b, 0xce, 0x1c, 0xc3,
+	0x2b, 0xc0, 0x59, 0x70, 0x27, 0xc1, 0x53, 0xb0, 0x32, 0xdd, 0x86, 0x11, 0xf7, 0x67, 0x84, 0xb3,
+	0x94, 0xe9, 0x0c, 0x4e, 0x37, 0xde, 0xee, 0xa4, 0x3c, 0x85, 0x93, 0x75, 0xfb, 0x22, 0xe3, 0x00,
+	0xac, 0x4d, 0x97, 0x3b, 0x09, 0x1d, 0x68, 0x8c, 0x7e, 0xb0, 0xe9, 0x34, 0x7d, 0x1e, 0x0c, 0x95,
+	0x9b, 0x80, 0xde, 0xa5, 0x5f, 0x4a, 0x7c, 0x76, 0x5e, 0x40, 0x53, 0xe6, 0x48, 0xaa, 0x0d, 0x49,
+	0x83, 0xdf, 0x15, 0x68, 0x26, 0xfb, 0x8c, 0x58, 0xb8, 0xf2, 0x27, 0x0c, 0xbf, 0x83, 0xba, 0xf2,
+	0x32, 0x7e, 0xb2, 0xf1, 0xc3, 0xb5, 0xba, 0x45, 0x38, 0xe9, 0xe0, 0xec, 0xc5, 0xd5, 0xca, 0x74,
+	0xb2, 0xba, 0x68, 0x70, 0x59, 0x5d, 0xf2, 0x66, 0x52, 0xad, 0x7c, 0x23, 0xab, 0x8b, 0x4e, 0x94,
+	0xd5, 0x25, 0x7b, 0x39, 0x7b, 0xf8, 0x12, 0x0e, 0x32, 0x4f, 0x83, 0x8f, 0x45, 0x62, 0xd9, 0x4e,
+	0x96, 0x59, 0xbe, 0x50, 0x1c, 0xef, 0x01, 0xd6, 0x8f, 0x81, 0xbb, 0x6b, 0x8b, 0xe6, 0x18, 0x8e,
+	0x4b, 0xb8, 0x22, 0x18, 0xe7, 0xbc, 0x9a, 0x3e, 0x27, 0xee, 0x15, 0x7b, 0x16, 0x5c, 0x60, 0xd9,
+	0xdb, 0x13, 0x14, 0xf7, 0xb7, 0xac, 0x8b, 0x15, 0xf5, 0xb3, 0xc2, 0x30, 0x45, 0xe6, 0xde, 0xd6,
+	0xfb, 0x94, 0x78, 0xf0, 0x59, 0xda, 0x29, 0xf5, 0xc0, 0x5b, 0xa8, 0x0d, 0x7f, 0xb1, 0xc9, 0x92,
+	0x33, 0xdc, 0x4e, 0xe6, 0xca, 0x98, 0xcd, 0xc2, 0x59, 0x28, 0xe5, 0x70, 0xd1, 0x1b, 0x74, 0x69,
+	0x8c, 0xe3, 0x5f, 0xe7, 0x4d, 0x55, 0xfc, 0x46, 0xcf, 0xfe, 0x06, 0x00, 0x00, 0xff, 0xff, 0x20,
+	0x09, 0x5d, 0x98, 0x53, 0x07, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -623,6 +920,10 @@ type StreamServiceClient interface {
 	AddEvents(ctx context.Context, in *AddEventsRequest, opts ...grpc.CallOption) (*AddEventsResponse, error)
 	GetEvents(ctx context.Context, in *GetEventsRequest, opts ...grpc.CallOption) (*GetEventsResponse, error)
 	LogEvents(ctx context.Context, in *LogEventsRequest, opts ...grpc.CallOption) (*LogEventsResponse, error)
+	StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
+	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
+	StreamCountEstimate(ctx context.Context, in *StreamCountEstimateRequest, opts ...grpc.CallOption) (*StreamCountEstimateResponse, error)
+	EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountEstimateResponse, error)
 }
 
 type streamServiceClient struct {
@@ -660,11 +961,51 @@ func (c *streamServiceClient) LogEvents(ctx context.Context, in *LogEventsReques
 	return out, nil
 }
 
+func (c *streamServiceClient) StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error) {
+	out := new(StreamCountResponse)
+	err := c.cc.Invoke(ctx, "/api.StreamService/StreamCount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *streamServiceClient) EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error) {
+	out := new(EventCountResponse)
+	err := c.cc.Invoke(ctx, "/api.StreamService/EventCount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *streamServiceClient) StreamCountEstimate(ctx context.Context, in *StreamCountEstimateRequest, opts ...grpc.CallOption) (*StreamCountEstimateResponse, error) {
+	out := new(StreamCountEstimateResponse)
+	err := c.cc.Invoke(ctx, "/api.StreamService/StreamCountEstimate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *streamServiceClient) EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountEstimateResponse, error) {
+	out := new(EventCountEstimateResponse)
+	err := c.cc.Invoke(ctx, "/api.StreamService/EventCountEstimate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StreamServiceServer is the server API for StreamService service.
 type StreamServiceServer interface {
 	AddEvents(context.Context, *AddEventsRequest) (*AddEventsResponse, error)
 	GetEvents(context.Context, *GetEventsRequest) (*GetEventsResponse, error)
 	LogEvents(context.Context, *LogEventsRequest) (*LogEventsResponse, error)
+	StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error)
+	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
+	StreamCountEstimate(context.Context, *StreamCountEstimateRequest) (*StreamCountEstimateResponse, error)
+	EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountEstimateResponse, error)
 }
 
 // UnimplementedStreamServiceServer can be embedded to have forward compatible implementations.
@@ -679,6 +1020,18 @@ func (*UnimplementedStreamServiceServer) GetEvents(ctx context.Context, req *Get
 }
 func (*UnimplementedStreamServiceServer) LogEvents(ctx context.Context, req *LogEventsRequest) (*LogEventsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LogEvents not implemented")
+}
+func (*UnimplementedStreamServiceServer) StreamCount(ctx context.Context, req *StreamCountRequest) (*StreamCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StreamCount not implemented")
+}
+func (*UnimplementedStreamServiceServer) EventCount(ctx context.Context, req *EventCountRequest) (*EventCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EventCount not implemented")
+}
+func (*UnimplementedStreamServiceServer) StreamCountEstimate(ctx context.Context, req *StreamCountEstimateRequest) (*StreamCountEstimateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StreamCountEstimate not implemented")
+}
+func (*UnimplementedStreamServiceServer) EventCountEstimate(ctx context.Context, req *EventCountEstimateRequest) (*EventCountEstimateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EventCountEstimate not implemented")
 }
 
 func RegisterStreamServiceServer(s *grpc.Server, srv StreamServiceServer) {
@@ -739,6 +1092,78 @@ func _StreamService_LogEvents_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StreamService_StreamCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StreamCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StreamServiceServer).StreamCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.StreamService/StreamCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StreamServiceServer).StreamCount(ctx, req.(*StreamCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StreamService_EventCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StreamServiceServer).EventCount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.StreamService/EventCount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StreamServiceServer).EventCount(ctx, req.(*EventCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StreamService_StreamCountEstimate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StreamCountEstimateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StreamServiceServer).StreamCountEstimate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.StreamService/StreamCountEstimate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StreamServiceServer).StreamCountEstimate(ctx, req.(*StreamCountEstimateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StreamService_EventCountEstimate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventCountEstimateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StreamServiceServer).EventCountEstimate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.StreamService/EventCountEstimate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StreamServiceServer).EventCountEstimate(ctx, req.(*EventCountEstimateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _StreamService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "api.StreamService",
 	HandlerType: (*StreamServiceServer)(nil),
@@ -754,6 +1179,22 @@ var _StreamService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LogEvents",
 			Handler:    _StreamService_LogEvents_Handler,
+		},
+		{
+			MethodName: "StreamCount",
+			Handler:    _StreamService_StreamCount_Handler,
+		},
+		{
+			MethodName: "EventCount",
+			Handler:    _StreamService_EventCount_Handler,
+		},
+		{
+			MethodName: "StreamCountEstimate",
+			Handler:    _StreamService_StreamCountEstimate_Handler,
+		},
+		{
+			MethodName: "EventCountEstimate",
+			Handler:    _StreamService_EventCountEstimate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -102,6 +102,40 @@ func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsReque
 	return result, nil
 }
 
+func (service *StreamService) StreamCount(ctx context.Context, req *StreamCountRequest) (*StreamCountResponse, error) {
+	count, err := service.store.StreamCount()
+	if err != nil {
+		return nil, err
+	}
+	return &StreamCountResponse{Count: count}, nil
+}
+
+func (service *StreamService) EventCount(ctx context.Context, req *EventCountRequest) (*EventCountResponse, error) {
+	count, err := service.store.EventCount()
+	if err != nil {
+		return nil, err
+	}
+	return &EventCountResponse{Count: count}, nil
+}
+
+/**/
+
+func (service *StreamService) StreamCountEstimate(ctx context.Context, req *StreamCountEstimateRequest) (*StreamCountEstimateResponse, error) {
+	count, err := service.store.StreamCountEstimate()
+	if err != nil {
+		return nil, err
+	}
+	return &StreamCountEstimateResponse{Count: count}, nil
+}
+
+func (service *StreamService) EventCountEstimate(ctx context.Context, req *EventCountEstimateRequest) (*EventCountEstimateResponse, error) {
+	count, err := service.store.EventCountEstimate()
+	if err != nil {
+		return nil, err
+	}
+	return &EventCountEstimateResponse{Count: count}, nil
+}
+
 func NewStreamService(store store.Store) *StreamService {
 	return &StreamService{store}
 }

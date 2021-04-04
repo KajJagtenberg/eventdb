@@ -53,10 +53,38 @@ message LogEventsResponse {
     repeated Event events = 1;
 }
 
+message StreamCountRequest {}
+
+message StreamCountResponse {
+    int64 count = 1;
+}
+
+message EventCountRequest {}
+
+message EventCountResponse {
+    int64 count = 1;
+}
+
+message StreamCountEstimateRequest {}
+
+message StreamCountEstimateResponse {
+    int64 count = 1;
+}
+
+message EventCountEstimateRequest {}
+
+message EventCountEstimateResponse {
+    int64 count = 1;
+}
+
 service StreamService {
     rpc AddEvents(AddEventsRequest) returns (AddEventsResponse) {}
     rpc GetEvents(GetEventsRequest) returns (GetEventsResponse) {}
     rpc LogEvents(LogEventsRequest) returns (LogEventsResponse) {}
+    rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
+    rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
+    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountEstimateResponse) {}
+    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountEstimateResponse) {}
 }
 
 /**/
