@@ -7,11 +7,13 @@ import (
 
 	"log"
 
+	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/helmet/v2"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
 )
 
@@ -40,11 +42,19 @@ func main() {
 
 	log.Println(store.Size()) // TODO: Remove when no longer necessary
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 	app.Use(helmet.New())
 	app.Use(cors.New())
 
+	prom := adaptor.HTTPHandler(promhttp.Handler())
+
+	app.Get("/metrics", prom)
+
 	go func() {
+		log.Printf("HTTP server listening on %v", httpAddr)
+
 		if err := app.Listen(httpAddr); err != nil {
 			log.Fatalf("Failed to listen: %v", err)
 		}

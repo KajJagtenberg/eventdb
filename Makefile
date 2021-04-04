@@ -1,7 +1,7 @@
 VERSION := $(shell cat constants/version)
 
-server:
-	go run cmd/server/main.go
+eventflowdb:
+	go run cmd/eventflowdb/main.go
 
 client:
 	go run cmd/client/main.go
