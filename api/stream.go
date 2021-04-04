@@ -83,7 +83,23 @@ func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsReque
 }
 
 func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsRequest) (*LogEventsResponse, error) {
-	return nil, nil
+	var offset ulid.ULID
+	if err := offset.UnmarshalBinary(req.Offset); err != nil {
+		return nil, err
+	}
+
+	limit := req.Limit
+
+	records, err := service.store.Log(offset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &LogEventsResponse{
+		Events: mapEvents(records),
+	}
+
+	return result, nil
 }
 
 func NewStreamService(store store.Store) *StreamService {
