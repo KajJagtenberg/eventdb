@@ -3,18 +3,14 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gofiber/adaptor v0.2.0
 	github.com/gofiber/adaptor/v2 v2.1.2
-	github.com/gofiber/fiber v1.14.6
 	github.com/gofiber/fiber/v2 v2.7.1
-	github.com/gofiber/helmet v0.1.2
 	github.com/gofiber/helmet/v2 v2.1.1
 	github.com/golang/protobuf v1.5.1
 	github.com/google/uuid v1.2.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
-	github.com/prometheus/client_golang v1.10.0 // indirect
+	github.com/prometheus/client_golang v1.10.0
 	github.com/stretchr/testify v1.7.0
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/sys v0.0.0-20210326220804-49726bf1d181 // indirect
