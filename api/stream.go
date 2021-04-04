@@ -54,10 +54,46 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 		return nil, err
 	}
 
-	result := &AddEventsResponse{}
+	result := &AddEventsResponse{
+		Events: mapEvents(records),
+	}
 
-	for _, record := range records {
-		result.Events = append(result.Events, &Event{
+	return result, nil
+}
+
+func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsRequest) (*GetEventsResponse, error) {
+	var stream uuid.UUID
+	if err := stream.UnmarshalBinary(req.Stream); err != nil {
+		return nil, err
+	}
+
+	version := req.Version
+	limit := req.Limit
+
+	records, err := service.store.Get(stream, version, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	result := &GetEventsResponse{
+		Events: mapEvents(records),
+	}
+
+	return result, nil
+}
+
+func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsRequest) (*LogEventsResponse, error) {
+	return nil, nil
+}
+
+func NewStreamService(store store.Store) *StreamService {
+	return &StreamService{store}
+}
+
+func mapEvents(in []store.Event) []*Event {
+	var result []*Event
+	for _, record := range in {
+		result = append(result, &Event{
 			Id:            record.ID[:],
 			Stream:        record.Stream[:],
 			Version:       record.Version,
@@ -70,17 +106,5 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 		})
 	}
 
-	return result, nil
-}
-
-func (service *StreamService) GetEvents(context.Context, *GetEventsRequest) (*GetEventsResponse, error) {
-	return nil, nil
-}
-
-func (service *StreamService) LogEvents(context.Context, *LogEventsRequest) (*LogEventsResponse, error) {
-	return nil, nil
-}
-
-func NewStreamService(store store.Store) *StreamService {
-	return &StreamService{store}
+	return result
 }
