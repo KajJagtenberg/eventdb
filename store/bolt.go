@@ -21,8 +21,12 @@ var (
 
 var (
 	addCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_addtions_total",
+		Name: "store_add_total",
 		Help: "The amount of events that have been added to the store",
+	})
+	getCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "store_get_total",
+		Help: "The amount of get requests performed",
 	})
 )
 
@@ -181,6 +185,8 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 	}); err != nil {
 		return nil, err
 	}
+
+	getCounter.Add(1)
 
 	return result, nil
 }
