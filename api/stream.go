@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bytes"
 	context "context"
 	"time"
 
@@ -41,8 +42,8 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 
 		events = append(events, store.EventData{
 			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
+			Data:          bytes.NewBuffer(event.Data),
+			Metadata:      bytes.NewBuffer(event.Metadata),
 			CausationID:   causationID,
 			CorrelationID: correlationID,
 			AddedAt:       time.Unix(0, event.AddedAt),
@@ -148,8 +149,8 @@ func mapEvents(in []store.Event) []*Event {
 			Stream:        record.Stream[:],
 			Version:       record.Version,
 			Type:          record.Type,
-			Data:          record.Data,
-			Metadata:      record.Metadata,
+			Data:          record.Data.Bytes(),
+			Metadata:      record.Metadata.Bytes(),
 			CausationId:   record.CausationID[:],
 			CorrelationId: record.CorrelationID[:],
 			AddedAt:       record.AddedAt.UnixNano(),
