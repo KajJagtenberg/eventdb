@@ -29,9 +29,7 @@ func (shell *Shell) Execute(code string) (string, error) {
 
 	compiled, err := babel.Compile(code)
 	if err != nil {
-		if err != nil {
-			return "", err
-		}
+		return err.Error(), nil
 	}
 
 	value, err := shell.vm.RunString(compiled)
@@ -39,13 +37,7 @@ func (shell *Shell) Execute(code string) (string, error) {
 		return err.Error(), nil
 	}
 
-	result := value.String()
-
-	if result == "use strict" {
-		return "", nil
-	}
-
-	return result, nil
+	return value.String(), nil
 }
 
 func NewShell(store store.Store) (*Shell, error) {
@@ -56,9 +48,25 @@ func NewShell(store store.Store) (*Shell, error) {
 		return nil, err
 	}
 
-	vm.Set("version", func() string {
+	if err := vm.Set("version", func() string {
 		return constants.Version
-	})
+	}); err != nil {
+		return nil, err
+	}
+
+	database := struct {
+		StreamCount interface{} `json:"streamCount"`
+		EventCount  interface{} `json:"eventCount"`
+		Size        interface{} `json:"size"`
+	}{
+		StreamCount: store.StreamCount,
+		EventCount:  store.EventCount,
+		Size:        store.Size,
+	}
+
+	if err := vm.Set("db", database); err != nil {
+		return nil, err
+	}
 
 	return &Shell{vm}, nil
 }

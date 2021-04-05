@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"log"
 
@@ -79,24 +78,6 @@ func main() {
 
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("Failed to listen on gRPC server: %v", err)
-		}
-	}()
-
-	go func() {
-		for {
-			streams, err := store.StreamCount()
-			if err != nil {
-				log.Fatalf("Failed to get stream count: %v", err)
-			}
-
-			events, err := store.EventCount()
-			if err != nil {
-				log.Fatalf("Failed to get event count: %v", err)
-			}
-
-			log.Printf("Streams: %d, Events: %d", streams, events)
-
-			time.Sleep(time.Second)
 		}
 	}()
 

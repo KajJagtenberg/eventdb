@@ -1,9 +1,9 @@
 VERSION := $(shell cat constants/version)
 
-eventflowdb:
+db:
 	go run cmd/eventflowdb/main.go
 
-eventflowctl:
+ctl:
 	go run cmd/eventflowctl/main.go
 
 pb:
