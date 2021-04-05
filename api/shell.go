@@ -4,13 +4,15 @@ import (
 	"io"
 
 	"github.com/kajjagtenberg/eventflowdb/shell"
+	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 type ShellService struct {
+	store store.Store
 }
 
 func (service *ShellService) Execute(stream ShellService_ExecuteServer) error {
-	shell, err := shell.NewShell()
+	shell, err := shell.NewShell(service.store)
 	if err != nil {
 		return err
 	}
@@ -37,6 +39,6 @@ func (service *ShellService) Execute(stream ShellService_ExecuteServer) error {
 	}
 }
 
-func NewShellService() *ShellService {
-	return &ShellService{}
+func NewShellService(store store.Store) *ShellService {
+	return &ShellService{store}
 }

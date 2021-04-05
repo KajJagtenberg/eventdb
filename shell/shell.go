@@ -5,6 +5,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/kajjagtenberg/eventflowdb/constants"
+	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 var (
@@ -47,7 +48,7 @@ func (shell *Shell) Execute(code string) (string, error) {
 	return result, nil
 }
 
-func NewShell() (*Shell, error) {
+func NewShell(store store.Store) (*Shell, error) {
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 
