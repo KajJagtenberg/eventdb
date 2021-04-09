@@ -30,7 +30,7 @@ func (shell *Shell) Execute(code string) (string, error) {
 		return err.Error(), nil
 	}
 
-	return value.String(), nil
+	return value.ToString().String(), nil
 }
 
 func NewShell(store store.Store) (*Shell, error) {
