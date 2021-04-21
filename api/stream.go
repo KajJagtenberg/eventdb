@@ -15,8 +15,8 @@ type StreamService struct {
 }
 
 func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsRequest) (*AddEventsResponse, error) {
-	var stream uuid.UUID
-	if err := stream.UnmarshalBinary(req.Stream); err != nil {
+	stream, err := uuid.Parse(req.Stream)
+	if err != nil {
 		return nil, err
 	}
 
@@ -27,23 +27,26 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 	for _, event := range req.Events {
 		var causationID ulid.ULID
 		var correlationID ulid.ULID
+		var err error
 
-		if id := event.CausationId; id != nil {
-			if err := causationID.UnmarshalBinary(id); err != nil {
+		if id := event.CausationId; len(id) != 0 {
+			causationID, err = ulid.Parse(id)
+			if err != nil {
 				return nil, err
 			}
 		}
 
-		if id := event.CorrelationId; id != nil {
-			if err := correlationID.UnmarshalBinary(id); err != nil {
+		if id := event.CorrelationId; len(id) != 0 {
+			correlationID, err = ulid.Parse(id)
+			if err != nil {
 				return nil, err
 			}
 		}
 
 		events = append(events, store.EventData{
 			Type:          event.Type,
-			Data:          bytes.NewBuffer(event.Data),
-			Metadata:      bytes.NewBuffer(event.Metadata),
+			Data:          bytes.NewBufferString(event.Data),
+			Metadata:      bytes.NewBufferString(event.Metadata),
 			CausationID:   causationID,
 			CorrelationID: correlationID,
 			AddedAt:       time.Unix(0, event.AddedAt),
@@ -63,8 +66,8 @@ func (service *StreamService) AddEvents(ctx context.Context, req *AddEventsReque
 }
 
 func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsRequest) (*GetEventsResponse, error) {
-	var stream uuid.UUID
-	if err := stream.UnmarshalBinary(req.Stream); err != nil {
+	stream, err := uuid.Parse(req.Stream)
+	if err != nil {
 		return nil, err
 	}
 
@@ -84,8 +87,8 @@ func (service *StreamService) GetEvents(ctx context.Context, req *GetEventsReque
 }
 
 func (service *StreamService) LogEvents(ctx context.Context, req *LogEventsRequest) (*LogEventsResponse, error) {
-	var offset ulid.ULID
-	if err := offset.UnmarshalBinary(req.Offset); err != nil {
+	offset, err := ulid.Parse(req.Offset)
+	if err != nil {
 		return nil, err
 	}
 
@@ -145,14 +148,14 @@ func mapEvents(in []store.Event) []*Event {
 	var result []*Event
 	for _, record := range in {
 		result = append(result, &Event{
-			Id:            record.ID[:],
-			Stream:        record.Stream[:],
+			Id:            record.ID.String(),
+			Stream:        record.Stream.String(),
 			Version:       record.Version,
 			Type:          record.Type,
-			Data:          record.Data.Bytes(),
-			Metadata:      record.Metadata.Bytes(),
-			CausationId:   record.CausationID[:],
-			CorrelationId: record.CorrelationID[:],
+			Data:          record.Data.String(),
+			Metadata:      record.Metadata.String(),
+			CausationId:   record.CausationID.String(),
+			CorrelationId: record.CorrelationID.String(),
 			AddedAt:       record.AddedAt.UnixNano(),
 		})
 	}
