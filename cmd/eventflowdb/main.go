@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,12 +11,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/helmet/v2"
-	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.etcd.io/bbolt"
-	"google.golang.org/grpc"
 
 	_ "embed"
 )
@@ -41,6 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create store: %v", err)
 	}
+	defer store.Close()
 
 	log.Println("Initializing HTTP server")
 
@@ -63,25 +61,6 @@ func main() {
 	}()
 
 	log.Println("Initializing gRPC server")
-
-	lis, err := net.Listen("tcp", grpcAddr)
-	if err != nil {
-		log.Fatalf("Failed to listen on socket: %v", err)
-	}
-	defer lis.Close()
-
-	grpcServer := grpc.NewServer()
-
-	api.RegisterStreamServiceServer(grpcServer, api.NewStreamService(store))
-	// api.RegisterShellServiceServer(grpcServer, api.NewShellService(store))
-
-	go func() {
-		log.Printf("gRPC server listening on %v", grpcAddr)
-
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("Failed to listen on gRPC server: %v", err)
-		}
-	}()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)

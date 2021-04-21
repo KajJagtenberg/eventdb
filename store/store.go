@@ -55,4 +55,6 @@ type Store interface {
 		Returns an estimate of the total number of streams in the database
 	*/
 	StreamCountEstimate() (int64, error)
+
+	Close() error
 }

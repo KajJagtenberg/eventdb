@@ -280,6 +280,10 @@ func (s *BoltStore) EventCountEstimate() (int64, error) {
 	return s.estimateEventCount, nil
 }
 
+func (s *BoltStore) Close() error {
+	return s.db.Close()
+}
+
 func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 	if err := db.Update(func(t *bbolt.Tx) error {
 		for _, bucket := range buckets {
