@@ -9,7 +9,7 @@ require (
 	github.com/gofiber/helmet/v2 v2.1.1
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
-	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/joho/godotenv v1.3.0
 	github.com/oklog/ulid v1.3.1
 	github.com/prometheus/client_golang v1.10.0
 	github.com/stretchr/testify v1.7.0
