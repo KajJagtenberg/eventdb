@@ -9,3 +9,4 @@ webui
 data
 *.rest
 gqlgen.yml
+.env

@@ -11,9 +11,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/helmet/v2"
+	"github.com/joho/godotenv"
+	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
 
 	_ "embed"
@@ -21,11 +24,13 @@ import (
 
 var (
 	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
-	grpcAddr      = env.GetEnv("GRPC_ADDR", ":6543")
+	respAddr      = env.GetEnv("RESP_ADDR", ":6543")
 	httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
 )
 
 func main() {
+	godotenv.Load()
+
 	log.Println("Initializing store")
 
 	db, err := bbolt.Open(stateLocation, 0666, bbolt.DefaultOptions)
@@ -60,7 +65,17 @@ func main() {
 		}
 	}()
 
-	log.Println("Initializing gRPC server")
+	log.Println("Initializing RESP server")
+
+	resp := api.NewResp(store)
+
+	go func() {
+		log.Printf("RESP API listening on %s", respAddr)
+
+		if err := redcon.ListenAndServe(respAddr, resp.CommandHandler, resp.AcceptHandler, resp.ErrorHandler); err != nil {
+			log.Fatalf("Failed to run RESP API: %v", err)
+		}
+	}()
 
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
