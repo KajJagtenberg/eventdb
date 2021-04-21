@@ -51,7 +51,6 @@ func (r *Resp) CommandHandler(conn redcon.Conn, cmd redcon.Command) {
 		conn.WriteString(constants.Version)
 	case "size":
 		conn.WriteInt64(r.store.Size())
-
 	case "eventcount":
 		count, err := r.store.EventCount()
 		if err != nil {
