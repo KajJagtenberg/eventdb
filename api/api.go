@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"os"
 	"strconv"
 	"strings"
 
@@ -12,35 +11,12 @@ import (
 	"github.com/tidwall/redcon"
 )
 
-type ConnectionContext struct {
-	authenticated bool
-}
-
 type Resp struct {
 	store store.Store
 }
 
 func (r *Resp) CommandHandler(conn redcon.Conn, cmd redcon.Command) {
-	ctx := assertContext(conn)
-
 	query := strings.ToLower(string(cmd.Args[0]))
-
-	if query == "auth" {
-		if string(cmd.Args[1]) != os.Getenv("AUTH_KEY") {
-			conn.WriteError("Unauthorized")
-			return
-		}
-
-		ctx.authenticated = true
-
-		conn.WriteString("Authenticated")
-		return
-	}
-
-	if !ctx.authenticated {
-		conn.WriteError("Unauthorized")
-		return
-	}
 
 	switch query {
 	default:
@@ -152,16 +128,4 @@ func (r *Resp) ErrorHandler(conn redcon.Conn, err error) {}
 
 func NewResp(store store.Store) *Resp {
 	return &Resp{store}
-}
-
-func assertContext(conn redcon.Conn) *ConnectionContext {
-	ctx, ok := conn.Context().(*ConnectionContext)
-
-	if !ok {
-		ctx = &ConnectionContext{}
-
-		conn.SetContext(ctx)
-	}
-
-	return ctx
 }
