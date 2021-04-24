@@ -11,7 +11,7 @@ type Store interface {
 	/*
 		Size of the database in bytes on disk
 	*/
-	Size() int64
+	Size() (int64, error)
 
 	/*
 		Writes a snapshot of the database to a writer

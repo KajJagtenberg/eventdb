@@ -45,16 +45,16 @@ type BoltStore struct {
 	estimateEventCount  int64
 }
 
-func (s *BoltStore) Size() int64 {
+func (s *BoltStore) Size() (int64, error) {
 	var size int64 = 0
 
-	s.db.View(func(t *bbolt.Tx) error {
+	err := s.db.View(func(t *bbolt.Tx) error {
 		size = t.Size()
 
 		return nil
 	})
 
-	return size
+	return size, err
 }
 
 func (s *BoltStore) Backup(dst io.Writer) error {
