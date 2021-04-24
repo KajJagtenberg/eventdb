@@ -1,6 +1,7 @@
 VERSION := $(shell cat constants/version)
 
 db:
+	mkdir -p data
 	go run cmd/eventflowdb/main.go
 
 ctl:
