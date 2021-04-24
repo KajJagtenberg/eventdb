@@ -20,7 +20,7 @@ import (
 var (
 	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
 	respAddr      = env.GetEnv("RESP_ADDR", ":6543")
-	httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
+	// httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
 )
 
 func main() {
