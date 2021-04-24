@@ -2,9 +2,11 @@ package shell
 
 import (
 	_ "embed"
+	"log"
 
 	"github.com/dop251/goja"
 	"github.com/kajjagtenberg/eventflowdb/constants"
+	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 var (
@@ -18,19 +20,9 @@ type Shell struct {
 }
 
 func (shell *Shell) Execute(code string) (string, error) {
-	if babel == nil {
-		var err error
-		babel, err = NewBabel()
-		if err != nil {
-			return "", err
-		}
-	}
-
 	compiled, err := babel.Compile(code)
 	if err != nil {
-		if err != nil {
-			return "", err
-		}
+		return err.Error(), nil
 	}
 
 	value, err := shell.vm.RunString(compiled)
@@ -38,26 +30,52 @@ func (shell *Shell) Execute(code string) (string, error) {
 		return err.Error(), nil
 	}
 
-	result := value.String()
-
-	if result == "use strict" {
-		return "", nil
-	}
-
-	return result, nil
+	return value.ToString().String(), nil
 }
 
-func NewShell() (*Shell, error) {
+func NewShell(store store.Store) (*Shell, error) {
+	if babel == nil {
+		var err error
+		babel, err = NewBabel()
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	vm := goja.New()
 	vm.SetFieldNameMapper(goja.TagFieldNameMapper("json", true))
 
-	if _, err := vm.RunString(runtime); err != nil {
+	compiledRuntime, err := babel.Compile(runtime)
+	if err != nil {
+		log.Println("Runtime compilation failed:", err)
 		return nil, err
 	}
 
-	vm.Set("version", func() string {
+	if _, err := vm.RunString(compiledRuntime); err != nil {
+		return nil, err
+	}
+
+	if err := vm.Set("version", func() string {
 		return constants.Version
-	})
+	}); err != nil {
+		return nil, err
+	}
+
+	database := struct {
+		StreamCount interface{} `json:"streamCount"`
+		EventCount  interface{} `json:"eventCount"`
+		Size        interface{} `json:"size"`
+		Log         interface{} `json:"log"`
+	}{
+		StreamCount: store.StreamCount,
+		EventCount:  store.EventCount,
+		Size:        store.Size,
+		Log:         store.Log,
+	}
+
+	if err := vm.Set("db", database); err != nil {
+		return nil, err
+	}
 
 	return &Shell{vm}, nil
 }

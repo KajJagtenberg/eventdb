@@ -1,32 +1,31 @@
 package main
 
 import (
-	"net"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"log"
 
-	"github.com/gofiber/adaptor/v2"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/helmet/v2"
+	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
-	"google.golang.org/grpc"
+
+	_ "embed"
 )
 
 var (
 	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
-	grpcAddr      = env.GetEnv("GRPC_ADDR", ":6543")
-	httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
+	respAddr      = env.GetEnv("RESP_ADDR", ":6543")
+	// httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
 )
 
 func main() {
+	godotenv.Load()
+
 	log.Println("Initializing store")
 
 	db, err := bbolt.Open(stateLocation, 0666, bbolt.DefaultOptions)
@@ -39,45 +38,37 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create store: %v", err)
 	}
+	defer store.Close()
 
-	log.Println("Initializing HTTP server")
+	// log.Println("Initializing HTTP server")
 
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	app.Use(helmet.New())
-	app.Use(cors.New())
+	// app := fiber.New(fiber.Config{
+	// 	DisableStartupMessage: true,
+	// })
+	// app.Use(helmet.New())
+	// app.Use(cors.New())
 
-	prom := adaptor.HTTPHandler(promhttp.Handler())
+	// prom := adaptor.HTTPHandler(promhttp.Handler())
 
-	app.Get("/metrics", prom)
+	// app.Get("/metrics", prom)
 
-	go func() {
-		log.Printf("HTTP server listening on %v", httpAddr)
+	// go func() {
+	// 	log.Printf("HTTP server listening on %v", httpAddr)
 
-		if err := app.Listen(httpAddr); err != nil {
-			log.Fatalf("Failed to listen: %v", err)
-		}
-	}()
+	// 	if err := app.Listen(httpAddr); err != nil {
+	// 		log.Fatalf("Failed to listen: %v", err)
+	// 	}
+	// }()
 
-	log.Println("Initializing gRPC server")
+	log.Println("Initializing RESP server")
 
-	lis, err := net.Listen("tcp", grpcAddr)
-	if err != nil {
-		log.Fatalf("Failed to listen on socket: %v", err)
-	}
-	defer lis.Close()
-
-	grpcServer := grpc.NewServer()
-
-	api.RegisterStreamServiceServer(grpcServer, api.NewStreamService(store))
-	api.RegisterShellServiceServer(grpcServer, api.NewShellService())
+	resp := api.NewResp(store)
 
 	go func() {
-		log.Printf("gRPC server listening on %v", grpcAddr)
+		log.Printf("RESP API listening on %s", respAddr)
 
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("Failed to listen on gRPC server: %v", err)
+		if err := redcon.ListenAndServe(respAddr, resp.CommandHandler, resp.AcceptHandler, resp.ErrorHandler); err != nil {
+			log.Fatalf("Failed to run RESP API: %v", err)
 		}
 	}()
 

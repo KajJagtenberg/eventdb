@@ -2,6 +2,7 @@ package shell
 
 import (
 	_ "embed"
+	"strings"
 
 	"github.com/dop251/goja"
 )
@@ -24,7 +25,15 @@ func (b *Babel) Compile(code string) (string, error) {
 	}
 
 	result, err := b.vm.RunString("compile()")
-	return result.String(), err
+	if err != nil {
+		return "", err
+	}
+
+	compiled := result.String()
+
+	compiled = strings.Replace(compiled, "use strict", "", 1)
+
+	return compiled, nil
 }
 
 func NewBabel() (*Babel, error) {
@@ -40,11 +49,11 @@ func NewBabel() (*Babel, error) {
 	}
 
 	if _, err := vm.RunString(`
-		function compile() {
-			return Babel.transform(code, {
-				presets: ["env"]
-			}).code
-		}
+	function compile() {
+		return Babel.transform(code, {
+		  presets: ["env"],
+		}).code;
+	  }	  
 	`); err != nil {
 		return nil, err
 	}

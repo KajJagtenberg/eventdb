@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log"
 	"math/rand"
 	"time"
 
@@ -32,22 +33,28 @@ var (
 		Name: "store_log_total",
 		Help: "The amount of log requests performed",
 	})
+	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "store_concurrent_modification_total",
+		Help: "The total amount of concurrent stream modification errors",
+	})
 )
 
 type BoltStore struct {
-	db *bbolt.DB
+	db                  *bbolt.DB
+	estimateStreamCount int64
+	estimateEventCount  int64
 }
 
-func (s *BoltStore) Size() int64 {
+func (s *BoltStore) Size() (int64, error) {
 	var size int64 = 0
 
-	s.db.View(func(t *bbolt.Tx) error {
+	err := s.db.View(func(t *bbolt.Tx) error {
 		size = t.Size()
 
 		return nil
 	})
 
-	return size
+	return size, err
 }
 
 func (s *BoltStore) Backup(dst io.Writer) error {
@@ -63,7 +70,7 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
 	var result []Event
 
-	if err := s.db.Update(func(t *bbolt.Tx) error {
+	if err := s.db.Batch(func(t *bbolt.Tx) error {
 		streamBucket := t.Bucket([]byte("streams"))
 		eventsBucket := t.Bucket([]byte("events"))
 
@@ -79,6 +86,8 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		}
 
 		if len(s.Events) != int(version) {
+			concurrencyCounter.Add(1)
+
 			return errors.New("Concurrent stream modification")
 		}
 
@@ -228,6 +237,53 @@ func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
 	return result, nil
 }
 
+func (s *BoltStore) EventCount() (int64, error) {
+	var total int64
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("events")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			total++
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (s *BoltStore) StreamCount() (int64, error) {
+	var total int64
+
+	if err := s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("streams")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			total++
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+func (s *BoltStore) StreamCountEstimate() (int64, error) {
+	return s.estimateStreamCount, nil
+}
+
+func (s *BoltStore) EventCountEstimate() (int64, error) {
+	return s.estimateEventCount, nil
+}
+
+func (s *BoltStore) Close() error {
+	return s.db.Close()
+}
+
 func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 	if err := db.Update(func(t *bbolt.Tx) error {
 		for _, bucket := range buckets {
@@ -241,5 +297,26 @@ func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 		return nil, err
 	}
 
-	return &BoltStore{db}, nil
+	store := &BoltStore{db, 0, 0}
+
+	go func() {
+		for {
+			streamCount, err := store.StreamCount()
+			if err != nil {
+				log.Fatalf("Failed to get stream count: %v", err)
+			}
+
+			eventCount, err := store.EventCount()
+			if err != nil {
+				log.Fatalf("Failed to get stream count: %v", err)
+			}
+
+			store.estimateStreamCount = streamCount
+			store.estimateEventCount = eventCount
+
+			time.Sleep(time.Second)
+		}
+	}()
+
+	return store, nil
 }

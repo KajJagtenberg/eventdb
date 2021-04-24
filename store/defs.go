@@ -1,6 +1,7 @@
 package store
 
 import (
+	"bytes"
 	"time"
 
 	proto "github.com/golang/protobuf/proto"
@@ -10,23 +11,23 @@ import (
 
 type EventData struct {
 	Type          string
-	Data          []byte
-	Metadata      []byte
+	Data          *bytes.Buffer
+	Metadata      *bytes.Buffer
 	CausationID   ulid.ULID
 	CorrelationID ulid.ULID
 	AddedAt       time.Time
 }
 
 type Event struct {
-	ID            ulid.ULID `json:"id"`
-	Stream        uuid.UUID `json:"stream"`
-	Version       uint32    `json:"version"`
-	Type          string    `json:"type"`
-	Data          []byte    `json:"data"`
-	Metadata      []byte    `json:"metadata"`
-	CausationID   ulid.ULID `json:"causation_id"`
-	CorrelationID ulid.ULID `json:"correlation_id"`
-	AddedAt       time.Time `json:"added_at"`
+	ID            ulid.ULID     `json:"id"`
+	Stream        uuid.UUID     `json:"stream"`
+	Version       uint32        `json:"version"`
+	Type          string        `json:"type"`
+	Data          *bytes.Buffer `json:"data"`
+	Metadata      *bytes.Buffer `json:"metadata"`
+	CausationID   ulid.ULID     `json:"causation_id"`
+	CorrelationID ulid.ULID     `json:"correlation_id"`
+	AddedAt       time.Time     `json:"added_at"`
 }
 
 func (e *Event) Marshal() ([]byte, error) {
@@ -35,8 +36,8 @@ func (e *Event) Marshal() ([]byte, error) {
 	m.Stream = e.Stream[:]
 	m.Version = e.Version
 	m.Type = e.Type
-	m.Data = e.Data
-	m.Metadata = e.Metadata
+	m.Data = e.Data.Bytes()
+	m.Metadata = e.Metadata.Bytes()
 	m.CausationId = e.CausationID[:]
 	m.CorrelationId = e.CorrelationID[:]
 	m.AddedAt = e.AddedAt.UnixNano()
@@ -64,8 +65,8 @@ func (e *Event) Unmarshal(data []byte) error {
 
 	e.Version = m.Version
 	e.Type = m.Type
-	e.Data = m.Data
-	e.Metadata = m.Metadata
+	e.Data = bytes.NewBuffer(m.Data)
+	e.Metadata = bytes.NewBuffer(m.Metadata)
 
 	var causationID ulid.ULID
 	if err := causationID.UnmarshalBinary(m.CausationId); err != nil {
