@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"strconv"
 	"strings"
 
@@ -106,16 +105,18 @@ func (r *Resp) CommandHandler(conn redcon.Conn, cmd redcon.Command) {
 			return
 		}
 
-		conn.WriteArray(len(events))
+		conn.WriteArray(len(events) * 9)
 
 		for _, event := range events {
-			raw, err := json.Marshal(event)
-			if err != nil {
-				conn.WriteError(err.Error())
-				return
-			}
-
-			conn.WriteString(string(raw))
+			conn.WriteString(event.ID.String())
+			conn.WriteString(event.Stream.String())
+			conn.WriteInt(int(event.Version))
+			conn.WriteString(event.Type)
+			conn.WriteString(event.Data.String())
+			conn.WriteString(event.Metadata.String())
+			conn.WriteString(event.CausationID.String())
+			conn.WriteString(event.CorrelationID.String())
+			conn.WriteString(event.AddedAt.String())
 		}
 		// TODO: Add get
 		// TODO: Add add

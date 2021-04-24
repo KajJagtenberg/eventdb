@@ -7,15 +7,10 @@ import (
 
 	"log"
 
-	"github.com/gofiber/adaptor/v2"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/helmet/v2"
 	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
 
@@ -45,25 +40,25 @@ func main() {
 	}
 	defer store.Close()
 
-	log.Println("Initializing HTTP server")
+	// log.Println("Initializing HTTP server")
 
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	app.Use(helmet.New())
-	app.Use(cors.New())
+	// app := fiber.New(fiber.Config{
+	// 	DisableStartupMessage: true,
+	// })
+	// app.Use(helmet.New())
+	// app.Use(cors.New())
 
-	prom := adaptor.HTTPHandler(promhttp.Handler())
+	// prom := adaptor.HTTPHandler(promhttp.Handler())
 
-	app.Get("/metrics", prom)
+	// app.Get("/metrics", prom)
 
-	go func() {
-		log.Printf("HTTP server listening on %v", httpAddr)
+	// go func() {
+	// 	log.Printf("HTTP server listening on %v", httpAddr)
 
-		if err := app.Listen(httpAddr); err != nil {
-			log.Fatalf("Failed to listen: %v", err)
-		}
-	}()
+	// 	if err := app.Listen(httpAddr); err != nil {
+	// 		log.Fatalf("Failed to listen: %v", err)
+	// 	}
+	// }()
 
 	log.Println("Initializing RESP server")
 
