@@ -117,6 +117,8 @@ func (r *Resp) CommandHandler(conn redcon.Conn, cmd redcon.Command) {
 
 			conn.WriteString(string(raw))
 		}
+		// TODO: Add get
+		// TODO: Add add
 	}
 }
 
