@@ -20,7 +20,6 @@ import (
 var (
 	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
 	respAddr      = env.GetEnv("RESP_ADDR", ":6543")
-	// httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
 )
 
 func main() {
@@ -40,26 +39,6 @@ func main() {
 	}
 	defer store.Close()
 
-	// log.Println("Initializing HTTP server")
-
-	// app := fiber.New(fiber.Config{
-	// 	DisableStartupMessage: true,
-	// })
-	// app.Use(helmet.New())
-	// app.Use(cors.New())
-
-	// prom := adaptor.HTTPHandler(promhttp.Handler())
-
-	// app.Get("/metrics", prom)
-
-	// go func() {
-	// 	log.Printf("HTTP server listening on %v", httpAddr)
-
-	// 	if err := app.Listen(httpAddr); err != nil {
-	// 		log.Fatalf("Failed to listen: %v", err)
-	// 	}
-	// }()
-
 	log.Println("Initializing RESP server")
 
 	resp := api.NewResp(store)
@@ -76,5 +55,5 @@ func main() {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
 
-	log.Println("Shutting down...")
+	log.Println("EventflowDB is shutting down...")
 }
