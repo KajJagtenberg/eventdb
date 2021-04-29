@@ -4,9 +4,6 @@ go 1.16
 
 require (
 	github.com/dop251/goja v0.0.0-20210402105715-96fa0aa6d91e
-	github.com/gofiber/adaptor/v2 v2.1.2
-	github.com/gofiber/fiber/v2 v2.7.1
-	github.com/gofiber/helmet/v2 v2.1.1
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
 	github.com/joho/godotenv v1.3.0
