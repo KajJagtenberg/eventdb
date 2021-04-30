@@ -70,6 +70,15 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 }
 
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
+	if bytes.Compare(stream[:], make([]byte, 16)) == 0 {
+		return nil, errors.New("Stream cannot be all zeroes")
+	}
+
+	if version < 0 {
+		log.Printf("Version is negative")
+		return nil, errors.New("Version cannot be negative")
+	}
+
 	if len(events) == 0 {
 		return nil, errors.New("List of events is empty")
 	}
