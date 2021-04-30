@@ -41,12 +41,16 @@ func main() {
 
 	log.Println("Initializing RESP server")
 
-	resp := api.NewResp(store)
-
 	go func() {
 		log.Printf("RESP API listening on %s", respAddr)
 
-		if err := redcon.ListenAndServe(respAddr, resp.CommandHandler, resp.AcceptHandler, resp.ErrorHandler); err != nil {
+		commandHandler := api.CommandHandler(store)
+
+		acceptHandler := api.AcceptHandler()
+
+		errorHandler := api.ErrorHandler()
+
+		if err := redcon.ListenAndServe(respAddr, commandHandler, acceptHandler, errorHandler); err != nil {
 			log.Fatalf("Failed to run RESP API: %v", err)
 		}
 	}()
