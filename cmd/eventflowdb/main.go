@@ -45,6 +45,7 @@ func main() {
 		log.Printf("RESP API listening on %s", respAddr)
 
 		commandHandler := api.Combine(
+			api.AssertSession(),
 			api.Authentication("password"),
 			api.CommandHandler(store),
 		)

@@ -1,6 +1,8 @@
 package api
 
-import "github.com/tidwall/redcon"
+import (
+	"github.com/tidwall/redcon"
+)
 
 func Authentication(password string) Handler {
 	return func(conn redcon.Conn, cmd redcon.Command) bool {
