@@ -21,8 +21,6 @@ func CommandHandler(s store.Store) Handler {
 			conn.WriteError("ERR unknown command '" + string(cmd.Args[0]) + "'")
 
 			return false
-		case "ping":
-			conn.WriteString("PONG")
 		case "quit":
 			conn.WriteString("OK")
 			conn.Close()
