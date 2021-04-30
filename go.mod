@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/dop251/goja v0.0.0-20210402105715-96fa0aa6d91e
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.2.0
 	github.com/joho/godotenv v1.3.0

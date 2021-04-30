@@ -1,9 +1,11 @@
 package api
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/constants"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
@@ -105,21 +107,49 @@ func (r *Resp) CommandHandler(conn redcon.Conn, cmd redcon.Command) {
 			return
 		}
 
-		conn.WriteArray(len(events) * 9)
-
-		for _, event := range events {
-			conn.WriteString(event.ID.String())
-			conn.WriteString(event.Stream.String())
-			conn.WriteInt(int(event.Version))
-			conn.WriteString(event.Type)
-			conn.WriteString(event.Data.String())
-			conn.WriteString(event.Metadata.String())
-			conn.WriteString(event.CausationID.String())
-			conn.WriteString(event.CorrelationID.String())
-			conn.WriteString(event.AddedAt.String())
+		result, err := json.Marshal(events)
+		if err != nil {
+			conn.WriteError(err.Error())
+			return
 		}
+
+		conn.WriteString(string(result))
+
+	case "add":
+		stream, err := uuid.ParseBytes(cmd.Args[1])
+		if err != nil {
+			conn.WriteError(err.Error())
+			return
+		}
+
+		version, err := strconv.ParseUint(string(cmd.Args[2]), 10, 32)
+		if err != nil {
+			conn.WriteError(err.Error())
+			return
+		}
+
+		var data []store.EventData
+
+		if err := json.Unmarshal(cmd.Args[3], &data); err != nil {
+			conn.WriteError(err.Error())
+			return
+		}
+
+		events, err := r.store.Add(stream, uint32(version), data)
+		if err != nil {
+			conn.WriteError(err.Error())
+			return
+		}
+
+		result, err := json.Marshal(events)
+		if err != nil {
+			conn.WriteError(err.Error())
+			return
+		}
+
+		conn.WriteString(string(result))
+
 		// TODO: Add get
-		// TODO: Add add
 	}
 }
 

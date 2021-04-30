@@ -1,7 +1,6 @@
 package store
 
 import (
-	"bytes"
 	"io/ioutil"
 	"testing"
 
@@ -41,8 +40,8 @@ func TestBoltAdd(t *testing.T) {
 	events := []EventData{
 		{
 			Type:     "TestEvent",
-			Data:     bytes.NewBufferString("data"),
-			Metadata: bytes.NewBufferString("metadata"),
+			Data:     []byte("data"),
+			Metadata: []byte("metadata"),
 		},
 	}
 
@@ -74,8 +73,8 @@ func TestBoltAddConcurrency(t *testing.T) {
 	events := []EventData{
 		{
 			Type:     "TestEvent",
-			Data:     bytes.NewBufferString("data"),
-			Metadata: bytes.NewBufferString("metadata"),
+			Data:     []byte("data"),
+			Metadata: []byte("metadata"),
 		},
 	}
 
@@ -100,8 +99,8 @@ func TestBoltGet(t *testing.T) {
 	events := []EventData{
 		{
 			Type:     "TestEvent",
-			Data:     bytes.NewBufferString("data"),
-			Metadata: bytes.NewBufferString("metadata"),
+			Data:     []byte("data"),
+			Metadata: []byte("metadata"),
 		},
 	}
 
@@ -138,8 +137,8 @@ func TestBoltLog(t *testing.T) {
 	events := []EventData{
 		{
 			Type:     "TestEvent",
-			Data:     bytes.NewBufferString("data"),
-			Metadata: bytes.NewBufferString("metadata"),
+			Data:     []byte("data"),
+			Metadata: []byte("metadata"),
 		},
 	}
 
