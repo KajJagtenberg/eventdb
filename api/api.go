@@ -16,6 +16,8 @@ func CommandHandler(s store.Store) Handler {
 		switch ctx.Command {
 		case "ping":
 			return Ping(ctx)
+		case "quit":
+			return Quit(ctx)
 		case "size":
 			return Size(s, ctx)
 		default:
