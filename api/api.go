@@ -14,24 +14,26 @@ var (
 func CommandHandler(s store.Store) Handler {
 	return func(c *Ctx) error {
 		switch c.Command {
+		case "eventcount":
+			return EventCount(s, c)
+		case "eventcountest":
+			return EventCountEstimate(s, c)
+		case "get":
+			return Get(s, c)
+		case "getall":
+			return GetAll(s, c)
 		case "ping":
 			return Ping(c)
 		case "quit":
 			return Quit(c)
 		case "size":
 			return Size(s, c)
-		case "get":
-			return Get(s, c)
-		case "getall":
-			return GetAll(s, c)
-		case "eventcount":
-			return EventCount(s, c)
-		case "eventcountest":
-			return EventCountEstimate(s, c)
 		case "streamcount":
 			return StreamCount(s, c)
 		case "streamcountest":
 			return StreamCountEstimate(s, c)
+		case "version":
+			return Version(c)
 		default:
 			return ErrUnknownCommand
 		}
