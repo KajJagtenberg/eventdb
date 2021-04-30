@@ -109,6 +109,14 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		now := time.Now()
 
 		for i, event := range events {
+			if event.Type == "" {
+				return errors.New("Event type cannot be empty")
+			}
+
+			if len(event.Data) == 0 {
+				return errors.New("Event data cannot be empty")
+			}
+
 			id, err := ulid.New(ulid.Now(), entropy)
 			if err != nil {
 				return err
