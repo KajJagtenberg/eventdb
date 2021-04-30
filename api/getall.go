@@ -3,14 +3,13 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/oklog/ulid"
 )
 
 type GetAllRequest struct {
-	Stream  uuid.UUID `json:"stream"`
-	Version uint32    `json:"version"`
-	Limit   uint32    `json:"limit"`
+	Offset ulid.ULID `json:"stream"`
+	Limit  uint32    `json:"limit"`
 }
 
 type GetAllResponse struct {
@@ -27,7 +26,7 @@ func GetAll(s store.Store, c *Ctx) error {
 		return err
 	}
 
-	events, err := s.Get(req.Stream, req.Version, req.Limit)
+	events, err := s.GetAll(req.Offset, req.Limit)
 	if err != nil {
 		return err
 	}

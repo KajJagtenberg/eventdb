@@ -22,6 +22,8 @@ func CommandHandler(s store.Store) Handler {
 			return Size(s, c)
 		case "get":
 			return Get(s, c)
+		case "getall":
+			return GetAll(s, c)
 		case "eventcount":
 			return EventCount(s, c)
 		case "eventcountest":
