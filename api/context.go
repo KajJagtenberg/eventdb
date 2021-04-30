@@ -11,7 +11,7 @@ type Ctx struct {
 	Command string
 	Args    [][]byte
 
-	next interface{}
+	next interface{} // this should be treated as []Handler, but cannot be defined that way due to cyclic references
 }
 
 func (c *Ctx) Next() error {
