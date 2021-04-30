@@ -1,16 +1,12 @@
 package api
 
-import (
-	"github.com/tidwall/redcon"
-)
-
 type Session struct {
 	Authenticated bool
 }
 
 func AssertSession() Handler {
-	return func(conn redcon.Conn, cmd redcon.Command) bool {
-		ctx := conn.Context()
+	return func(c *Ctx) error {
+		ctx := c.Conn.Context()
 
 		if ctx == nil {
 			ctx = &Session{
@@ -18,8 +14,8 @@ func AssertSession() Handler {
 			}
 		}
 
-		conn.SetContext(ctx)
+		c.Conn.SetContext(ctx)
 
-		return true
+		return c.Next()
 	}
 }

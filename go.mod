@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/redcon v1.4.1
 	go.etcd.io/bbolt v1.3.5
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
+	golang.org/x/net v0.0.0-20210226101413-39120d07d75e // indirect
 	golang.org/x/sys v0.0.0-20210403161142-5e06dd20ab57 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )

@@ -1,46 +1,44 @@
 package api
 
 import (
-	"strings"
+	"errors"
+)
 
-	"github.com/tidwall/redcon"
+var (
+	ErrUnauthorized         = errors.New("Unauthorized")
+	ErrAlreadyAuthenticated = errors.New("Already authenticated")
 )
 
 func Authentication(password string) Handler {
-	return func(conn redcon.Conn, cmd redcon.Command) bool {
-		session := conn.Context().(*Session)
-
-		query := strings.ToLower(string(cmd.Args[0]))
+	return func(c *Ctx) error {
+		session := c.Conn.Context().(*Session)
 
 		if session.Authenticated {
-			if query == "auth" {
-				conn.WriteError("Already authenticated")
-				return false
+			if c.Command == "auth" {
+				return ErrAlreadyAuthenticated
 			} else {
-				return true
+				return c.Next()
 			}
 		} else {
 			if password == "" {
-				return true
+				return c.Next()
 			}
 
-			if query != "auth" {
-				conn.WriteError("Unauthorized")
-				return false
+			if c.Command != "auth" {
+				return ErrUnauthorized
 			}
 
-			if string(cmd.Args[1]) != password {
-				conn.WriteError("Unauthorized")
-				return false
+			if string(c.Args[1]) != password {
+				return ErrUnauthorized
 			}
 
 			session.Authenticated = true
 
-			conn.SetContext(session)
+			c.Conn.SetContext(session)
 
-			conn.WriteString("OK")
+			c.Conn.WriteString("OK")
 
-			return false
+			return nil
 		}
 	}
 }
