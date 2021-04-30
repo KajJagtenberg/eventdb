@@ -100,10 +100,16 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 			s.AddedAt = time.Now()
 		}
 
-		if len(s.Events) != int(version) {
-			// concurrencyCounter.Add(1)
+		// if len(s.Events) != int(version) {
+		// 	return errors.New("Concurrent stream modification")
+		// }
 
+		if int(version) < len(s.Events) {
 			return errors.New("Concurrent stream modification")
+		}
+
+		if int(version) > len(s.Events) {
+			return errors.New("Given version leaves gap in stream")
 		}
 
 		now := time.Now()
