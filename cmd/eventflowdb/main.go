@@ -20,6 +20,7 @@ import (
 var (
 	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
 	respAddr      = env.GetEnv("RESP_ADDR", ":6543")
+	password      = env.GetEnv("PASSWORD", "")
 )
 
 func main() {
@@ -46,7 +47,7 @@ func main() {
 
 		commandHandler := api.Combine(
 			api.AssertSession(),
-			api.Authentication("password"),
+			api.Authentication(password),
 			api.CommandHandler(store),
 		)
 
