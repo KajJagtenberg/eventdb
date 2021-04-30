@@ -12,14 +12,16 @@ var (
 )
 
 func CommandHandler(s store.Store) Handler {
-	return func(ctx *Ctx) error {
-		switch ctx.Command {
+	return func(c *Ctx) error {
+		switch c.Command {
 		case "ping":
-			return Ping(ctx)
+			return Ping(c)
 		case "quit":
-			return Quit(ctx)
+			return Quit(c)
 		case "size":
-			return Size(s, ctx)
+			return Size(s, c)
+		case "eventcount":
+			return EventCount(s, c)
 		default:
 			return ErrUnknownCommand
 		}
