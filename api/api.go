@@ -12,13 +12,15 @@ import (
 	"github.com/tidwall/redcon"
 )
 
-func CommandHandler(s store.Store) redcon.HandlerFunc {
-	return func(conn redcon.Conn, cmd redcon.Command) {
+func CommandHandler(s store.Store) Handler {
+	return func(conn redcon.Conn, cmd redcon.Command) bool {
 		query := strings.ToLower(string(cmd.Args[0]))
 
 		switch query {
 		default:
 			conn.WriteError("ERR unknown command '" + string(cmd.Args[0]) + "'")
+
+			return false
 		case "ping":
 			conn.WriteString("PONG")
 		case "quit":
@@ -30,7 +32,7 @@ func CommandHandler(s store.Store) redcon.HandlerFunc {
 			size, err := s.Size()
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			conn.WriteInt64(size)
@@ -38,7 +40,7 @@ func CommandHandler(s store.Store) redcon.HandlerFunc {
 			count, err := s.EventCount()
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			conn.WriteInt64(count)
@@ -46,7 +48,7 @@ func CommandHandler(s store.Store) redcon.HandlerFunc {
 			count, err := s.EventCountEstimate()
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			conn.WriteInt64(count)
@@ -54,7 +56,7 @@ func CommandHandler(s store.Store) redcon.HandlerFunc {
 			count, err := s.StreamCount()
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			conn.WriteInt64(count)
@@ -62,7 +64,7 @@ func CommandHandler(s store.Store) redcon.HandlerFunc {
 			count, err := s.StreamCountEstimate()
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			conn.WriteInt64(count)
@@ -79,35 +81,35 @@ func CommandHandler(s store.Store) redcon.HandlerFunc {
 				offset, err = ulid.Parse(string(cmd.Args[1]))
 				if err != nil {
 					conn.WriteError(err.Error())
-					return
+					return false
 				}
 			case 3:
 				offset, err = ulid.Parse(string(cmd.Args[1]))
 				if err != nil {
 					conn.WriteError(err.Error())
-					return
+					return false
 				}
 
 				limit, err = strconv.Atoi(string(cmd.Args[2]))
 				if err != nil {
 					conn.WriteError(err.Error())
-					return
+					return false
 				}
 			default:
 				conn.WriteError("Amount of arguments is not supported")
-				return
+				return false
 			}
 
 			events, err := s.Log(offset, uint32(limit))
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			result, err := json.Marshal(events)
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			conn.WriteString(string(result))
@@ -116,39 +118,42 @@ func CommandHandler(s store.Store) redcon.HandlerFunc {
 			stream, err := uuid.ParseBytes(cmd.Args[1])
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			version, err := strconv.ParseUint(string(cmd.Args[2]), 10, 32)
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			var data []store.EventData
 
 			if err := json.Unmarshal(cmd.Args[3], &data); err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			events, err := s.Add(stream, uint32(version), data)
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			result, err := json.Marshal(events)
 			if err != nil {
 				conn.WriteError(err.Error())
-				return
+				return false
 			}
 
 			conn.WriteString(string(result))
 
 			// TODO: Add get
 		}
+
+		return true
 	}
+
 }
 
 func AcceptHandler() func(conn redcon.Conn) bool {

@@ -44,7 +44,10 @@ func main() {
 	go func() {
 		log.Printf("RESP API listening on %s", respAddr)
 
-		commandHandler := api.CommandHandler(store)
+		commandHandler := api.Combine(
+			api.Authentication("password"),
+			api.CommandHandler(store),
+		)
 
 		acceptHandler := api.AcceptHandler()
 
