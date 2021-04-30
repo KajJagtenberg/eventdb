@@ -206,7 +206,7 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 	return result, nil
 }
 
-func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
+func (s *BoltStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, error) {
 	if limit == 0 {
 		limit = 100
 	}

@@ -34,7 +34,7 @@ type Store interface {
 		Returns amount of events that have been recorded since the given offset. The maximum amount of returned events is specified by the given limit.
 		If the limit is 0, then it will return a maximum of 100 events.
 	*/
-	Log(offset ulid.ULID, limit uint32) ([]Event, error)
+	GetAll(offset ulid.ULID, limit uint32) ([]Event, error)
 
 	/*
 		Returns the total number of events stored in the database
