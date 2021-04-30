@@ -18,6 +18,10 @@ var (
 	entropy = ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0)
 )
 
+const (
+	ESTIMATE_SLEEP_TIME = time.Second // Maybe make this configurable?
+)
+
 // var (
 // 	addCounter = promauto.NewCounter(prometheus.CounterOpts{
 // 		Name: "store_add_total",
@@ -312,7 +316,7 @@ func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 			store.estimateStreamCount = streamCount
 			store.estimateEventCount = eventCount
 
-			time.Sleep(time.Second)
+			time.Sleep(ESTIMATE_SLEEP_TIME)
 		}
 	}()
 
