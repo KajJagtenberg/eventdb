@@ -20,6 +20,8 @@ func CommandHandler(s store.Store) Handler {
 			return Quit(c)
 		case "size":
 			return Size(s, c)
+		case "get":
+			return Get(s, c)
 		case "eventcount":
 			return EventCount(s, c)
 		case "eventcountest":
