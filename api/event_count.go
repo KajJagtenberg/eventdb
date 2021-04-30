@@ -12,3 +12,14 @@ func EventCount(store store.Store, c *Ctx) error {
 
 	return nil
 }
+
+func EventCountEstimate(store store.Store, c *Ctx) error {
+	count, err := store.EventCountEstimate()
+	if err != nil {
+		return err
+	}
+
+	c.Conn.WriteInt64(count)
+
+	return nil
+}

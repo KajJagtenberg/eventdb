@@ -22,6 +22,8 @@ func CommandHandler(s store.Store) Handler {
 			return Size(s, c)
 		case "eventcount":
 			return EventCount(s, c)
+		case "eventcountest":
+			return EventCountEstimate(s, c)
 		default:
 			return ErrUnknownCommand
 		}
