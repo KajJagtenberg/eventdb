@@ -10,8 +10,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.etcd.io/bbolt"
 )
 
@@ -20,24 +18,24 @@ var (
 	entropy = ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0)
 )
 
-var (
-	addCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_add_total",
-		Help: "The amount of events that have been added to the store",
-	})
-	getCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_get_total",
-		Help: "The amount of get requests performed",
-	})
-	logCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_log_total",
-		Help: "The amount of log requests performed",
-	})
-	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_concurrent_modification_total",
-		Help: "The total amount of concurrent stream modification errors",
-	})
-)
+// var (
+// 	addCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_add_total",
+// 		Help: "The amount of events that have been added to the store",
+// 	})
+// 	getCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_get_total",
+// 		Help: "The amount of get requests performed",
+// 	})
+// 	logCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_log_total",
+// 		Help: "The amount of log requests performed",
+// 	})
+// 	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_concurrent_modification_total",
+// 		Help: "The total amount of concurrent stream modification errors",
+// 	})
+// )
 
 type BoltStore struct {
 	db                  *bbolt.DB
@@ -86,7 +84,7 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		}
 
 		if len(s.Events) != int(version) {
-			concurrencyCounter.Add(1)
+			// concurrencyCounter.Add(1)
 
 			return errors.New("Concurrent stream modification")
 		}
@@ -151,7 +149,7 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		return nil, err
 	}
 
-	addCounter.Add(float64(len(events)))
+	// addCounter.Add(float64(len(events)))
 
 	return result, nil
 }
@@ -199,7 +197,7 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 		return nil, err
 	}
 
-	getCounter.Add(1)
+	// getCounter.Add(1)
 
 	return result, nil
 }
@@ -232,7 +230,7 @@ func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
 		return nil, err
 	}
 
-	logCounter.Add(1)
+	// logCounter.Add(1)
 
 	return result, nil
 }
