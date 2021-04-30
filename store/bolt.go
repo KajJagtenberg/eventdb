@@ -70,6 +70,10 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 }
 
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
+	if len(events) == 0 {
+		return nil, errors.New("List of events is empty")
+	}
+
 	result := make([]Event, 0)
 
 	if err := s.db.Batch(func(t *bbolt.Tx) error {
