@@ -66,7 +66,7 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 }
 
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
-	var result []Event
+	result := make([]Event, 0)
 
 	if err := s.db.Batch(func(t *bbolt.Tx) error {
 		streamBucket := t.Bucket([]byte("streams"))
@@ -155,7 +155,7 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 }
 
 func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event, error) {
-	var result []Event
+	result := make([]Event, 0)
 
 	if err := s.db.View(func(t *bbolt.Tx) error {
 		streamBucket := t.Bucket([]byte("streams"))
@@ -207,7 +207,7 @@ func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
 		limit = 100
 	}
 
-	var result []Event
+	result := make([]Event, 0)
 
 	if err := s.db.View(func(t *bbolt.Tx) error {
 		cursor := t.Bucket([]byte("events")).Cursor()
