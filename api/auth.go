@@ -28,7 +28,7 @@ func Authentication(password string) Handler {
 				return ErrUnauthorized
 			}
 
-			if string(c.Args[1]) != password {
+			if string(c.Args[0]) != password {
 				return ErrUnauthorized
 			}
 

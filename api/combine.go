@@ -13,7 +13,7 @@ func Combine(handlers ...Handler) redcon.HandlerFunc {
 			Command: strings.ToLower(string(cmd.Args[0])),
 			Args:    cmd.Args[1:],
 		}
-		ctx.next = handlers
+		ctx.next = handlers[1:]
 
 		err := handlers[0](ctx)
 		if err != nil {
