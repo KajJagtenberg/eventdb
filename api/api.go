@@ -7,9 +7,18 @@ import (
 	"github.com/tidwall/redcon"
 )
 
+var (
+	ErrUnknownCommand = errors.New("Unknown command")
+)
+
 func CommandHandler(s store.Store) Handler {
-	return func(c *Ctx) error {
-		return errors.New("Unknown command")
+	return func(ctx *Ctx) error {
+		switch ctx.Command {
+		case "ping":
+			return Ping(ctx)
+		default:
+			return ErrUnknownCommand
+		}
 	}
 }
 

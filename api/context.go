@@ -11,12 +11,12 @@ type Ctx struct {
 	Command string
 	Args    [][]byte
 
-	next []interface{}
+	next interface{}
 }
 
 func (c *Ctx) Next() error {
-	h := c.next[0].(Handler)
-	c.next = c.next[1:]
-
+	next := c.next.([]Handler)
+	h := next[0]
+	c.next = next[1:]
 	return h(c)
 }
