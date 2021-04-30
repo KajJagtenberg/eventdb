@@ -21,6 +21,6 @@ WORKDIR /var/lib/eventflowdb
 
 RUN mkdir data -p
 
-COPY --from=build /src/bin/eventflowdb /bin/eventflowdb
+COPY --from=build /src/bin/eventflowdb /usr/bin/eventflowdb
 
 CMD ["eventflowdb"]
