@@ -24,6 +24,10 @@ func CommandHandler(s store.Store) Handler {
 			return EventCount(s, c)
 		case "eventcountest":
 			return EventCountEstimate(s, c)
+		case "streamcount":
+			return StreamCount(s, c)
+		case "streamcountest":
+			return StreamCountEstimate(s, c)
 		default:
 			return ErrUnknownCommand
 		}
