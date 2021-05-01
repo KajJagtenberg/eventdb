@@ -16,6 +16,8 @@ func CommandHandler(s store.Store) Handler {
 		switch c.Command {
 		case "add":
 			return Add(s, c)
+		case "checksum":
+			return Checksum(s, c)
 		case "eventcount":
 			return EventCount(s, c)
 		case "eventcountest":

@@ -306,7 +306,7 @@ func (s *BoltStore) EventCountEstimate() (int64, error) {
 	return s.estimateEventCount, nil
 }
 
-func (s *BoltStore) Checksum() (uint32, error) {
+func (s *BoltStore) Checksum() ([]byte, error) {
 	crc := crc32.NewIEEE()
 
 	err := s.db.View(func(t *bbolt.Tx) error {
@@ -321,10 +321,10 @@ func (s *BoltStore) Checksum() (uint32, error) {
 		return nil
 	})
 	if err != nil {
-		return 0, nil
+		return nil, err
 	}
 
-	return crc.Sum32(), nil
+	return crc.Sum(nil), nil
 }
 
 func (s *BoltStore) Close() error {

@@ -56,5 +56,7 @@ type Store interface {
 	*/
 	StreamCountEstimate() (int64, error)
 
+	Checksum() ([]byte, error)
+
 	Close() error
 }
