@@ -19,8 +19,8 @@ import (
 )
 
 var (
-	data     = env.GetEnv("DATA", "data/state.dat")
-	respAddr = env.GetEnv("RESP_ADDR", ":6543")
+	data     = env.GetEnv("DATA", "data")
+	port     = env.GetEnv("PORT", ":6543")
 	password = env.GetEnv("PASSWORD", "")
 )
 
@@ -48,7 +48,7 @@ func main() {
 	log.Println("Initializing RESP server")
 
 	go func() {
-		log.Printf("RESP API listening on %s", respAddr)
+		log.Printf("RESP API listening on %s", port)
 
 		commandHandler := api.Combine(
 			api.AssertSession(),
@@ -60,7 +60,7 @@ func main() {
 
 		errorHandler := api.ErrorHandler()
 
-		if err := redcon.ListenAndServe(respAddr, commandHandler, acceptHandler, errorHandler); err != nil {
+		if err := redcon.ListenAndServe(":"+port, commandHandler, acceptHandler, errorHandler); err != nil {
 			log.Fatalf("Failed to run RESP API: %v", err)
 		}
 	}()
