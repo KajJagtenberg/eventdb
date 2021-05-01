@@ -17,6 +17,10 @@ type Client struct {
 	r *redis.Client
 }
 
+func (c *Client) Close() error {
+	return c.r.Close()
+}
+
 func NewClient(config *Config) *Client {
 	r := redis.NewClient(&redis.Options{
 		Addr: config.Address,
