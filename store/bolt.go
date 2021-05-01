@@ -134,7 +134,7 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 				Metadata:      event.Metadata,
 				CausationID:   event.CausationID,
 				CorrelationID: event.CorrelationID,
-				AddedAt:       event.AddedAt,
+				AddedAt:       now,
 			}
 
 			if bytes.Compare(record.CausationID[:], make([]byte, 16)) == 0 {
@@ -143,10 +143,6 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 
 			if bytes.Compare(record.CorrelationID[:], make([]byte, 16)) == 0 {
 				record.CorrelationID = record.CausationID
-			}
-
-			if record.AddedAt.IsZero() {
-				record.AddedAt = now
 			}
 
 			result = append(result, record)

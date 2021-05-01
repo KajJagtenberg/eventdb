@@ -14,7 +14,7 @@ type EventData struct {
 	Metadata      []byte    `json:"metadata"`
 	CausationID   ulid.ULID `json:"causation_id"`
 	CorrelationID ulid.ULID `json:"correlation_id"`
-	AddedAt       time.Time `json:"added_at"`
+	// AddedAt       time.Time `json:"added_at"`
 }
 
 type Event struct {
