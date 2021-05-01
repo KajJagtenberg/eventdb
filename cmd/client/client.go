@@ -11,5 +11,5 @@ func main() {
 		Address: "127.0.0.1:6543",
 	})
 
-	log.Println(client.Checksum())
+	log.Println(client.Ping())
 }
