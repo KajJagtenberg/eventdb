@@ -57,6 +57,8 @@ func Populate(s store.Store, c *Ctx) error {
 		}()
 	}
 
+	wg.Wait()
+
 	c.Conn.WriteString("OK")
 
 	return nil
