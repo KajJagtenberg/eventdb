@@ -306,6 +306,7 @@ func (s *BoltStore) EventCountEstimate() (int64, error) {
 	return s.estimateEventCount, nil
 }
 
+// TODO: Store the checksum and ID at intervals to prevent recalculation since the beginning
 func (s *BoltStore) Checksum() (id ulid.ULID, sum []byte, err error) {
 	crc := crc32.NewIEEE()
 
