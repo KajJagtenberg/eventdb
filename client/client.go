@@ -22,18 +22,19 @@ type Client struct {
 	r *redis.Client
 }
 
-func (c *Client) GetAll(offset ulid.ULID, limit uint32) ([]store.Event, error) {
-	req := api.GetAllRequest{
-		Offset: offset,
-		Limit:  limit,
+func (c *Client) Add(stream uuid.UUID, version uint32, data []store.EventData) ([]store.Event, error) {
+	req := api.AddRequest{
+		Stream:  stream,
+		Version: version,
+		Events:  data,
 	}
 
-	args, err := json.Marshal(req)
+	cmd, err := json.Marshal(&req)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := c.r.Do("getall", args).Result()
+	response, err := c.r.Do("ADD", string(cmd)).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -52,19 +53,49 @@ func (c *Client) GetAll(offset ulid.ULID, limit uint32) ([]store.Event, error) {
 	return events, nil
 }
 
-func (c *Client) Add(stream uuid.UUID, version uint32, data []store.EventData) ([]store.Event, error) {
-	req := api.AddRequest{
+func (c *Client) Get(stream uuid.UUID, version uint32, limit uint32) ([]store.Event, error) {
+	req := api.GetRequest{
 		Stream:  stream,
 		Version: version,
-		Events:  data,
+		Limit:   limit,
 	}
 
-	cmd, err := json.Marshal(&req)
+	args, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := c.r.Do("ADD", string(cmd)).Result()
+	response, err := c.r.Do("GET", args).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var events []store.Event
+
+	for _, entry := range response.([]interface{}) {
+		var event store.Event
+		if err := json.Unmarshal([]byte(entry.(string)), &event); err != nil {
+			return nil, err
+		}
+
+		events = append(events, event)
+	}
+
+	return events, nil
+}
+
+func (c *Client) GetAll(offset ulid.ULID, limit uint32) ([]store.Event, error) {
+	req := api.GetAllRequest{
+		Offset: offset,
+		Limit:  limit,
+	}
+
+	args, err := json.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	response, err := c.r.Do("GETALL", args).Result()
 	if err != nil {
 		return nil, err
 	}
