@@ -3,6 +3,7 @@ package store
 import (
 	"bytes"
 	"errors"
+	"hash/crc32"
 	"io"
 	"log"
 	"math/rand"
@@ -303,6 +304,27 @@ func (s *BoltStore) StreamCountEstimate() (int64, error) {
 
 func (s *BoltStore) EventCountEstimate() (int64, error) {
 	return s.estimateEventCount, nil
+}
+
+func (s *BoltStore) Checksum() (uint32, error) {
+	crc := crc32.NewIEEE()
+
+	err := s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("events")).Cursor()
+
+		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+			if _, err := crc.Write(v); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return 0, nil
+	}
+
+	return crc.Sum32(), nil
 }
 
 func (s *BoltStore) Close() error {
