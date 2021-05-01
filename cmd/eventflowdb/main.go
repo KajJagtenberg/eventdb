@@ -27,6 +27,10 @@ var (
 func main() {
 	godotenv.Load()
 
+	if len(password) == 0 {
+		log.Println("WARNING: No password set")
+	}
+
 	log.Println("Initializing store")
 
 	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
