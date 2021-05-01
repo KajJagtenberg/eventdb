@@ -306,13 +306,17 @@ func (s *BoltStore) EventCountEstimate() (int64, error) {
 	return s.estimateEventCount, nil
 }
 
-func (s *BoltStore) Checksum() ([]byte, error) {
+func (s *BoltStore) Checksum() (id ulid.ULID, sum []byte, err error) {
 	crc := crc32.NewIEEE()
 
-	err := s.db.View(func(t *bbolt.Tx) error {
+	err = s.db.View(func(t *bbolt.Tx) error {
 		cursor := t.Bucket([]byte("events")).Cursor()
 
 		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+			if err := id.UnmarshalBinary(k); err != nil {
+				return err
+			}
+
 			if _, err := crc.Write(v); err != nil {
 				return err
 			}
@@ -321,10 +325,12 @@ func (s *BoltStore) Checksum() ([]byte, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return id, sum, err
 	}
 
-	return crc.Sum(nil), nil
+	sum = crc.Sum(nil)
+
+	return id, sum, nil
 }
 
 func (s *BoltStore) Close() error {
