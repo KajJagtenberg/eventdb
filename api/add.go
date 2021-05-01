@@ -13,10 +13,6 @@ type AddRequest struct {
 	Events  []store.EventData `json:"events"`
 }
 
-type AddResponse struct {
-	Events []store.Event `json:"events"`
-}
-
 func Add(s store.Store, c *Ctx) error {
 	if len(c.Args) == 0 {
 		return ErrInsufficientArguments
@@ -32,16 +28,16 @@ func Add(s store.Store, c *Ctx) error {
 		return err
 	}
 
-	res := AddResponse{
-		Events: events,
-	}
+	c.Conn.WriteArray(len(events))
 
-	result, err := json.Marshal(&res)
-	if err != nil {
-		return err
-	}
+	for _, event := range events {
+		v, err := json.Marshal(&event)
+		if err != nil {
+			return err
+		}
 
-	c.Conn.WriteString(string(result))
+		c.Conn.WriteString(string(v))
+	}
 
 	return nil
 }
