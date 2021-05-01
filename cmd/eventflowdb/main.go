@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 
 	"log"
@@ -18,9 +19,9 @@ import (
 )
 
 var (
-	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
-	respAddr      = env.GetEnv("RESP_ADDR", ":6543")
-	password      = env.GetEnv("PASSWORD", "")
+	data     = env.GetEnv("DATA", "data/state.dat")
+	respAddr = env.GetEnv("RESP_ADDR", ":6543")
+	password = env.GetEnv("PASSWORD", "")
 )
 
 func main() {
@@ -28,7 +29,7 @@ func main() {
 
 	log.Println("Initializing store")
 
-	db, err := bbolt.Open(stateLocation, 0666, bbolt.DefaultOptions)
+	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
@@ -60,8 +61,8 @@ func main() {
 		}
 	}()
 
-	c := make(chan os.Signal)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT)
 	<-c
 
 	log.Println("EventflowDB is shutting down...")
