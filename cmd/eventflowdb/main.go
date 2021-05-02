@@ -24,6 +24,12 @@ var (
 	password = env.GetEnv("PASSWORD", "")
 )
 
+func check(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %v", msg, err)
+	}
+}
+
 func main() {
 	godotenv.Load()
 
@@ -34,15 +40,11 @@ func main() {
 	log.Println("Initializing store")
 
 	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
-	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
-	}
+	check(err, "Failed to open database")
 	defer db.Close()
 
 	store, err := store.NewBoltStore(db)
-	if err != nil {
-		log.Fatalf("Failed to create store: %v", err)
-	}
+	check(err, "Failed to create store")
 	defer store.Close()
 
 	log.Println("Initializing RESP server")
@@ -60,9 +62,9 @@ func main() {
 
 		errorHandler := api.ErrorHandler()
 
-		if err := redcon.ListenAndServe(":"+port, commandHandler, acceptHandler, errorHandler); err != nil {
-			log.Fatalf("Failed to run RESP API: %v", err)
-		}
+		server := redcon.NewServer(":"+port, commandHandler, acceptHandler, errorHandler)
+
+		check(server.ListenAndServe(), "Failed to run RESP API")
 	}()
 
 	c := make(chan os.Signal, 1)
