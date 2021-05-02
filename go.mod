@@ -9,6 +9,7 @@ require (
 	github.com/oklog/ulid v1.3.1
 	github.com/onsi/ginkgo v1.16.1 // indirect
 	github.com/onsi/gomega v1.11.0 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/btree v0.5.0 // indirect
 	github.com/tidwall/redcon v1.4.1
