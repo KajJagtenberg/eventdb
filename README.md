@@ -83,13 +83,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 - Optional synchronous replication (with Raft)
 - HTTP API
 - Backups
-<<<<<<< HEAD
 - Web UI
 - Pub/Sub notifications
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
-=======
-- Client libraries for other languages
->>>>>>> master
 
 ## Authors
 
