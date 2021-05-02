@@ -14,6 +14,9 @@ pb:
 clean:
 	rm -rf data/*
 
+test:
+	go test ./...
+
 build:
 	docker build -t ghcr.io/kajjagtenberg/eventflowdb:$(VERSION) .
 

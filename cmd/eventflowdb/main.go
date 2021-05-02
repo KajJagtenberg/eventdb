@@ -20,7 +20,7 @@ import (
 
 var (
 	data     = env.GetEnv("DATA", "data")
-	port     = env.GetEnv("PORT", ":6543")
+	port     = env.GetEnv("PORT", "6543")
 	password = env.GetEnv("PASSWORD", "")
 )
 
