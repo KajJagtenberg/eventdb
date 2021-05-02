@@ -20,27 +20,8 @@ var (
 )
 
 const (
-	ESTIMATE_SLEEP_TIME = time.Second // Maybe make this configurable?
+	ESTIMATE_SLEEP_TIME = time.Second // TODO: Maybe make this configurable?
 )
-
-// var (
-// 	addCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_add_total",
-// 		Help: "The amount of events that have been added to the store",
-// 	})
-// 	getCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_get_total",
-// 		Help: "The amount of get requests performed",
-// 	})
-// 	logCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_log_total",
-// 		Help: "The amount of log requests performed",
-// 	})
-// 	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_concurrent_modification_total",
-// 		Help: "The total amount of concurrent stream modification errors",
-// 	})
-// )
 
 type BoltStore struct {
 	db                  *bbolt.DB
@@ -173,8 +154,6 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		return nil, err
 	}
 
-	// addCounter.Add(float64(len(events)))
-
 	return result, nil
 }
 
@@ -221,8 +200,6 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 		return nil, err
 	}
 
-	// getCounter.Add(1)
-
 	return result, nil
 }
 
@@ -253,8 +230,6 @@ func (s *BoltStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, error) {
 	}); err != nil {
 		return nil, err
 	}
-
-	// logCounter.Add(1)
 
 	return result, nil
 }

@@ -28,8 +28,6 @@ func CommandHandler(s store.Store) Handler {
 			return GetAll(s, c)
 		case "ping":
 			return Ping(c)
-		// case "populate":
-		// return Populate(s, c)
 		case "quit":
 			return Quit(c)
 		case "size":
