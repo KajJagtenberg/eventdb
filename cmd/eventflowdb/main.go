@@ -43,7 +43,7 @@ func main() {
 	check(err, "Failed to open database")
 	defer db.Close()
 
-	store, err := store.NewBoltStore(db)
+	store, err := store.NewBoltStore(db, log)
 	check(err, "Failed to create store")
 	defer store.Close()
 

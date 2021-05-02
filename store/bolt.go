@@ -5,12 +5,12 @@ import (
 	"errors"
 	"hash/crc32"
 	"io"
-	"log"
 	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"github.com/sirupsen/logrus"
 	"go.etcd.io/bbolt"
 )
 
@@ -304,7 +304,7 @@ func (s *BoltStore) Close() error {
 	return s.db.Close()
 }
 
-func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
+func NewBoltStore(db *bbolt.DB, log logrus.StdLogger) (*BoltStore, error) {
 	if err := db.Update(func(t *bbolt.Tx) error {
 		for _, bucket := range buckets {
 			if _, err := t.CreateBucketIfNotExists([]byte(bucket)); err != nil {

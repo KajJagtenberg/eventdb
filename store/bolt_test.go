@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/bbolt"
 )
@@ -21,7 +22,10 @@ func OpenStore() (*BoltStore, error) {
 		return nil, err
 	}
 
-	store, err := NewBoltStore(db)
+	log := logrus.New()
+	log.SetFormatter(&logrus.JSONFormatter{})
+
+	store, err := NewBoltStore(db, log)
 	if err != nil {
 		return nil, err
 	}
