@@ -53,7 +53,7 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
 	if bytes.Equal(stream[:], make([]byte, 16)) {
-		return nil, errors.New("Stream cannot be all zeroes")
+		return nil, errors.New("stream cannot be all zeroes")
 	}
 
 	if len(events) == 0 {
@@ -89,11 +89,11 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 
 		for i, event := range events {
 			if event.Type == "" {
-				return errors.New("Event type cannot be empty")
+				return errors.New("event type cannot be empty")
 			}
 
 			if len(event.Data) == 0 {
-				return errors.New("Event data cannot be empty")
+				return errors.New("event data cannot be empty")
 			}
 
 			id, err := ulid.New(ulid.Now(), entropy)
@@ -186,7 +186,7 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 
 				result = append(result, event)
 			} else {
-				return errors.New("event cannot be found. This should never happen")
+				return errors.New("event cannot be found. this should never happen")
 			}
 		}
 
