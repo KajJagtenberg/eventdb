@@ -8,6 +8,6 @@ docker-compose.yml
 webui
 data
 *.rest
-gqlgen.yml
 *.env
 proto
+*.md
