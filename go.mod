@@ -5,7 +5,6 @@ go 1.16
 require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/google/uuid v1.2.0
-	github.com/joho/godotenv v1.3.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/onsi/ginkgo v1.16.1 // indirect

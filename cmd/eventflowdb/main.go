@@ -8,7 +8,6 @@ import (
 
 	"log"
 
-	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
@@ -31,8 +30,6 @@ func check(err error, msg string) {
 }
 
 func main() {
-	godotenv.Load()
-
 	if len(password) == 0 {
 		log.Println("WARNING: No password set")
 	}
