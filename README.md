@@ -29,8 +29,17 @@ docker build -t eventflowdb:latest .
 
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -p 6543:6543 eventflowdb:latest
+docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 eventflowdb:latest
 ```
+
+### Configuration
+
+The following environment variables can be used:
+
+* `PORT`: The port on which the instance used: Defaults: __6543__
+* `LANG`: System language. Defaults: __en_US.UTF-8__
+* `DATA`: Location of the persisted data (inside the container). Defaults: __/data__
+* `PASSWORD`: Clients need to use this password to authenticate to the server. No defaults. We recommend you change this
 
 ## Versioning
 
@@ -38,15 +47,16 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Roadmap
 
-* Advanced authentication
-* ACL
-* Projection Engine
-* Asynchronous replication (with Raft for leader election)
-* Optional synchronous replication (with Raft)
+- Advanced authentication
+- ACL
+- Choosable payload encodings (msgpack, protobuf)
+- Projection Engine
+- Asynchronous replication (with Raft for leader election)
+- Optional synchronous replication (with Raft)
 
 ## Authors
 
-* **Kaj Jagtenberg** - *Initial work* - [KajJagtenberg](https://github.com/KajJagtenberg)
+- **Kaj Jagtenberg** - _Initial work_ - [KajJagtenberg](https://github.com/KajJagtenberg)
 
 See also the list of [contributors](https://github.com/kajjagtenberg/eventflowdb/contributors) who participated in this project.
 

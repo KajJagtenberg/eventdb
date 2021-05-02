@@ -22,8 +22,6 @@ ENV DATA /data
 
 RUN mkdir $DATA
 
-RUN echo $DATA
-
 COPY --from=build /src/bin/eventflowdb /usr/bin/eventflowdb
 
 STOPSIGNAL SIGINT
