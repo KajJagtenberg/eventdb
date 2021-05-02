@@ -3,9 +3,9 @@ package store
 import (
 	"time"
 
-	proto "github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"google.golang.org/protobuf/proto"
 )
 
 type EventData struct {

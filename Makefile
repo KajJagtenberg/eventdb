@@ -8,7 +8,7 @@ ctl:
 	go run cmd/eventflowctl/main.go
 
 pb:
-	protoc --proto_path=proto --go_out=plugins=grpc:store --go_opt=paths=source_relative proto/store.proto
+	protoc -I=${PWD} --go_out=${PWD}/ ${PWD}/proto/store.proto
 
 clean:
 	rm -rf data/*

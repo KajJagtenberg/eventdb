@@ -52,17 +52,12 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 }
 
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
-	if bytes.Compare(stream[:], make([]byte, 16)) == 0 {
+	if bytes.Equal(stream[:], make([]byte, 16)) {
 		return nil, errors.New("Stream cannot be all zeroes")
 	}
 
-	if version < 0 {
-		log.Printf("Version is negative")
-		return nil, errors.New("Version cannot be negative")
-	}
-
 	if len(events) == 0 {
-		return nil, errors.New("List of events is empty")
+		return nil, errors.New("list of events is empty")
 	}
 
 	result := make([]Event, 0)
@@ -83,11 +78,11 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		}
 
 		if int(version) < len(s.Events) {
-			return errors.New("Concurrent stream modification")
+			return errors.New("concurrent stream modification")
 		}
 
 		if int(version) > len(s.Events) {
-			return errors.New("Given version leaves gap in stream")
+			return errors.New("given version leaves gap in stream")
 		}
 
 		now := time.Now()
@@ -118,11 +113,11 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 				AddedAt:       now,
 			}
 
-			if bytes.Compare(record.CausationID[:], make([]byte, 16)) == 0 {
+			if bytes.Equal(record.CausationID[:], make([]byte, 16)) {
 				record.CausationID = record.ID
 			}
 
-			if bytes.Compare(record.CorrelationID[:], make([]byte, 16)) == 0 {
+			if bytes.Equal(record.CorrelationID[:], make([]byte, 16)) {
 				record.CorrelationID = record.CausationID
 			}
 
@@ -191,7 +186,7 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 
 				result = append(result, event)
 			} else {
-				return errors.New("Event cannot be found. This should never happen.")
+				return errors.New("event cannot be found. This should never happen")
 			}
 		}
 
