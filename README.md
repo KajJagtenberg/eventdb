@@ -58,6 +58,7 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 - Optional synchronous replication (with Raft)
 - HTTP API
 - Backups
+- Web UI
 
 ## Authors
 
