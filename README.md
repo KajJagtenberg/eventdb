@@ -50,11 +50,14 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 ## Roadmap
 
 - Advanced authentication
+- TLS support
 - ACL
 - Choosable payload encodings (msgpack, protobuf)
 - Projection Engine
 - Asynchronous replication (with Raft for leader election)
 - Optional synchronous replication (with Raft)
+- HTTP API
+- Backups
 
 ## Authors
 
