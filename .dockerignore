@@ -9,5 +9,5 @@ webui
 data
 *.rest
 gqlgen.yml
-.env
+*.env
 proto

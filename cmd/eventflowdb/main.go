@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/signal"
+	"path"
 	"syscall"
 
 	"log"
@@ -18,17 +19,21 @@ import (
 )
 
 var (
-	stateLocation = env.GetEnv("STATE_LOCATION", "data/state.dat")
-	respAddr      = env.GetEnv("RESP_ADDR", ":6543")
-	// httpAddr      = env.GetEnv("HTTP_ADDR", ":16543")
+	data     = env.GetEnv("DATA", "data")
+	port     = env.GetEnv("PORT", "6543")
+	password = env.GetEnv("PASSWORD", "")
 )
 
 func main() {
 	godotenv.Load()
 
+	if len(password) == 0 {
+		log.Println("WARNING: No password set")
+	}
+
 	log.Println("Initializing store")
 
-	db, err := bbolt.Open(stateLocation, 0666, bbolt.DefaultOptions)
+	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
@@ -40,41 +45,29 @@ func main() {
 	}
 	defer store.Close()
 
-	// log.Println("Initializing HTTP server")
-
-	// app := fiber.New(fiber.Config{
-	// 	DisableStartupMessage: true,
-	// })
-	// app.Use(helmet.New())
-	// app.Use(cors.New())
-
-	// prom := adaptor.HTTPHandler(promhttp.Handler())
-
-	// app.Get("/metrics", prom)
-
-	// go func() {
-	// 	log.Printf("HTTP server listening on %v", httpAddr)
-
-	// 	if err := app.Listen(httpAddr); err != nil {
-	// 		log.Fatalf("Failed to listen: %v", err)
-	// 	}
-	// }()
-
 	log.Println("Initializing RESP server")
 
-	resp := api.NewResp(store)
-
 	go func() {
-		log.Printf("RESP API listening on %s", respAddr)
+		log.Printf("RESP API listening on %s", port)
 
-		if err := redcon.ListenAndServe(respAddr, resp.CommandHandler, resp.AcceptHandler, resp.ErrorHandler); err != nil {
+		commandHandler := api.Combine(
+			api.AssertSession(),
+			api.Authentication(password),
+			api.CommandHandler(store),
+		)
+
+		acceptHandler := api.AcceptHandler()
+
+		errorHandler := api.ErrorHandler()
+
+		if err := redcon.ListenAndServe(":"+port, commandHandler, acceptHandler, errorHandler); err != nil {
 			log.Fatalf("Failed to run RESP API: %v", err)
 		}
 	}()
 
-	c := make(chan os.Signal)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT)
 	<-c
 
-	log.Println("Shutting down...")
+	log.Println("EventflowDB is shutting down...")
 }

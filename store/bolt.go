@@ -3,6 +3,7 @@ package store
 import (
 	"bytes"
 	"errors"
+	"hash/crc32"
 	"io"
 	"log"
 	"math/rand"
@@ -10,8 +11,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"go.etcd.io/bbolt"
 )
 
@@ -20,24 +19,28 @@ var (
 	entropy = ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0)
 )
 
-var (
-	addCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_add_total",
-		Help: "The amount of events that have been added to the store",
-	})
-	getCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_get_total",
-		Help: "The amount of get requests performed",
-	})
-	logCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_log_total",
-		Help: "The amount of log requests performed",
-	})
-	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_concurrent_modification_total",
-		Help: "The total amount of concurrent stream modification errors",
-	})
+const (
+	ESTIMATE_SLEEP_TIME = time.Second // Maybe make this configurable?
 )
+
+// var (
+// 	addCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_add_total",
+// 		Help: "The amount of events that have been added to the store",
+// 	})
+// 	getCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_get_total",
+// 		Help: "The amount of get requests performed",
+// 	})
+// 	logCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_log_total",
+// 		Help: "The amount of log requests performed",
+// 	})
+// 	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
+// 		Name: "store_concurrent_modification_total",
+// 		Help: "The total amount of concurrent stream modification errors",
+// 	})
+// )
 
 type BoltStore struct {
 	db                  *bbolt.DB
@@ -68,7 +71,20 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 }
 
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
-	var result []Event
+	if bytes.Compare(stream[:], make([]byte, 16)) == 0 {
+		return nil, errors.New("Stream cannot be all zeroes")
+	}
+
+	if version < 0 {
+		log.Printf("Version is negative")
+		return nil, errors.New("Version cannot be negative")
+	}
+
+	if len(events) == 0 {
+		return nil, errors.New("List of events is empty")
+	}
+
+	result := make([]Event, 0)
 
 	if err := s.db.Batch(func(t *bbolt.Tx) error {
 		streamBucket := t.Bucket([]byte("streams"))
@@ -85,15 +101,25 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 			s.AddedAt = time.Now()
 		}
 
-		if len(s.Events) != int(version) {
-			concurrencyCounter.Add(1)
-
+		if int(version) < len(s.Events) {
 			return errors.New("Concurrent stream modification")
+		}
+
+		if int(version) > len(s.Events) {
+			return errors.New("Given version leaves gap in stream")
 		}
 
 		now := time.Now()
 
 		for i, event := range events {
+			if event.Type == "" {
+				return errors.New("Event type cannot be empty")
+			}
+
+			if len(event.Data) == 0 {
+				return errors.New("Event data cannot be empty")
+			}
+
 			id, err := ulid.New(ulid.Now(), entropy)
 			if err != nil {
 				return err
@@ -108,7 +134,7 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 				Metadata:      event.Metadata,
 				CausationID:   event.CausationID,
 				CorrelationID: event.CorrelationID,
-				AddedAt:       event.AddedAt,
+				AddedAt:       now,
 			}
 
 			if bytes.Compare(record.CausationID[:], make([]byte, 16)) == 0 {
@@ -117,10 +143,6 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 
 			if bytes.Compare(record.CorrelationID[:], make([]byte, 16)) == 0 {
 				record.CorrelationID = record.CausationID
-			}
-
-			if record.AddedAt.IsZero() {
-				record.AddedAt = now
 			}
 
 			result = append(result, record)
@@ -151,13 +173,13 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		return nil, err
 	}
 
-	addCounter.Add(float64(len(events)))
+	// addCounter.Add(float64(len(events)))
 
 	return result, nil
 }
 
 func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event, error) {
-	var result []Event
+	result := make([]Event, 0)
 
 	if err := s.db.View(func(t *bbolt.Tx) error {
 		streamBucket := t.Bucket([]byte("streams"))
@@ -199,17 +221,17 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 		return nil, err
 	}
 
-	getCounter.Add(1)
+	// getCounter.Add(1)
 
 	return result, nil
 }
 
-func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
+func (s *BoltStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, error) {
 	if limit == 0 {
 		limit = 100
 	}
 
-	var result []Event
+	result := make([]Event, 0)
 
 	if err := s.db.View(func(t *bbolt.Tx) error {
 		cursor := t.Bucket([]byte("events")).Cursor()
@@ -232,7 +254,7 @@ func (s *BoltStore) Log(offset ulid.ULID, limit uint32) ([]Event, error) {
 		return nil, err
 	}
 
-	logCounter.Add(1)
+	// logCounter.Add(1)
 
 	return result, nil
 }
@@ -280,6 +302,34 @@ func (s *BoltStore) EventCountEstimate() (int64, error) {
 	return s.estimateEventCount, nil
 }
 
+// TODO: Store the checksum and ID at intervals to prevent recalculation since the beginning
+func (s *BoltStore) Checksum() (id ulid.ULID, sum []byte, err error) {
+	crc := crc32.NewIEEE()
+
+	err = s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("events")).Cursor()
+
+		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+			if err := id.UnmarshalBinary(k); err != nil {
+				return err
+			}
+
+			if _, err := crc.Write(v); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return id, sum, err
+	}
+
+	sum = crc.Sum(nil)
+
+	return id, sum, nil
+}
+
 func (s *BoltStore) Close() error {
 	return s.db.Close()
 }
@@ -314,7 +364,7 @@ func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
 			store.estimateStreamCount = streamCount
 			store.estimateEventCount = eventCount
 
-			time.Sleep(time.Second)
+			time.Sleep(ESTIMATE_SLEEP_TIME)
 		}
 	}()
 
