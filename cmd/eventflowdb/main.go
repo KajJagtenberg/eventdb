@@ -6,11 +6,10 @@ import (
 	"path"
 	"syscall"
 
-	"log"
-
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
 
@@ -21,6 +20,8 @@ var (
 	data     = env.GetEnv("DATA", "data")
 	port     = env.GetEnv("PORT", "6543")
 	password = env.GetEnv("PASSWORD", "")
+
+	log = logrus.New()
 )
 
 func check(err error, msg string) {
@@ -30,8 +31,10 @@ func check(err error, msg string) {
 }
 
 func main() {
+	log.SetFormatter(&logrus.JSONFormatter{})
+
 	if len(password) == 0 {
-		log.Println("WARNING: No password set")
+		log.Warn("No password set")
 	}
 
 	log.Println("Initializing store")
