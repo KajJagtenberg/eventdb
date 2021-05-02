@@ -25,11 +25,11 @@ git clone https://github.com/KajJagtenberg/eventflowdb eventflowdb
 
 cd eventflowdb
 
-docker build -t <tag> .
+docker build -t eventflowdb:latest .
 
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -p 6543:6543 <tag>
+docker run -d -v eventflowdb:/data -p 6543:6543 eventflowdb:latest
 ```
 
 ## Versioning
