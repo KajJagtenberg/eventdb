@@ -11,7 +11,7 @@ type Store interface {
 	/*
 		Size of the database in bytes on disk
 	*/
-	Size() int64
+	Size() (int64, error)
 
 	/*
 		Writes a snapshot of the database to a writer
@@ -34,5 +34,29 @@ type Store interface {
 		Returns amount of events that have been recorded since the given offset. The maximum amount of returned events is specified by the given limit.
 		If the limit is 0, then it will return a maximum of 100 events.
 	*/
-	Log(offset ulid.ULID, limit uint32) ([]Event, error)
+	GetAll(offset ulid.ULID, limit uint32) ([]Event, error)
+
+	/*
+		Returns the total number of events stored in the database
+	*/
+	EventCount() (int64, error)
+
+	/*
+		Returns the total number of streams in the database
+	*/
+	StreamCount() (int64, error)
+
+	/*
+		Returns an estimate of the total number of events stored in the database
+	*/
+	EventCountEstimate() (int64, error)
+
+	/*
+		Returns an estimate of the total number of streams in the database
+	*/
+	StreamCountEstimate() (int64, error)
+
+	Checksum() (id ulid.ULID, sum []byte, err error)
+
+	Close() error
 }

@@ -9,12 +9,12 @@ import (
 )
 
 type EventData struct {
-	Type          string
-	Data          []byte
-	Metadata      []byte
-	CausationID   ulid.ULID
-	CorrelationID ulid.ULID
-	AddedAt       time.Time
+	Type          string    `json:"type"`
+	Data          []byte    `json:"data"`
+	Metadata      []byte    `json:"metadata"`
+	CausationID   ulid.ULID `json:"causation_id"`
+	CorrelationID ulid.ULID `json:"correlation_id"`
+	// AddedAt       time.Time `json:"added_at"`
 }
 
 type Event struct {

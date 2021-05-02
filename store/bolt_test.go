@@ -147,7 +147,7 @@ func TestBoltLog(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	records, err := store.Log(ulid.ULID{}, 0)
+	records, err := store.GetAll(ulid.ULID{}, 0)
 	if err != nil {
 		t.Fatal(err)
 	}

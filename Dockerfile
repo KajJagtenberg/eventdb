@@ -17,10 +17,15 @@ RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 
 FROM alpine:3.8
 
-WORKDIR /var/lib/eventflowdb
+ENV LANG en_US.UTF-8
+ENV DATA /data
 
-RUN mkdir data -p
+RUN mkdir $DATA
 
-COPY --from=build /src/bin/eventflowdb /bin/eventflowdb
+RUN echo $DATA
+
+COPY --from=build /src/bin/eventflowdb /usr/bin/eventflowdb
+
+STOPSIGNAL SIGINT
 
 CMD ["eventflowdb"]
