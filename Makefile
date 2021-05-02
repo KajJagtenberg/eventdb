@@ -17,12 +17,12 @@ test:
 	go test ./...
 
 build:
-	docker build -t ghcr.io/kajjagtenberg/eventflowdb:$(VERSION) .
+	docker build -t docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:$(VERSION) .
 
 push: build
-	docker tag ghcr.io/kajjagtenberg/eventflowdb:$(VERSION) ghcr.io/kajjagtenberg/eventflowdb:latest
-	docker push ghcr.io/kajjagtenberg/eventflowdb:$(VERSION)
-	docker push ghcr.io/kajjagtenberg/eventflowdb:latest
+	docker tag docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:$(VERSION) docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:latest
+	docker push docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:$(VERSION)
+	docker push docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:latest
 
 compose_up:
 	docker-compose up -d --build
