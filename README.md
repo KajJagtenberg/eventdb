@@ -59,6 +59,8 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 - HTTP API
 - Backups
 - Web UI
+- Pub/Sub notifications
+- Downstream message broker connectors (such as Kafka, RabbitMQ)
 
 ## Authors
 
