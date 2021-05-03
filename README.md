@@ -39,7 +39,6 @@ docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 ev
 The following environment variables can be used:
 
 - `PORT`: The port on which the instance used: Defaults: **6543**
-- `LANG`: System language. Defaults: **en_US.UTF-8**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
 - `PASSWORD`: Clients need to use this password to authenticate to the server. No defaults. We recommend you change this
 
