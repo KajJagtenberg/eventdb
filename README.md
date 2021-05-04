@@ -71,7 +71,7 @@ The following commands are currently supported:
 
 The event data must adhere to the following format, otherwise an error will be returned.
 
-```json
+```javascript
 {
   "type": "AccountOpened", // string
   "data": "{"id": 1, "name": "John Doe"}", // string
