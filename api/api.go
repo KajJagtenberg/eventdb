@@ -36,6 +36,8 @@ func CommandHandler(s store.Store) Handler {
 			return StreamCount(s, c)
 		case "streamcountest":
 			return StreamCountEstimate(s, c)
+		case "uptime":
+			return Uptime(c)
 		case "version":
 			return Version(c)
 		default:
