@@ -52,21 +52,23 @@ Commands either use no arguments at all, or a single JSON formatted object which
 
 The following commands are currently supported:
 
-| Command        | Argument                                                        | Description                                                                                                                                                                                                                    | Notes                                                    |
-| -------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- |
-| PING           | -                                                               | Returns PONG                                                                                                                                                                                                                   |                                                          |
-| AUTH           | \<password\>                                                    | Authenticates the session                                                                                                                                                                                                      | Only needs to be done after making the connection        |
-| CHECKSUM       | -                                                               | Returns the ID of the latest event and the checksum for the entire event log                                                                                                                                                   |                                                          |
-| EVENTCOUNT     | -                                                               | Returns the number of events stored                                                                                                                                                                                            | Calling EVENTCOUNTEST is cheaper                         |
-| EVENTCOUNTEST  | -                                                               | Returns the number of events stored as of the last periodic index                                                                                                                                                              |                                                          |
-| STREAMCOUNT    | -                                                               | Returns the number of streams stored                                                                                                                                                                                           |                                                          |
-| STREAMCOUNTEST | -                                                               | Returns the number of streams stored as of the last periodic index                                                                                                                                                             |                                                          |
-| ADD            | {"stream":"<uuidv4>","version":<integer>,"events":[\<events\>]} | Appends 1 or more events atomically to a specified stream. If the specified version does not match, a concurrency error will be returned. When successful, the newly stored events will be returned.                           |
-| GET            | {"stream":"\<uuidv4>","version":\<integer>,"limit":\<integer>}  | Returns events from the given stream, offset by the version, limited by the limit. If the stream contains no events past the given version, then none will be returned.                                                        | Similar to LIMIT and OFFSET in some relational databases |
-| GETALL         | {"offset":"\<ulid>","limit":\<integer>}                         | Returns events from all streams. It will skip all events before the vent in the log with the given ID. Returns no more than the amount of events specified by 'limit'                                                          |                                                          |
-| QUIT           | Closes the connection                                           |                                                                                                                                                                                                                                |                                                          |
-| SIZE           | -                                                               | Returns the size in the form of an array with 2 elements. The first element contains an integer with the size of the database in bytes. The second element contains a string with a human friendly representation of the size. |                                                          |
+| Command        | Argument                                                        | Description                                                                                                                                                                                                                    | Notes                                                                                                  |
+| -------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| PING           | -                                                               | Returns PONG                                                                                                                                                                                                                   |                                                                                                        |
+| AUTH           | \<password\>                                                    | Authenticates the session                                                                                                                                                                                                      | Only needs to be done after making the connection                                                      |
+| CHECKSUM       | -                                                               | Returns the ID of the latest event and the checksum for the entire event log                                                                                                                                                   |                                                                                                        |
+| EVENTCOUNT     | -                                                               | Returns the number of events stored                                                                                                                                                                                            | Calling EVENTCOUNTEST is cheaper                                                                       |
+| EVENTCOUNTEST  | -                                                               | Returns the number of events stored as of the last periodic index                                                                                                                                                              |                                                                                                        |
+| STREAMCOUNT    | -                                                               | Returns the number of streams stored                                                                                                                                                                                           |                                                                                                        |
+| STREAMCOUNTEST | -                                                               | Returns the number of streams stored as of the last periodic index                                                                                                                                                             |                                                                                                        |
+| ADD            | {"stream":"<uuidv4>","version":<integer>,"events":[\<events\>]} | Appends 1 or more events atomically to a specified stream. If the specified version does not match, a concurrency error will be returned. When successful, the newly stored events will be returned.                           | See the [Event Format](https://github.com/KajJagtenberg/eventflowdb#event-format) for more information |
+| GET            | {"stream":"\<uuidv4>","version":\<integer>,"limit":\<integer>}  | Returns events from the given stream, offset by the version, limited by the limit. If the stream contains no events past the given version, then none will be returned.                                                        | Similar to LIMIT and OFFSET in most relational databases                                               |
+| GETALL         | {"offset":"\<ulid>","limit":\<integer>}                         | Returns events from all streams. It will skip all events before the vent in the log with the given ID. Returns no more than the amount of events specified by 'limit'                                                          |                                                                                                        |
+| QUIT           | Closes the connection                                           |                                                                                                                                                                                                                                |                                                                                                        |
+| SIZE           | -                                                               | Returns the size in the form of an array with 2 elements. The first element contains an integer with the size of the database in bytes. The second element contains a string with a human friendly representation of the size. |                                                                                                        |
 | VERSION        | Returns the version of the database                             |
+
+### Event Format
 
 The event data must adhere to the following format, otherwise an error will be returned.
 
@@ -86,18 +88,27 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Roadmap
 
+The features on the roadmap in no particular order:
+
 - Advanced authentication
 - TLS support
 - ACL
-- Choosable payload encodings (msgpack, protobuf)
+- Choosable argument encodings (msgpack, protobuf)
 - Projection Engine
 - Asynchronous replication (with Raft for leader election)
 - Optional synchronous replication (with Raft)
 - HTTP API
 - Backups
-- Web UI
 - Pub/Sub notifications
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
+- Web UI / Terminal UI
+- Client libraries for other languages
+
+## Contributions
+
+Contributions are most welcome. If you are unsure if a certain feature will benefit the project, please open up an issue.
+
+Discussions are good, arguments are not. Be civil.
 
 ## Authors
 
