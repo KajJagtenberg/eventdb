@@ -14,8 +14,6 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
-
-	_ "embed"
 )
 
 var (
