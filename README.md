@@ -20,19 +20,15 @@ The easiest way to get up and running is via Docker containers. To use this you 
 
 ### Installing
 
-Once you've installed Docker, you can execute the following commands to start an EventflowDB instance:
+Once you've installed Docker, you can execute the following commands to start an EventflowDB instance with a persistent, named volume:
 
 ```
-git clone https://github.com/KajJagtenberg/eventflowdb eventflowdb
-
-cd eventflowdb
-
-docker build -t eventflowdb:latest .
-
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 eventflowdb:latest
+docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:latest
 ```
+
+Eventhough the "latest" tag is specified in the above command, we recommend you pin the tag to prevent experiencing any unexpected changes.
 
 ## Configuration
 
