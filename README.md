@@ -4,6 +4,19 @@ EventflowDB is a database designed with Event Sourcing in mind.
 
 The current version is subject to change and the API may break at any time. Be advised.
 
+- [EventflowDB](#eventflowdb)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installing](#installing)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+    - [Event Format](#event-format)
+  - [Versioning](#versioning)
+  - [Roadmap](#roadmap)
+  - [Contributions](#contributions)
+  - [Authors](#authors)
+  - [License](#license)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
