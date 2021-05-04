@@ -12,12 +12,12 @@ func (c *Client) Size() (int64, string, error) {
 
 	size, ok := entries[0].(int64)
 	if !ok {
-		return 0, "", errors.New("Invalid response")
+		return 0, "", errors.New("invalid response")
 	}
 
 	human, ok := entries[1].(string)
 	if !ok {
-		return 0, "", errors.New("Invalid response")
+		return 0, "", errors.New("invalid response")
 	}
 
 	return size, human, nil

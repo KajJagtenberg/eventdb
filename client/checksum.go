@@ -17,7 +17,7 @@ func (c *Client) Checksum() (id ulid.ULID, checksum []byte, err error) {
 
 	sid, ok := entries[0].(string)
 	if !ok {
-		return id, checksum, errors.New("Invalid response")
+		return id, checksum, errors.New("invalid response")
 	}
 
 	id, err = ulid.Parse(sid)
@@ -27,7 +27,7 @@ func (c *Client) Checksum() (id ulid.ULID, checksum []byte, err error) {
 
 	ssum, ok := entries[1].(string)
 	if !ok {
-		return id, checksum, errors.New("Invalid response")
+		return id, checksum, errors.New("invalid response")
 	}
 
 	checksum, err = base32.StdEncoding.DecodeString(ssum)
