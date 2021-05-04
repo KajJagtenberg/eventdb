@@ -1,5 +1,8 @@
 VERSION := $(shell cat constants/version)
 
+compile:
+	go build cmd/eventflowdb/main.go
+
 db:
 	mkdir -p data
 	go run cmd/eventflowdb/main.go
@@ -18,9 +21,6 @@ test:
 
 build:
 	docker build -t docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:$(VERSION) .
-
-compile:
-	go build cmd/eventflowdb/main.go
 
 push: build
 	docker tag docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:$(VERSION) docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:latest

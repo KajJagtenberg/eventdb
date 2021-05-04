@@ -12,8 +12,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
-
-	_ "embed"
 )
 
 var (
