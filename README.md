@@ -77,7 +77,7 @@ The event data must adhere to the following format, otherwise an error will be r
   "data": "{"id": 1, "name": "John Doe"}", // string
   "metadata": "{"user": "3df976f9-f7e6-47e9-a9d0-9e19e451a23e"}", // string. optional
   "causation_id": "0000000000XS4M8WSZ1DW0Z2HT", //ULID in string form, points to the id of the event that caused it. optional
-"correlation_id": "0000000000XS4M8WSZ1DW0Z2HT", //ULID in string form, points to the id of the original event that set the reaction in motion. optional
+  "correlation_id": "0000000000XS4M8WSZ1DW0Z2HT", //ULID in string form, points to the id of the original event that set the reaction in motion. optional
 }
 ```
 
