@@ -99,6 +99,8 @@ The features on the roadmap in no particular order:
 - Optional synchronous replication (with Raft)
 - HTTP API
 - Backups
+- Pub/Sub notifications
+- Downstream message broker connectors (such as Kafka, RabbitMQ)
 - Web UI / Terminal UI
 - Client libraries for other languages
 
