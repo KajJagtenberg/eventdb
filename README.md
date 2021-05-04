@@ -4,6 +4,19 @@ EventflowDB is a database designed with Event Sourcing in mind.
 
 The current version is subject to change and the API may break at any time. Be advised.
 
+- [EventflowDB](#eventflowdb)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Installing](#installing)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+    - [Event Format](#event-format)
+  - [Versioning](#versioning)
+  - [Roadmap](#roadmap)
+  - [Contributions](#contributions)
+  - [Authors](#authors)
+  - [License](#license)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
@@ -62,7 +75,8 @@ The following commands are currently supported:
 | GETALL         | {"offset":"\<ulid>","limit":\<integer>}                         | Returns events from all streams. It will skip all events before the vent in the log with the given ID. Returns no more than the amount of events specified by 'limit'                                                          |                                                                                                        |
 | QUIT           | Closes the connection                                           |                                                                                                                                                                                                                                |                                                                                                        |
 | SIZE           | -                                                               | Returns the size in the form of an array with 2 elements. The first element contains an integer with the size of the database in bytes. The second element contains a string with a human friendly representation of the size. |                                                                                                        |
-| VERSION        | Returns the version of the database                             |
+| UPTIME         | -                                                               | Returns the uptime of the server in human readable format                                                                                                                                                                      |                                                                                                        |
+| VERSION        | -                                                               | Returns the version of the database                                                                                                                                                                                            |
 
 ### Event Format
 
