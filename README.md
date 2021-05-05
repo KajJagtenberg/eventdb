@@ -35,7 +35,7 @@ The easiest way to get up and running is via Docker containers. To use this you 
 
 Once you've installed Docker, you can execute the following commands to start an EventflowDB instance with a persistent, named volume:
 
-```
+```shell
 docker volume create eventflowdb
 
 docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:latest
@@ -70,7 +70,7 @@ The following commands are currently supported:
 | EVENTCOUNTEST  | -                                                               | Returns the number of events stored as of the last periodic index                                                                                                                                                              |                                                                                                        |
 | STREAMCOUNT    | -                                                               | Returns the number of streams stored                                                                                                                                                                                           |                                                                                                        |
 | STREAMCOUNTEST | -                                                               | Returns the number of streams stored as of the last periodic index                                                                                                                                                             |                                                                                                        |
-| ADD            | {"stream":"<uuidv4>","version":<integer>,"events":[\<events\>]} | Appends 1 or more events atomically to a specified stream. If the specified version does not match, a concurrency error will be returned. When successful, the newly stored events will be returned.                           | See the [Event Format](https://github.com/KajJagtenberg/eventflowdb#event-format) for more information |
+| ADD            | {"stream":"<uuidv4>","version":<integer>,"events":[\<events\>]} | Appends 1 or more events atomically to a specified stream. If the specified version does not match, a concurrency error will be returned. When successful, the newly stored events will be returned.                           | See the [Event Format](https://github.com/kajjagtenberg/eventflowdb#event-format) for more information |
 | GET            | {"stream":"\<uuidv4>","version":\<integer>,"limit":\<integer>}  | Returns events from the given stream, offset by the version, limited by the limit. If the stream contains no events past the given version, then none will be returned.                                                        | Similar to LIMIT and OFFSET in most relational databases                                               |
 | GETALL         | {"offset":"\<ulid>","limit":\<integer>}                         | Returns events from all streams. It will skip all events before the vent in the log with the given ID. Returns no more than the amount of events specified by 'limit'                                                          |                                                                                                        |
 | QUIT           | Closes the connection                                           |                                                                                                                                                                                                                                |                                                                                                        |
@@ -89,6 +89,22 @@ The event data must adhere to the following format, otherwise an error will be r
   "metadata": "{"user": "3df976f9-f7e6-47e9-a9d0-9e19e451a23e"}", // string. optional
   "causation_id": "0000000000XS4M8WSZ1DW0Z2HT", //ULID in string form, points to the id of the event that caused it. optional
   "correlation_id": "0000000000XS4M8WSZ1DW0Z2HT", //ULID in string form, points to the id of the original event that set the reaction in motion. optional
+}
+```
+
+All methods that return a list of events will be in the following format:
+
+```javascript
+{
+  "id": "0000000000XS4M8WSZ1DW0Z2HT",
+  "stream": "",
+  "version": 0,
+  "type": "AccountOpened",
+  "data": "{"id": 1, "name": "John Doe"}",
+  "metadata": "{"user": "3df976f9-f7e6-47e9-a9d0-9e19e451a23e"}",
+  "causation_id": "0000000000XS4M8WSZ1DW0Z2HT",
+  "correlation_id": "0000000000XS4M8WSZ1DW0Z2HT",
+  "added_at": "2021-05-05T11:02:56.372078255Z"
 }
 ```
 
@@ -122,7 +138,7 @@ Discussions are good, arguments are not. Be civil.
 
 ## Authors
 
-- **Kaj Jagtenberg** - _Initial work_ - [KajJagtenberg](https://github.com/KajJagtenberg)
+- **Kaj Jagtenberg** - _Initial work_ - [KajJagtenberg](https://github.com/kajjagtenberg)
 
 See also the list of [contributors](https://github.com/kajjagtenberg/eventflowdb/contributors) who participated in this project.
 

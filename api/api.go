@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrUnknownCommand = errors.New("Unknown command")
+	ErrUnknownCommand = errors.New("unknown command")
 )
 
 func CommandHandler(s store.Store) Handler {

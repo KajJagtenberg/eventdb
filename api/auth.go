@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	ErrUnauthorized         = errors.New("Unauthorized")
-	ErrAlreadyAuthenticated = errors.New("Already authenticated")
+	ErrUnauthorized         = errors.New("unauthorized")
+	ErrAlreadyAuthenticated = errors.New("already authenticated")
 )
 
 func Authentication(password string) Handler {
