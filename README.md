@@ -35,7 +35,7 @@ The easiest way to get up and running is via Docker containers. To use this you 
 
 Once you've installed Docker, you can execute the following commands to start an EventflowDB instance with a persistent, named volume:
 
-```
+```shell
 docker volume create eventflowdb
 
 docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:latest
@@ -89,6 +89,22 @@ The event data must adhere to the following format, otherwise an error will be r
   "metadata": "{"user": "3df976f9-f7e6-47e9-a9d0-9e19e451a23e"}", // string. optional
   "causation_id": "0000000000XS4M8WSZ1DW0Z2HT", //ULID in string form, points to the id of the event that caused it. optional
   "correlation_id": "0000000000XS4M8WSZ1DW0Z2HT", //ULID in string form, points to the id of the original event that set the reaction in motion. optional
+}
+```
+
+All methods that return a list of events will be in the following format:
+
+```javascript
+{
+  "id": "0000000000XS4M8WSZ1DW0Z2HT",
+  "stream": "",
+  "version": 0,
+  "type": "AccountOpened",
+  "data": "{"id": 1, "name": "John Doe"}",
+  "metadata": "{"user": "3df976f9-f7e6-47e9-a9d0-9e19e451a23e"}",
+  "causation_id": "0000000000XS4M8WSZ1DW0Z2HT",
+  "correlation_id": "0000000000XS4M8WSZ1DW0Z2HT",
+  "added_at": "2021-05-05T11:02:56.372078255Z"
 }
 ```
 
