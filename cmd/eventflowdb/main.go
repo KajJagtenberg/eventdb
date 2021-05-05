@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"os"
 	"os/signal"
 	"path"
@@ -15,9 +17,10 @@ import (
 )
 
 var (
-	data     = env.GetEnv("DATA", "data")
-	port     = env.GetEnv("PORT", "6543")
-	password = env.GetEnv("PASSWORD", "")
+	data       = env.GetEnv("DATA", "data")
+	port       = env.GetEnv("PORT", "6543")
+	password   = env.GetEnv("PASSWORD", "")
+	noPassword = env.GetEnv("NO_PASSWORD", "false") == "true"
 
 	log = logrus.New()
 )
@@ -31,8 +34,14 @@ func check(err error, msg string) {
 func main() {
 	log.SetFormatter(&logrus.JSONFormatter{})
 
-	if len(password) == 0 {
-		log.Warn("No password set")
+	if !noPassword && len(password) == 0 {
+		passwordData := make([]byte, 20)
+		_, err := rand.Read(passwordData)
+		check(err, "Failed to generate password")
+
+		password = base32.StdEncoding.EncodeToString(passwordData)
+
+		log.Printf("Generated a password since none was given: %s", password)
 	}
 
 	log.Println("Initializing store")
