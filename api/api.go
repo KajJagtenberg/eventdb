@@ -28,8 +28,6 @@ func CommandHandler(s store.Store) Handler {
 			return GetAll(s, c)
 		case "ping":
 			return Ping(c)
-		// case "populate":
-		// return Populate(s, c)
 		case "quit":
 			return Quit(c)
 		case "size":
@@ -38,6 +36,8 @@ func CommandHandler(s store.Store) Handler {
 			return StreamCount(s, c)
 		case "streamcountest":
 			return StreamCountEstimate(s, c)
+		case "uptime":
+			return Uptime(c)
 		case "version":
 			return Version(c)
 		default:

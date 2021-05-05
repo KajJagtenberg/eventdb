@@ -3,9 +3,9 @@ package store
 import (
 	"time"
 
-	proto "github.com/golang/protobuf/proto"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"google.golang.org/protobuf/proto"
 )
 
 type EventData struct {
@@ -14,7 +14,6 @@ type EventData struct {
 	Metadata      []byte    `json:"metadata"`
 	CausationID   ulid.ULID `json:"causation_id"`
 	CorrelationID ulid.ULID `json:"correlation_id"`
-	// AddedAt       time.Time `json:"added_at"`
 }
 
 type Event struct {

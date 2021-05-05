@@ -5,12 +5,12 @@ import (
 	"errors"
 	"hash/crc32"
 	"io"
-	"log"
 	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"github.com/sirupsen/logrus"
 	"go.etcd.io/bbolt"
 )
 
@@ -20,27 +20,8 @@ var (
 )
 
 const (
-	ESTIMATE_SLEEP_TIME = time.Second // Maybe make this configurable?
+	ESTIMATE_SLEEP_TIME = time.Second // TODO: Maybe make this configurable?
 )
-
-// var (
-// 	addCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_add_total",
-// 		Help: "The amount of events that have been added to the store",
-// 	})
-// 	getCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_get_total",
-// 		Help: "The amount of get requests performed",
-// 	})
-// 	logCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_log_total",
-// 		Help: "The amount of log requests performed",
-// 	})
-// 	concurrencyCounter = promauto.NewCounter(prometheus.CounterOpts{
-// 		Name: "store_concurrent_modification_total",
-// 		Help: "The total amount of concurrent stream modification errors",
-// 	})
-// )
 
 type BoltStore struct {
 	db                  *bbolt.DB
@@ -71,17 +52,12 @@ func (s *BoltStore) Backup(dst io.Writer) error {
 }
 
 func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
-	if bytes.Compare(stream[:], make([]byte, 16)) == 0 {
-		return nil, errors.New("Stream cannot be all zeroes")
-	}
-
-	if version < 0 {
-		log.Printf("Version is negative")
-		return nil, errors.New("Version cannot be negative")
+	if bytes.Equal(stream[:], make([]byte, 16)) {
+		return nil, errors.New("stream cannot be all zeroes")
 	}
 
 	if len(events) == 0 {
-		return nil, errors.New("List of events is empty")
+		return nil, errors.New("list of events is empty")
 	}
 
 	result := make([]Event, 0)
@@ -102,22 +78,22 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 		}
 
 		if int(version) < len(s.Events) {
-			return errors.New("Concurrent stream modification")
+			return errors.New("concurrent stream modification")
 		}
 
 		if int(version) > len(s.Events) {
-			return errors.New("Given version leaves gap in stream")
+			return errors.New("given version leaves gap in stream")
 		}
 
 		now := time.Now()
 
 		for i, event := range events {
 			if event.Type == "" {
-				return errors.New("Event type cannot be empty")
+				return errors.New("event type cannot be empty")
 			}
 
 			if len(event.Data) == 0 {
-				return errors.New("Event data cannot be empty")
+				return errors.New("event data cannot be empty")
 			}
 
 			id, err := ulid.New(ulid.Now(), entropy)
@@ -137,11 +113,11 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 				AddedAt:       now,
 			}
 
-			if bytes.Compare(record.CausationID[:], make([]byte, 16)) == 0 {
+			if bytes.Equal(record.CausationID[:], make([]byte, 16)) {
 				record.CausationID = record.ID
 			}
 
-			if bytes.Compare(record.CorrelationID[:], make([]byte, 16)) == 0 {
+			if bytes.Equal(record.CorrelationID[:], make([]byte, 16)) {
 				record.CorrelationID = record.CausationID
 			}
 
@@ -172,8 +148,6 @@ func (s *BoltStore) Add(stream uuid.UUID, version uint32, events []EventData) ([
 	}); err != nil {
 		return nil, err
 	}
-
-	// addCounter.Add(float64(len(events)))
 
 	return result, nil
 }
@@ -212,7 +186,7 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 
 				result = append(result, event)
 			} else {
-				return errors.New("Event cannot be found. This should never happen.")
+				return errors.New("event cannot be found. this should never happen")
 			}
 		}
 
@@ -220,8 +194,6 @@ func (s *BoltStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event
 	}); err != nil {
 		return nil, err
 	}
-
-	// getCounter.Add(1)
 
 	return result, nil
 }
@@ -253,8 +225,6 @@ func (s *BoltStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, error) {
 	}); err != nil {
 		return nil, err
 	}
-
-	// logCounter.Add(1)
 
 	return result, nil
 }
@@ -334,7 +304,7 @@ func (s *BoltStore) Close() error {
 	return s.db.Close()
 }
 
-func NewBoltStore(db *bbolt.DB) (*BoltStore, error) {
+func NewBoltStore(db *bbolt.DB, log logrus.StdLogger) (*BoltStore, error) {
 	if err := db.Update(func(t *bbolt.Tx) error {
 		for _, bucket := range buckets {
 			if _, err := t.CreateBucketIfNotExists([]byte(bucket)); err != nil {

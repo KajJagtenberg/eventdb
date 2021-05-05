@@ -1,46 +1,57 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"os"
 	"os/signal"
 	"path"
 	"syscall"
 
-	"log"
-
-	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
 )
 
 var (
-	data     = env.GetEnv("DATA", "data")
-	port     = env.GetEnv("PORT", "6543")
-	password = env.GetEnv("PASSWORD", "")
+	data       = env.GetEnv("DATA", "data")
+	port       = env.GetEnv("PORT", "6543")
+	password   = env.GetEnv("PASSWORD", "")
+	noPassword = env.GetEnv("NO_PASSWORD", "false") == "true"
+
+	log = logrus.New()
 )
 
-func main() {
-	godotenv.Load()
+func check(err error, msg string) {
+	if err != nil {
+		log.Fatalf("%s: %v", msg, err)
+	}
+}
 
-	if len(password) == 0 {
-		log.Println("WARNING: No password set")
+func main() {
+	log.SetFormatter(&logrus.JSONFormatter{})
+
+	if !noPassword && len(password) == 0 {
+		passwordData := make([]byte, 20)
+		_, err := rand.Read(passwordData)
+		check(err, "Failed to generate password")
+
+		password = base32.StdEncoding.EncodeToString(passwordData)
+
+		log.Printf("Generated a password since none was given: %s", password)
 	}
 
 	log.Println("Initializing store")
 
 	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
-	if err != nil {
-		log.Fatalf("Failed to open database: %v", err)
-	}
+	check(err, "Failed to open database")
 	defer db.Close()
 
-	store, err := store.NewBoltStore(db)
-	if err != nil {
-		log.Fatalf("Failed to create store: %v", err)
-	}
+	store, err := store.NewBoltStore(db, log)
+	check(err, "Failed to create store")
 	defer store.Close()
 
 	log.Println("Initializing RESP server")
@@ -58,9 +69,9 @@ func main() {
 
 		errorHandler := api.ErrorHandler()
 
-		if err := redcon.ListenAndServe(":"+port, commandHandler, acceptHandler, errorHandler); err != nil {
-			log.Fatalf("Failed to run RESP API: %v", err)
-		}
+		server := redcon.NewServer(":"+port, commandHandler, acceptHandler, errorHandler)
+
+		check(server.ListenAndServe(), "Failed to run RESP API")
 	}()
 
 	c := make(chan os.Signal, 1)

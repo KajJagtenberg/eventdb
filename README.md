@@ -49,7 +49,8 @@ The following environment variables can be used:
 
 - `PORT`: The port on which the instance used: Defaults: **6543**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
-- `PASSWORD`: Clients need to use this password to authenticate to the server. No defaults. We recommend you change this
+- `PASSWORD`: Clients need to use this password to authenticate to the server. A random password will be generated if not specified and NO_PASSWORD is not set to true.
+- `NO_PASSWORD`: true/false. Disables authentication. Default: **false**. We do not recommend this.
 
 ## Usage
 
