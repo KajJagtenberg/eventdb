@@ -3,9 +3,9 @@ package client
 import (
 	"encoding/json"
 
+	"github.com/KajJagtenberg/eventflowdb/api"
+	"github.com/KajJagtenberg/eventflowdb/store"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 func (c *Client) Get(stream uuid.UUID, version uint32, limit uint32) ([]store.Event, error) {

@@ -3,8 +3,8 @@ package api
 import (
 	"encoding/json"
 
+	"github.com/KajJagtenberg/eventflowdb/store"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 type AddRequest struct {

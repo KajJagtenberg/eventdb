@@ -1,6 +1,6 @@
 package api
 
-import "github.com/kajjagtenberg/eventflowdb/store"
+import "github.com/KajJagtenberg/eventflowdb/store"
 
 func StreamCount(store store.Store, c *Ctx) error {
 	count, err := store.StreamCount()

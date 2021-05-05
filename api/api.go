@@ -3,12 +3,12 @@ package api
 import (
 	"errors"
 
-	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/KajJagtenberg/eventflowdb/store"
 	"github.com/tidwall/redcon"
 )
 
 var (
-	ErrUnknownCommand = errors.New("Unknown command")
+	ErrUnknownCommand = errors.New("unknown command")
 )
 
 func CommandHandler(s store.Store) Handler {

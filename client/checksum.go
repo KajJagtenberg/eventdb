@@ -2,7 +2,6 @@ package client
 
 import (
 	"encoding/base32"
-	"errors"
 
 	"github.com/oklog/ulid"
 )
@@ -17,7 +16,7 @@ func (c *Client) Checksum() (id ulid.ULID, checksum []byte, err error) {
 
 	sid, ok := entries[0].(string)
 	if !ok {
-		return id, checksum, errors.New("Invalid response")
+		return id, checksum, ErrInvalidResponse
 	}
 
 	id, err = ulid.Parse(sid)
@@ -27,7 +26,7 @@ func (c *Client) Checksum() (id ulid.ULID, checksum []byte, err error) {
 
 	ssum, ok := entries[1].(string)
 	if !ok {
-		return id, checksum, errors.New("Invalid response")
+		return id, checksum, ErrInvalidResponse
 	}
 
 	checksum, err = base32.StdEncoding.DecodeString(ssum)

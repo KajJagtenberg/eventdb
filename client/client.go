@@ -1,12 +1,18 @@
 package client
 
 import (
+	"errors"
+
 	"github.com/go-redis/redis"
 	"github.com/oklog/ulid"
 )
 
 var (
 	SINCE_START = ulid.ULID{}
+)
+
+var (
+	ErrInvalidResponse = errors.New("invalid response")
 )
 
 type Config struct {
