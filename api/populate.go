@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/KajJagtenberg/eventflowdb/store"
 	"github.com/google/uuid"
+	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 type PopulateRequest struct {

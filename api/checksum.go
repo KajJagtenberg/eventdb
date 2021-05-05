@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/base32"
 
-	"github.com/KajJagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 func Checksum(s store.Store, c *Ctx) error {

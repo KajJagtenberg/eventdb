@@ -3,7 +3,7 @@ package api
 import (
 	"errors"
 
-	"github.com/KajJagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/tidwall/redcon"
 )
 

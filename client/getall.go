@@ -3,8 +3,8 @@ package client
 import (
 	"encoding/json"
 
-	"github.com/KajJagtenberg/eventflowdb/api"
-	"github.com/KajJagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
 )
 

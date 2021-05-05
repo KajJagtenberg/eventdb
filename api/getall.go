@@ -3,7 +3,7 @@ package api
 import (
 	"encoding/json"
 
-	"github.com/KajJagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
 )
 

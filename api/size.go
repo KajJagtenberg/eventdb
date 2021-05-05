@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/KajJagtenberg/eventflowdb/si"
-	"github.com/KajJagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/si"
+	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 func Size(store store.Store, c *Ctx) error {

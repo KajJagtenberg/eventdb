@@ -8,10 +8,10 @@ import (
 
 	"log"
 
-	"github.com/KajJagtenberg/eventflowdb/api"
-	"github.com/KajJagtenberg/eventflowdb/env"
-	"github.com/KajJagtenberg/eventflowdb/store"
 	"github.com/joho/godotenv"
+	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/kajjagtenberg/eventflowdb/env"
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
 )

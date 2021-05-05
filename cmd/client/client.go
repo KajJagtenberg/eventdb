@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	v1 "github.com/KajJagtenberg/eventflowdb/client"
+	v1 "github.com/kajjagtenberg/eventflowdb/client"
 )
 
 func main() {
