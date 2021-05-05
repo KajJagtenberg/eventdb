@@ -1,4 +1,4 @@
-module github.com/kajjagtenberg/eventflowdb
+module github.com/KajJagtenberg/eventflowdb
 
 go 1.16
 
