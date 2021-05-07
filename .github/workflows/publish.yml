@@ -1,0 +1,25 @@
+name: Docker Build & Push
+
+on:
+  release:
+    branches: [ master ]
+    types: [published]
+
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      
+      - name: Build and push Docker images
+        uses: docker/build-push-action@v2.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.PAT }}
+          repository: ${{ github.actor }}/${{github.repository}}
+          tags: latest
+          tag_with_ref: true
