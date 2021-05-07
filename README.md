@@ -38,7 +38,7 @@ Once you've installed Docker, you can execute the following commands to start an
 ```shell
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 docker.pkg.github.com/kajjagtenberg/eventflowdb/eventflowdb:latest
+docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 kajjagtenberg/eventflowdb:latest
 ```
 
 Eventhough the "latest" tag is specified in the above command, we recommend you pin the tag to prevent experiencing any unexpected changes.
