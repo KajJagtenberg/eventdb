@@ -48,4 +48,4 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/kajjagtenberg/eventflowdb:latest
+            kajjagtenberg/eventflowdb:latest
