@@ -22,8 +22,8 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            kajjagtenberg/eventflowdb
-            ghcr.io/kajjagtenberg/eventflowdb
+            ${{ github.repository }}
+            ghcr.io/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -39,7 +39,7 @@ jobs:
         uses: docker/login-action@v1 
         with:
           registry: ghcr.io
-          username: kajjagtenberg
+          username: ${{ github.actor }}
           password: ${{ secrets.PAT }}
       -
         name: Build and push
