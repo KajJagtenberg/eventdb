@@ -3,6 +3,7 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
+	github.com/br0xen/boltbrowser v0.0.0-20200408202924-14bd1cdd41fd // indirect
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/google/uuid v1.2.0
 	github.com/kr/text v0.2.0 // indirect

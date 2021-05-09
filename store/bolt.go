@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"hash/crc32"
 	"io"
@@ -15,7 +16,7 @@ import (
 )
 
 var (
-	buckets = []string{"streams", "events"}
+	buckets = []string{"streams", "events", "metadata"}
 	entropy = ulid.Monotonic(rand.New(rand.NewSource(int64(ulid.Now()))), 0)
 )
 
@@ -273,18 +274,50 @@ func (s *BoltStore) EventCountEstimate() (int64, error) {
 }
 
 // TODO: Store the checksum and ID at intervals to prevent recalculation since the beginning
-func (s *BoltStore) Checksum() (id ulid.ULID, sum []byte, err error) {
-	crc := crc32.NewIEEE()
+func (s *BoltStore) Checksum() (ulid.ULID, []byte, error) {
+	h := crc32.NewIEEE()
+	checksum := Checksum{
+		ID:  ulid.ULID{},
+		Sum: make([]byte, 4),
+	}
 
-	err = s.db.View(func(t *bbolt.Tx) error {
+	err := s.db.Update(func(t *bbolt.Tx) error {
+
+		if value := t.Bucket([]byte("metadata")).Get([]byte("checksum")); value != nil {
+			if err := json.Unmarshal(value, &checksum); err != nil {
+				return err
+			}
+		}
+
 		cursor := t.Bucket([]byte("events")).Cursor()
 
-		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
-			if err := id.UnmarshalBinary(k); err != nil {
+		for k, v := cursor.Seek(checksum.ID[:]); k != nil; k, v = cursor.Next() {
+			if bytes.Equal(k, checksum.ID[:]) {
+				return nil
+			}
+
+			h.Reset()
+
+			if err := checksum.ID.UnmarshalBinary(k); err != nil {
 				return err
 			}
 
-			if _, err := crc.Write(v); err != nil {
+			if _, err := h.Write(v); err != nil {
+				return err
+			}
+
+			if _, err := h.Write(checksum.Sum); err != nil {
+				return err
+			}
+
+			checksum.Sum = h.Sum(nil)
+
+		}
+
+		if value, err := json.Marshal(checksum); err != nil {
+			return err
+		} else {
+			if err := t.Bucket([]byte("metadata")).Put([]byte("checksum"), value); err != nil {
 				return err
 			}
 		}
@@ -292,12 +325,10 @@ func (s *BoltStore) Checksum() (id ulid.ULID, sum []byte, err error) {
 		return nil
 	})
 	if err != nil {
-		return id, sum, err
+		return checksum.ID, checksum.Sum, err
 	}
 
-	sum = crc.Sum(nil)
-
-	return id, sum, nil
+	return checksum.ID, checksum.Sum, nil
 }
 
 func (s *BoltStore) Close() error {
@@ -339,4 +370,9 @@ func NewBoltStore(db *bbolt.DB, log logrus.StdLogger) (*BoltStore, error) {
 	}()
 
 	return store, nil
+}
+
+type Checksum struct {
+	ID  ulid.ULID `json:"ulid"`
+	Sum []byte    `json:"sum"`
 }
