@@ -17,7 +17,6 @@ RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 
 FROM alpine:3.8
 
-ENV LANG en_US.UTF-8
 ENV DATA /data
 
 RUN mkdir $DATA
