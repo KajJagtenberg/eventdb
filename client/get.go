@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/google/uuid"
@@ -15,12 +16,12 @@ func (c *Client) Get(stream uuid.UUID, version uint32, limit uint32) ([]store.Ev
 		Limit:   limit,
 	}
 
-	args, err := json.Marshal(req)
+	cmd, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := c.r.Do("GET", args).Result()
+	response, err := c.r.Do("GET", base64.StdEncoding.EncodeToString(cmd)).Result()
 	if err != nil {
 		return nil, err
 	}

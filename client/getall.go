@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/kajjagtenberg/eventflowdb/api"
@@ -14,12 +15,12 @@ func (c *Client) GetAll(offset ulid.ULID, limit uint32) ([]store.Event, error) {
 		Limit:  limit,
 	}
 
-	args, err := json.Marshal(req)
+	cmd, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := c.r.Do("GETALL", args).Result()
+	response, err := c.r.Do("GETALL", base64.StdEncoding.EncodeToString(cmd)).Result()
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/google/uuid"
@@ -20,7 +21,7 @@ func (c *Client) Add(stream uuid.UUID, version uint32, data []store.EventData) (
 		return nil, err
 	}
 
-	response, err := c.r.Do("ADD", string(cmd)).Result()
+	response, err := c.r.Do("ADD", base64.StdEncoding.EncodeToString(cmd)).Result()
 	if err != nil {
 		return nil, err
 	}
