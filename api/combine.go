@@ -16,9 +16,13 @@ func Combine(handlers ...Handler) redcon.HandlerFunc {
 			return
 		}
 
-		if _, err := base64.StdEncoding.Decode(cmd.Args[1], args); err != nil {
-			conn.WriteError(err.Error())
-			return
+		if len(cmd.Args) == 2 {
+			var err error
+			args, err = base64.StdEncoding.DecodeString(string(cmd.Args[1]))
+			if err != nil {
+				conn.WriteError(err.Error())
+				return
+			}
 		}
 
 		ctx := &Ctx{
