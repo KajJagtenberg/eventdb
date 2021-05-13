@@ -19,7 +19,7 @@ func Get(s store.Store, c *Ctx) error {
 	}
 
 	var req GetRequest
-	if err := json.Unmarshal(c.Args[0], &req); err != nil {
+	if err := json.Unmarshal(c.Args, &req); err != nil {
 		return err
 	}
 

@@ -18,7 +18,7 @@ func GetAll(s store.Store, c *Ctx) error {
 	}
 
 	var req GetAllRequest
-	if err := json.Unmarshal(c.Args[0], &req); err != nil {
+	if err := json.Unmarshal(c.Args, &req); err != nil {
 		return err
 	}
 

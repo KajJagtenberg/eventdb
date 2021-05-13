@@ -9,7 +9,7 @@ type Handler = func(ctx *Ctx) error
 type Ctx struct {
 	Conn    redcon.Conn
 	Command string
-	Args    [][]byte
+	Args    []byte
 
 	next interface{} // this should be treated as []Handler, but cannot be defined that way due to cyclic references
 }
