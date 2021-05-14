@@ -57,6 +57,7 @@ func main() {
 
 	dispatcher := commands.NewCommandDispatcher()
 	dispatcher.Register("uptime", "u", commands.UptimeHandler())
+	dispatcher.Register("version", "v", commands.VersionHandler())
 
 	log.Println("Initializing RESP server")
 

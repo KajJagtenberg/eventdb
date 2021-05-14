@@ -30,6 +30,9 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 			conn.WriteArray(2)
 			conn.WriteInt64(r.Uptime.Milliseconds())
 			conn.WriteString(r.Human)
+
+		case commands.VersionResponse:
+			conn.WriteString(r.Version)
 		default:
 			log.Println("No known result")
 		}
