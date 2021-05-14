@@ -2,6 +2,13 @@ package commands
 
 import "github.com/kajjagtenberg/eventflowdb/store"
 
+const (
+	CMD_STREAM_COUNT           = "streamcount"
+	CMD_STREAM_COUNT_SHORT     = "sc"
+	CMD_STREAM_COUNT_EST       = "streamcountest"
+	CMD_STREAM_COUNT_EST_SHORT = "sce"
+)
+
 type StreamCountResponse struct {
 	Count int64 `json:"count"`
 }

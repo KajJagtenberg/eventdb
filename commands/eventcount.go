@@ -2,6 +2,13 @@ package commands
 
 import "github.com/kajjagtenberg/eventflowdb/store"
 
+const (
+	CMD_EVENT_COUNT           = "eventcount"
+	CMD_EVENT_COUNT_SHORT     = "ec"
+	CMD_EVENT_COUNT_EST       = "eventcountest"
+	CMD_EVENT_COUNT_EST_SHORT = "ece"
+)
+
 type EventCountResponse struct {
 	Count int64 `json:"count"`
 }

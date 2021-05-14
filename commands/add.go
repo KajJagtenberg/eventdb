@@ -7,6 +7,11 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
+const (
+	CMD_ADD       = "add"
+	CMD_ADD_SHORT = "a"
+)
+
 type AddRequest struct {
 	Stream  uuid.UUID         `json:"stream"`
 	Version uint32            `json:"version"`

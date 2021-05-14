@@ -7,6 +7,11 @@ import (
 	"github.com/oklog/ulid"
 )
 
+const (
+	CMD_GET_ALL       = "getall"
+	CMD_GET_ALL_SHORT = "ga"
+)
+
 type GetAllRequest struct {
 	Offset ulid.ULID `json:"stream"`
 	Limit  uint32    `json:"limit"`

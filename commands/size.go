@@ -5,6 +5,11 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
+const (
+	CMD_SIZE       = "size"
+	CMD_SIZE_SHORT = "s"
+)
+
 type SizeResponse struct {
 	Size  int64  `json:"size"`
 	Human string `json:"human"`

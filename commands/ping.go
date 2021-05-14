@@ -1,5 +1,10 @@
 package commands
 
+const (
+	CMD_PING       = "ping"
+	CMD_PING_SHORT = "p"
+)
+
 type PingResponse struct {
 	Message string `json:"message"`
 }

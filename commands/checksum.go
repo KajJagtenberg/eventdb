@@ -7,6 +7,11 @@ import (
 	"github.com/oklog/ulid"
 )
 
+const (
+	CMD_CHECKSUM       = "checksum"
+	CMD_CHECKSUM_SHORT = "ch"
+)
+
 type ChecksumResponse struct {
 	ID       ulid.ULID `json:"id"`
 	Checksum string    `json:"checksum"`

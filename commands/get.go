@@ -7,6 +7,11 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
+const (
+	CMD_GET       = "get"
+	CMD_GET_SHORT = "g"
+)
+
 type GetRequest struct {
 	Stream  uuid.UUID `json:"stream"`
 	Version uint32    `json:"version"`
