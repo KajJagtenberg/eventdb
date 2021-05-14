@@ -82,6 +82,9 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 				conn.WriteString(string(v))
 			}
 
+		case commands.PingResponse:
+			conn.WriteString(r.Message)
+
 		default:
 			log.Println("No known result")
 		}

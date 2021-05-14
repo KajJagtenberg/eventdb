@@ -14,8 +14,7 @@ var (
 func CommandHandler(s store.Store) Handler {
 	return func(c *Ctx) error {
 		switch c.Command {
-		case "ping":
-			return Ping(c)
+
 		case "quit":
 			return Quit(c)
 		case "size":
