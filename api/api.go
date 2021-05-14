@@ -14,8 +14,7 @@ var (
 func CommandHandler(s store.Store) Handler {
 	return func(c *Ctx) error {
 		switch c.Command {
-		case "checksum":
-			return Checksum(s, c)
+
 		case "eventcount":
 			return EventCount(s, c)
 		case "eventcountest":

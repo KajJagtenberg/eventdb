@@ -59,6 +59,7 @@ func main() {
 	dispatcher.Register("uptime", "u", commands.UptimeHandler())
 	dispatcher.Register("version", "v", commands.VersionHandler())
 	dispatcher.Register("add", "a", commands.AddHandler(eventstore))
+	dispatcher.Register("checksum", "ch", commands.ChecksumHandler(eventstore))
 
 	log.Println("Initializing RESP server")
 

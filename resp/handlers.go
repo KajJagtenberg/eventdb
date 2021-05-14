@@ -34,6 +34,7 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 
 		case commands.VersionResponse:
 			conn.WriteString(r.Version)
+
 		case commands.AddResponse:
 			conn.WriteArray(len(r.Events))
 
@@ -46,6 +47,12 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 
 				conn.WriteString(string(v))
 			}
+
+		case commands.ChecksumResponse:
+			conn.WriteArray(2)
+			conn.WriteString(r.ID.String())
+			conn.WriteString(r.Checksum)
+
 		default:
 			log.Println("No known result")
 		}
