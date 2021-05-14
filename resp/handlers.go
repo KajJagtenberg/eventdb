@@ -53,6 +53,9 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 			conn.WriteString(r.ID.String())
 			conn.WriteString(r.Checksum)
 
+		case commands.EventCountResponse:
+			conn.WriteInt64(r.Count)
+
 		default:
 			log.Println("No known result")
 		}
