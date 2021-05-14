@@ -66,6 +66,8 @@ func main() {
 	dispatcher.Register("getall", "ga", commands.GetHandler(eventstore))
 	dispatcher.Register("ping", "p", commands.PingHandler())
 	dispatcher.Register("size", "s", commands.SizeHandler(eventstore))
+	dispatcher.Register("streamcount", "sc", commands.StreamCountHandler(eventstore))
+	dispatcher.Register("streamcountest", "sce", commands.StreamCountEstimateHandler(eventstore))
 
 	log.Println("Initializing RESP server")
 

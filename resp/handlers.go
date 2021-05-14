@@ -90,6 +90,9 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 			conn.WriteInt64(r.Size)
 			conn.WriteString(r.Human)
 
+		case commands.StreamCountResponse:
+			conn.WriteInt64(r.Count)
+
 		default:
 			log.Println("No known result")
 		}
