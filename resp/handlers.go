@@ -85,6 +85,11 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 		case commands.PingResponse:
 			conn.WriteString(r.Message)
 
+		case commands.SizeResponse:
+			conn.WriteArray(2)
+			conn.WriteInt64(r.Size)
+			conn.WriteString(r.Human)
+
 		default:
 			log.Println("No known result")
 		}

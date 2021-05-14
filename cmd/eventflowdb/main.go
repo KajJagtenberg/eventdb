@@ -65,6 +65,7 @@ func main() {
 	dispatcher.Register("get", "g", commands.GetHandler(eventstore))
 	dispatcher.Register("getall", "ga", commands.GetHandler(eventstore))
 	dispatcher.Register("ping", "p", commands.PingHandler())
+	dispatcher.Register("size", "s", commands.SizeHandler(eventstore))
 
 	log.Println("Initializing RESP server")
 

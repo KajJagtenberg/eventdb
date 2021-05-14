@@ -15,10 +15,6 @@ func CommandHandler(s store.Store) Handler {
 	return func(c *Ctx) error {
 		switch c.Command {
 
-		case "quit":
-			return Quit(c)
-		case "size":
-			return Size(s, c)
 		case "streamcount":
 			return StreamCount(s, c)
 		case "streamcountest":

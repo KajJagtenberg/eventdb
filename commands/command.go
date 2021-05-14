@@ -19,6 +19,14 @@ type CommandDispatcher struct {
 }
 
 func (r *CommandDispatcher) Register(name string, shorthand string, handler CommandHandler) {
+	if r.handlers[name] != nil {
+		panic("Handler is already registered with given name")
+	}
+
+	if r.handlers[shorthand] != nil {
+		panic("Handler is already registered with given shorthand name")
+	}
+
 	r.handlers[name] = handler
 	r.handlers[shorthand] = handler
 }
