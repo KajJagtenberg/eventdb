@@ -3,7 +3,8 @@ package commands
 import "errors"
 
 var (
-	ErrUnknownCommand = errors.New("unknown command")
+	ErrUnknownCommand        = errors.New("unknown command")
+	ErrInsufficientArguments = errors.New("insufficient arguments")
 )
 
 type Command struct {

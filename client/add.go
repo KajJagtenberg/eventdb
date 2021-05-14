@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 func (c *Client) Add(stream uuid.UUID, version uint32, data []store.EventData) ([]store.Event, error) {
-	req := api.AddRequest{
+	req := commands.AddRequest{
 		Stream:  stream,
 		Version: version,
 		Events:  data,

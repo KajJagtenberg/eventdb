@@ -51,13 +51,14 @@ func main() {
 	check(err, "Failed to open database")
 	defer db.Close()
 
-	store, err := store.NewBoltStore(db, log)
+	eventstore, err := store.NewBoltStore(db, log)
 	check(err, "Failed to create store")
-	defer store.Close()
+	defer eventstore.Close()
 
 	dispatcher := commands.NewCommandDispatcher()
 	dispatcher.Register("uptime", "u", commands.UptimeHandler())
 	dispatcher.Register("version", "v", commands.VersionHandler())
+	dispatcher.Register("add", "a", commands.AddHandler(eventstore))
 
 	log.Println("Initializing RESP server")
 
