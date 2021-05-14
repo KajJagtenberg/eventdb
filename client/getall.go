@@ -4,13 +4,13 @@ import (
 	"encoding/base64"
 	"encoding/json"
 
-	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
 )
 
 func (c *Client) GetAll(offset ulid.ULID, limit uint32) ([]store.Event, error) {
-	req := api.GetAllRequest{
+	req := commands.GetAllRequest{
 		Offset: offset,
 		Limit:  limit,
 	}

@@ -69,6 +69,19 @@ func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Con
 				conn.WriteString(string(v))
 			}
 
+		case commands.GetAllResponse:
+			conn.WriteArray(len(r.Events))
+
+			for _, event := range r.Events {
+				v, err := json.Marshal(&event)
+				if err != nil {
+					conn.WriteError(err.Error())
+					return
+				}
+
+				conn.WriteString(string(v))
+			}
+
 		default:
 			log.Println("No known result")
 		}

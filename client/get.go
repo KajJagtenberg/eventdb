@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/store"
 )
 
 func (c *Client) Get(stream uuid.UUID, version uint32, limit uint32) ([]store.Event, error) {
-	req := api.GetRequest{
+	req := commands.GetRequest{
 		Stream:  stream,
 		Version: version,
 		Limit:   limit,
