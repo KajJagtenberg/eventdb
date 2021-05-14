@@ -11,18 +11,18 @@ type Command struct {
 	Args []byte `json:"args"`
 }
 
-type CommandDispatcher = func(cmd Command) (interface{}, error)
+type CommandHandler = func(cmd Command) (interface{}, error)
 
-type CommandRegistry struct {
-	handlers map[string]CommandDispatcher
+type CommandDispatcher struct {
+	handlers map[string]CommandHandler
 }
 
-func (r *CommandRegistry) Register(name string, shorthand string, handler CommandDispatcher) {
+func (r *CommandDispatcher) Register(name string, shorthand string, handler CommandHandler) {
 	r.handlers[name] = handler
 	r.handlers[shorthand] = handler
 }
 
-func (r *CommandRegistry) Handle(cmd Command) (interface{}, error) {
+func (r *CommandDispatcher) Handle(cmd Command) (interface{}, error) {
 	handler := r.handlers[cmd.Name]
 	if handler == nil {
 		return nil, ErrUnknownCommand
@@ -31,8 +31,8 @@ func (r *CommandRegistry) Handle(cmd Command) (interface{}, error) {
 	return handler(cmd)
 }
 
-func NewCommandRegistry() *CommandRegistry {
-	return &CommandRegistry{
-		handlers: make(map[string]CommandDispatcher),
+func NewCommandDispatcher() *CommandDispatcher {
+	return &CommandDispatcher{
+		handlers: make(map[string]CommandHandler),
 	}
 }
