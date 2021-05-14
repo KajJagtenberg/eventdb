@@ -1,11 +1,11 @@
 VERSION := $(shell cat constants/version)
 
-compile:
-	go build cmd/eventflowdb/main.go
-
 db:
 	mkdir -p data
 	go run cmd/eventflowdb/main.go
+
+compile:
+	go build cmd/eventflowdb/main.go
 
 ctl:
 	go run cmd/eventflowctl/main.go
