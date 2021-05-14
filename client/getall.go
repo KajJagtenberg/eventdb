@@ -20,7 +20,7 @@ func (c *Client) GetAll(offset ulid.ULID, limit uint32) ([]store.Event, error) {
 		return nil, err
 	}
 
-	response, err := c.r.Do("GETALL", base64.StdEncoding.EncodeToString(cmd)).Result()
+	response, err := c.r.Do(commands.CMD_GET_ALL_SHORT, base64.StdEncoding.EncodeToString(cmd)).Result()
 	if err != nil {
 		return nil, err
 	}

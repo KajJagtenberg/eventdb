@@ -3,11 +3,12 @@ package client
 import (
 	"encoding/base32"
 
+	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/oklog/ulid"
 )
 
 func (c *Client) Checksum() (id ulid.ULID, checksum []byte, err error) {
-	res, err := c.r.Do("CHECKSUM").Result()
+	res, err := c.r.Do(commands.CMD_CHECKSUM_SHORT).Result()
 	if err != nil {
 		return id, checksum, err
 	}
