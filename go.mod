@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/gofiber/fiber/v2 v2.9.0
 	github.com/google/uuid v1.2.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
@@ -13,6 +14,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/tidwall/btree v0.5.0 // indirect
 	github.com/tidwall/redcon v1.4.1
+	github.com/valyala/fasthttp v1.24.0 // indirect
 	go.etcd.io/bbolt v1.3.5
 	golang.org/x/net v0.0.0-20210505024714-0287a6fb4125 // indirect
 	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6 // indirect
