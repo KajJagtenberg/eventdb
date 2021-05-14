@@ -8,8 +8,9 @@ import (
 	"path"
 	"syscall"
 
-	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/env"
+	"github.com/kajjagtenberg/eventflowdb/resp"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
@@ -54,22 +55,15 @@ func main() {
 	check(err, "Failed to create store")
 	defer store.Close()
 
+	dispatcher := commands.NewCommandDispatcher()
+	dispatcher.Register("uptime", "u", commands.UptimeHandler())
+
 	log.Println("Initializing RESP server")
 
 	go func() {
 		log.Printf("RESP API listening on %s", port)
 
-		commandHandler := api.Combine(
-			api.AssertSession(),
-			api.Authentication(password),
-			api.CommandHandler(store),
-		)
-
-		acceptHandler := api.AcceptHandler()
-
-		errorHandler := api.ErrorHandler()
-
-		server := redcon.NewServer(":"+port, commandHandler, acceptHandler, errorHandler)
+		server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher), resp.AcceptHandler(), resp.ErrorHandler())
 
 		check(server.ListenAndServe(), "Failed to run RESP API")
 	}()
