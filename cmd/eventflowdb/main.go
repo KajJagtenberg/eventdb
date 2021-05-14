@@ -62,6 +62,7 @@ func main() {
 	dispatcher.Register("checksum", "ch", commands.ChecksumHandler(eventstore))
 	dispatcher.Register("eventcount", "ec", commands.EventCountHandler(eventstore))
 	dispatcher.Register("eventcountest", "ece", commands.EventCountEstimateHandler(eventstore))
+	dispatcher.Register("get", "g", commands.GetHandler(eventstore))
 
 	log.Println("Initializing RESP server")
 
