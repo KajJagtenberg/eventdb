@@ -9,8 +9,51 @@ import (
 	"github.com/tidwall/redcon"
 )
 
-func CommandHandler(dispatcher *commands.CommandDispatcher) func(conn redcon.Conn, cmd redcon.Command) {
+type Session struct {
+	Authenticated bool
+}
+
+func CommandHandler(dispatcher *commands.CommandDispatcher, password string) func(conn redcon.Conn, cmd redcon.Command) {
 	return func(conn redcon.Conn, cmd redcon.Command) {
+		if len(cmd.Args) == 0 {
+			conn.WriteError("no command specified")
+			return
+		}
+
+		var session *Session
+
+		if value := conn.Context(); value != nil {
+			session = value.(*Session)
+		} else {
+			session = &Session{
+				Authenticated: false,
+			}
+		}
+
+		if !session.Authenticated && len(password) > 0 {
+			if strings.ToLower(string(cmd.Args[0])) != "auth" {
+				conn.WriteError("unauthorized")
+				return
+			}
+
+			if len(cmd.Args) == 1 {
+				conn.WriteError("unauthorized")
+				return
+			}
+
+			if string(cmd.Args[1]) != password {
+				conn.WriteError("unauthorized")
+				return
+			}
+
+			session.Authenticated = true
+
+			conn.SetContext(session)
+
+			conn.WriteString("OK")
+			return
+		}
+
 		var args []byte
 
 		if len(cmd.Args) > 1 {

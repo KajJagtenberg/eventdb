@@ -76,7 +76,7 @@ func main() {
 	go func() {
 		log.Printf("RESP API listening on %s", port)
 
-		server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher), resp.AcceptHandler(), resp.ErrorHandler())
+		server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler())
 
 		check(server.ListenAndServe(), "failed to run RESP API")
 	}()
