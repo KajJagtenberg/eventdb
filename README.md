@@ -38,7 +38,7 @@ Once you've installed Docker, you can execute the following commands to start an
 ```shell
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 kajjagtenberg/eventflowdb:latest
+docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 -p 16543:16543 kajjagtenberg/eventflowdb:latest
 ```
 
 Eventhough the "latest" tag is specified in the above command, we recommend you pin the tag to prevent experiencing any unexpected changes.
@@ -119,16 +119,15 @@ The features on the roadmap in no particular order:
 
 - Advanced authentication
 - TLS support
-- ACL
+- ACL or other authorization scheme
 - Choosable argument encodings (msgpack, protobuf)
 - Projection Engine
 - Asynchronous replication (with Raft for leader election)
 - Optional synchronous replication (with Raft)
-- HTTP API
 - Backups
 - Pub/Sub notifications
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
-- Web UI / Terminal UI
+- Web UI
 - Client libraries for other languages
 
 ## Contributions
