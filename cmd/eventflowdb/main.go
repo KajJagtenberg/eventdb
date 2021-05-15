@@ -12,6 +12,7 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/resp"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/web"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
@@ -20,6 +21,7 @@ import (
 var (
 	data       = env.GetEnv("DATA", "data")
 	port       = env.GetEnv("PORT", "6543")
+	httpPort   = env.GetEnv("HTTP_PORT", "16543")
 	password   = env.GetEnv("PASSWORD", "")
 	noPassword = env.GetEnv("NO_PASSWORD", "false") == "true"
 
@@ -38,21 +40,21 @@ func main() {
 	if !noPassword && len(password) == 0 {
 		passwordData := make([]byte, 20)
 		_, err := rand.Read(passwordData)
-		check(err, "Failed to generate password")
+		check(err, "failed to generate password")
 
 		password = base32.StdEncoding.EncodeToString(passwordData)
 
-		log.Printf("Generated a password since none was given: %s", password)
+		log.Printf("generated a password since none was given: %s", password)
 	}
 
-	log.Println("Initializing store")
+	log.Println("initializing store")
 
 	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
-	check(err, "Failed to open database")
+	check(err, "failed to open database")
 	defer db.Close()
 
 	eventstore, err := store.NewBoltStore(db, log)
-	check(err, "Failed to create store")
+	check(err, "failed to create store")
 	defer eventstore.Close()
 
 	dispatcher := commands.NewCommandDispatcher()
@@ -69,19 +71,28 @@ func main() {
 	dispatcher.Register(commands.CMD_UPTIME, commands.CMD_UPTIME_SHORT, commands.UptimeHandler())
 	dispatcher.Register(commands.CMD_VERSION, commands.CMD_VERSION_SHORT, commands.VersionHandler())
 
-	log.Println("Initializing RESP server")
+	log.Println("initializing RESP server")
 
 	go func() {
 		log.Printf("RESP API listening on %s", port)
 
 		server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher), resp.AcceptHandler(), resp.ErrorHandler())
 
-		check(server.ListenAndServe(), "Failed to run RESP API")
+		check(server.ListenAndServe(), "failed to run RESP API")
+	}()
+
+	app, err := web.CreateWebServer(dispatcher)
+	check(err, "failed to create web server")
+
+	go func() {
+		log.Printf("HTTP API listening on %s", httpPort)
+
+		check(app.Listen(":"+httpPort), "failed to run HTTP API")
 	}()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT)
 	<-c
 
-	log.Println("EventflowDB is shutting down...")
+	log.Println("eventflowDB is shutting down...")
 }
