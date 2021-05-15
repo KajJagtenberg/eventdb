@@ -59,7 +59,7 @@ EventflowDB makes use of the [REdis Serialization Protocol](https://redis.io/top
 
 This repository contains a ready to use Golang client which implements all the current features. Support for other languages is on the roadmap, but feel free to contribute your own client libraries.
 
-Commands either use no arguments at all, or a single JSON formatted object, encoded by base64, which contains the arguments for the given command. Thus commands are either 1 or 2 'words' long, encoded according to the [RESP specification](https://redis.io/topics/protocol).
+Commands either use no arguments at all, or a single JSON formatted object, which contains the arguments for the given command. Thus commands are either 1 or 2 'words' long, encoded according to the [RESP specification](https://redis.io/topics/protocol).
 
 The following commands are currently supported:
 

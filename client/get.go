@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/base64"
 	"encoding/json"
 
 	"github.com/google/uuid"
@@ -21,7 +20,7 @@ func (c *Client) Get(stream uuid.UUID, version uint32, limit uint32) ([]store.Ev
 		return nil, err
 	}
 
-	response, err := c.r.Do(commands.CMD_GET_SHORT, base64.StdEncoding.EncodeToString(cmd)).Result()
+	response, err := c.r.Do(commands.CMD_GET_SHORT, cmd).Result()
 	if err != nil {
 		return nil, err
 	}
