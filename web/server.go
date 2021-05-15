@@ -3,7 +3,7 @@ package web
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/kajjagtenberg/eventflowdb/commands"
+	"github.com/kajjagtenberg/go-commando"
 )
 
 // var (
@@ -11,7 +11,7 @@ import (
 // 	frontend embed.FS
 // )
 
-func CreateWebServer(dispatcher *commands.CommandDispatcher) (*fiber.App, error) {
+func CreateWebServer(dispatcher *commando.CommandDispatcher) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
@@ -19,7 +19,7 @@ func CreateWebServer(dispatcher *commands.CommandDispatcher) (*fiber.App, error)
 	app.Use(cors.New())
 
 	app.Post("/api", func(c *fiber.Ctx) error {
-		var cmd commands.Command
+		var cmd commando.Command
 		if err := c.BodyParser(&cmd); err != nil {
 			return err
 		}

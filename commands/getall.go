@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/go-commando"
 	"github.com/oklog/ulid"
 )
 
@@ -21,10 +22,10 @@ type GetAllResponse struct {
 	Events []store.Event `json:"events"`
 }
 
-func GetAllHandler(store store.EventStore) CommandHandler {
-	return func(cmd Command) (interface{}, error) {
+func GetAllHandler(store store.EventStore) commando.CommandHandler {
+	return func(cmd commando.Command) (interface{}, error) {
 		if cmd.Args == nil {
-			return nil, ErrInsufficientArguments
+			return nil, commando.ErrInsufficientArguments
 		}
 
 		var req GetAllRequest

@@ -13,6 +13,7 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/resp"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/kajjagtenberg/eventflowdb/web"
+	"github.com/kajjagtenberg/go-commando"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
 	"go.etcd.io/bbolt"
@@ -57,7 +58,7 @@ func main() {
 	check(err, "failed to create store")
 	defer eventstore.Close()
 
-	dispatcher := commands.NewCommandDispatcher()
+	dispatcher := commando.NewCommandDispatcher()
 	dispatcher.Register(commands.CMD_ADD, commands.CMD_ADD_SHORT, commands.AddHandler(eventstore))
 	dispatcher.Register(commands.CMD_CHECKSUM, commands.CMD_CHECKSUM_SHORT, commands.ChecksumHandler(eventstore))
 	dispatcher.Register(commands.CMD_EVENT_COUNT, commands.CMD_EVENT_COUNT_SHORT, commands.EventCountHandler(eventstore))

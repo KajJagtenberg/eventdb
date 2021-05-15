@@ -4,6 +4,7 @@ import (
 	"encoding/base32"
 
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/go-commando"
 	"github.com/oklog/ulid"
 )
 
@@ -17,8 +18,8 @@ type ChecksumResponse struct {
 	Checksum string    `json:"checksum"`
 }
 
-func ChecksumHandler(s store.EventStore) CommandHandler {
-	return func(cmd Command) (interface{}, error) {
+func ChecksumHandler(s store.EventStore) commando.CommandHandler {
+	return func(cmd commando.Command) (interface{}, error) {
 		id, checksum, err := s.Checksum()
 		if err != nil {
 			return nil, err

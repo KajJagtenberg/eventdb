@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/kajjagtenberg/eventflowdb/commands"
+	"github.com/kajjagtenberg/go-commando"
 	"github.com/tidwall/redcon"
 )
 
@@ -13,7 +14,7 @@ type Session struct {
 	Authenticated bool
 }
 
-func CommandHandler(dispatcher *commands.CommandDispatcher, password string) func(conn redcon.Conn, cmd redcon.Command) {
+func CommandHandler(dispatcher *commando.CommandDispatcher, password string) func(conn redcon.Conn, cmd redcon.Command) {
 	return func(conn redcon.Conn, cmd redcon.Command) {
 		if len(cmd.Args) == 0 {
 			conn.WriteError("no command specified")
@@ -60,7 +61,7 @@ func CommandHandler(dispatcher *commands.CommandDispatcher, password string) fun
 			args = cmd.Args[1]
 		}
 
-		result, err := dispatcher.Handle(commands.Command{
+		result, err := dispatcher.Handle(commando.Command{
 			Name: strings.ToLower(string(cmd.Args[0])),
 			Args: args,
 		})

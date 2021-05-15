@@ -3,6 +3,7 @@ package commands
 import (
 	"github.com/kajjagtenberg/eventflowdb/si"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/go-commando"
 )
 
 const (
@@ -15,8 +16,8 @@ type SizeResponse struct {
 	Human string `json:"human"`
 }
 
-func SizeHandler(store store.EventStore) CommandHandler {
-	return func(cmd Command) (interface{}, error) {
+func SizeHandler(store store.EventStore) commando.CommandHandler {
+	return func(cmd commando.Command) (interface{}, error) {
 		size, err := store.Size()
 		if err != nil {
 			return nil, err

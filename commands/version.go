@@ -1,6 +1,9 @@
 package commands
 
-import "github.com/kajjagtenberg/eventflowdb/constants"
+import (
+	"github.com/kajjagtenberg/eventflowdb/constants"
+	"github.com/kajjagtenberg/go-commando"
+)
 
 const (
 	CMD_VERSION       = "version"
@@ -11,8 +14,8 @@ type VersionResponse struct {
 	Version string `json:"version"`
 }
 
-func VersionHandler() CommandHandler {
-	return func(cmd Command) (interface{}, error) {
+func VersionHandler() commando.CommandHandler {
+	return func(cmd commando.Command) (interface{}, error) {
 		return VersionResponse{
 			Version: constants.Version,
 		}, nil

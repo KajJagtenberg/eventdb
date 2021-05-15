@@ -6,6 +6,7 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gofiber/fiber/v2 v2.9.0
 	github.com/google/uuid v1.2.0
+	github.com/kajjagtenberg/go-commando v0.0.0-20210515131051-80c2a6c0efeb
 	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/onsi/ginkgo v1.16.2 // indirect

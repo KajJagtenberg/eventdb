@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/go-commando"
 )
 
 const (
@@ -22,10 +23,10 @@ type GetResponse struct {
 	Events []store.Event `json:"events"`
 }
 
-func GetHandler(store store.EventStore) CommandHandler {
-	return func(cmd Command) (interface{}, error) {
+func GetHandler(store store.EventStore) commando.CommandHandler {
+	return func(cmd commando.Command) (interface{}, error) {
 		if cmd.Args == nil {
-			return nil, ErrInsufficientArguments
+			return nil, commando.ErrInsufficientArguments
 		}
 
 		var req GetRequest
