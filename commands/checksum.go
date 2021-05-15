@@ -17,7 +17,7 @@ type ChecksumResponse struct {
 	Checksum string    `json:"checksum"`
 }
 
-func ChecksumHandler(s store.Store) CommandHandler {
+func ChecksumHandler(s store.EventStore) CommandHandler {
 	return func(cmd Command) (interface{}, error) {
 		id, checksum, err := s.Checksum()
 		if err != nil {

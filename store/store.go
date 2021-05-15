@@ -7,7 +7,7 @@ import (
 	"github.com/oklog/ulid"
 )
 
-type Store interface {
+type EventStore interface {
 	/*
 		Size of the database in bytes on disk
 	*/

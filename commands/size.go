@@ -15,7 +15,7 @@ type SizeResponse struct {
 	Human string `json:"human"`
 }
 
-func SizeHandler(store store.Store) CommandHandler {
+func SizeHandler(store store.EventStore) CommandHandler {
 	return func(cmd Command) (interface{}, error) {
 		size, err := store.Size()
 		if err != nil {

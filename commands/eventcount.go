@@ -13,7 +13,7 @@ type EventCountResponse struct {
 	Count int64 `json:"count"`
 }
 
-func EventCountHandler(store store.Store) CommandHandler {
+func EventCountHandler(store store.EventStore) CommandHandler {
 	return func(cmd Command) (interface{}, error) {
 		count, err := store.EventCount()
 		if err != nil {
@@ -24,7 +24,7 @@ func EventCountHandler(store store.Store) CommandHandler {
 	}
 }
 
-func EventCountEstimateHandler(store store.Store) CommandHandler {
+func EventCountEstimateHandler(store store.EventStore) CommandHandler {
 	return func(cmd Command) (interface{}, error) {
 		count, err := store.EventCountEstimate()
 		if err != nil {

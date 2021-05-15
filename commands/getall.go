@@ -21,7 +21,7 @@ type GetAllResponse struct {
 	Events []store.Event `json:"events"`
 }
 
-func GetAllHandler(store store.Store) CommandHandler {
+func GetAllHandler(store store.EventStore) CommandHandler {
 	return func(cmd Command) (interface{}, error) {
 		if cmd.Args == nil {
 			return nil, ErrInsufficientArguments
