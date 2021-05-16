@@ -2,21 +2,31 @@ package commands_test
 
 import (
 	"encoding/base32"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/kajjagtenberg/eventflowdb/commands"
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/kajjagtenberg/eventflowdb/tests"
 	"github.com/kajjagtenberg/go-commando"
 	"github.com/oklog/ulid"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestChecksum(t *testing.T) {
-	store, err := tests.CreateTempStore()
+	db, err := tests.CreateTempDB()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer store.Close()
+	defer db.Close()
+	defer os.Remove(db.Path())
+
+	store, err := store.NewBoltStore(db, logrus.New())
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	handler := commands.ChecksumHandler(store)
 
