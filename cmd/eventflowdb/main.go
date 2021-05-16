@@ -25,6 +25,9 @@ var (
 	httpPort   = env.GetEnv("HTTP_PORT", "16543")
 	password   = env.GetEnv("PASSWORD", "")
 	noPassword = env.GetEnv("NO_PASSWORD", "false") == "true"
+	tlsEnabled = env.GetEnv("TLS_ENABLED", "false") == "true"
+	certFile   = env.GetEnv("TLS_CERT_FILE", "certs/cert.pem") // TODO: Specify in README
+	keyFile    = env.GetEnv("TLS_KEY_FILE", "certs/key.pem")   // TODO: Specify in README
 
 	log = logrus.New()
 )
@@ -87,9 +90,16 @@ func main() {
 	check(err, "failed to create web server")
 
 	go func() {
-		log.Printf("HTTP API listening on %s", httpPort)
+		if tlsEnabled {
+			log.Printf("HTTP API listening on %s over TLS", httpPort)
 
-		check(app.Listen(":"+httpPort), "failed to run HTTP API")
+			check(app.ListenTLS(":"+httpPort, certFile, keyFile), "failed to run HTTP APi over TLS")
+		} else {
+			log.Printf("HTTP API listening on %s", httpPort)
+
+			check(app.Listen(":"+httpPort), "failed to run HTTP API")
+		}
+
 	}()
 
 	c := make(chan os.Signal, 1)
