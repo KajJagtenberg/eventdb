@@ -8,7 +8,7 @@ import (
 
 const (
 	CMD_UPTIME       = "uptime"
-	CMD_UPTIME_SHORT = "u"
+	CMD_UPTIME_SHORT = "up"
 )
 
 type UptimeResponse struct {

@@ -19,6 +19,8 @@ func CreateWebServer(dispatcher *commando.CommandDispatcher) (*fiber.App, error)
 	app.Use(cors.New())
 
 	app.Post("/api", func(c *fiber.Ctx) error {
+		return c.Next()
+	}, func(c *fiber.Ctx) error {
 		var cmd commando.Command
 		if err := c.BodyParser(&cmd); err != nil {
 			return err
