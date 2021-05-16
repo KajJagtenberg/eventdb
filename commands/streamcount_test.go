@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestEventCount(t *testing.T) {
+func TestStreamCount(t *testing.T) {
 	db, err := tests.CreateTempDB()
 	if err != nil {
 		t.Fatal(err)
@@ -24,7 +24,7 @@ func TestEventCount(t *testing.T) {
 		log.Fatal(err)
 	}
 
-	handler := commands.EventCountHandler(store)
+	handler := commands.StreamCountHandler(store)
 
 	cmd := commando.Command{}
 
@@ -33,7 +33,7 @@ func TestEventCount(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	res, ok := result.(commands.EventCountResponse)
+	res, ok := result.(commands.StreamCountResponse)
 	if !ok {
 		t.Fatal("Wrong cast")
 	}
