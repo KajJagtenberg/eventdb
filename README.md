@@ -119,23 +119,21 @@ The features on the roadmap in no particular order:
 
 - Advanced authentication
 - TLS support
-- ACL
+- ACL or other authorization scheme
 - Choosable argument encodings (msgpack, protobuf)
 - Projection Engine
-- Asynchronous replication (with Raft for leader election)
+- Asynchronous replication (with external leader election)
 - Optional synchronous replication (with Raft)
 - HTTP API
 - Backups
 - Pub/Sub notifications
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
-- Web UI / Terminal UI
+- Web UI
 - Client libraries for other languages
 
 ## Contributions
 
 Contributions are most welcome. If you are unsure if a certain feature will benefit the project, please open up an issue.
-
-Discussions are good, arguments are not. Be civil.
 
 ## Authors
 
