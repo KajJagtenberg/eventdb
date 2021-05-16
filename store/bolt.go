@@ -21,7 +21,7 @@ var (
 )
 
 const (
-	ESTIMATE_SLEEP_TIME = time.Second // TODO: Maybe make this configurable?
+	ESTIMATE_SLEEP_TIME = time.Second
 )
 
 type BoltStore struct {
@@ -311,7 +311,6 @@ func (s *BoltStore) EventCountEstimate() (int64, error) {
 	return s.estimateEventCount, nil
 }
 
-// TODO: Store the checksum and ID at intervals to prevent recalculation since the beginning
 func (s *BoltStore) Checksum() (ulid.ULID, []byte, error) {
 	h := crc32.NewIEEE()
 	checksum := Checksum{
@@ -349,7 +348,6 @@ func (s *BoltStore) Checksum() (ulid.ULID, []byte, error) {
 			}
 
 			checksum.Sum = h.Sum(nil)
-
 		}
 
 		if value, err := json.Marshal(checksum); err != nil {
