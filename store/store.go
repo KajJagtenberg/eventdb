@@ -47,6 +47,12 @@ type EventStore interface {
 	StreamCount() (int64, error)
 
 	/*
+		Returns the names of streams, with skip and limit options
+	*/
+
+	ListStreams(skip uint32, limit uint32) ([]string, error)
+
+	/*
 		Returns an estimate of the total number of events stored in the database
 	*/
 	EventCountEstimate() (int64, error)

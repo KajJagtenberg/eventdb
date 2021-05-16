@@ -71,6 +71,7 @@ func main() {
 	dispatcher.Register(commands.CMD_STREAM_COUNT_EST, commands.CMD_STREAM_COUNT_EST_SHORT, commands.StreamCountEstimateHandler(eventstore))
 	dispatcher.Register(commands.CMD_UPTIME, commands.CMD_UPTIME_SHORT, commands.UptimeHandler())
 	dispatcher.Register(commands.CMD_VERSION, commands.CMD_VERSION_SHORT, commands.VersionHandler())
+	dispatcher.Register(commands.CMD_LIST_STREAMS, commands.CMD_LIST_STREAMS_SHORT, commands.ListStreamsHandler(eventstore))
 
 	log.Println("initializing RESP server")
 

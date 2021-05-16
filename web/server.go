@@ -18,15 +18,13 @@ func CreateWebServer(dispatcher *commando.CommandDispatcher) (*fiber.App, error)
 
 	app.Use(cors.New())
 
-	app.Post("/api", func(c *fiber.Ctx) error {
+	app.Post("/api/:cmd", func(c *fiber.Ctx) error {
 		return c.Next()
 	}, func(c *fiber.Ctx) error {
-		var cmd commando.Command
-		if err := c.BodyParser(&cmd); err != nil {
-			return err
-		}
-
-		result, err := dispatcher.Handle(cmd)
+		result, err := dispatcher.Handle(commando.Command{
+			Name: c.Params("cmd"),
+			Args: c.Body(),
+		})
 		if err != nil {
 			return err
 		}

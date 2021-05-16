@@ -1,6 +1,13 @@
-POST http://127.0.0.1:16543/api
-Content-Type: application/json
+POST http://127.0.0.1:16543/api/up
 
-{
-    "name":"up"
-}
+###
+
+POST http://127.0.0.1:16543/api/sc
+
+###
+
+POST http://127.0.0.1:16543/api/lstreams
+
+###
+
+POST http://127.0.0.1:16543/api/ga

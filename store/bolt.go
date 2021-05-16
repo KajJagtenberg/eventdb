@@ -265,8 +265,46 @@ func (s *BoltStore) StreamCount() (int64, error) {
 
 	return total, nil
 }
+
 func (s *BoltStore) StreamCountEstimate() (int64, error) {
 	return s.estimateStreamCount, nil
+}
+
+func (s *BoltStore) ListStreams(skip uint32, limit uint32) ([]string, error) {
+	result := make([]string, 0)
+
+	if limit == 0 {
+		limit = 25
+	}
+
+	err := s.db.View(func(t *bbolt.Tx) error {
+		cursor := t.Bucket([]byte("streams")).Cursor()
+
+		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+			if skip > 0 {
+				skip--
+				continue
+			}
+
+			if len(result) >= int(limit) {
+				return nil
+			}
+
+			var stream uuid.UUID
+			if err := stream.UnmarshalBinary(k); err != nil {
+				return err
+			}
+
+			result = append(result, stream.String())
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (s *BoltStore) EventCountEstimate() (int64, error) {

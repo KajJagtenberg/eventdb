@@ -137,6 +137,12 @@ func CommandHandler(dispatcher *commando.CommandDispatcher, password string) fun
 		case commands.StreamCountResponse:
 			conn.WriteInt64(r.Count)
 
+		case commands.ListStreamsResponse:
+			conn.WriteArray(len(r.Streams))
+
+			for _, stream := range r.Streams {
+				conn.WriteString(stream)
+			}
 		default:
 			log.Println("No known result")
 		}

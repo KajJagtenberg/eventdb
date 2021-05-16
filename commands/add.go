@@ -25,7 +25,7 @@ type AddResponse struct {
 
 func AddHandler(store store.EventStore) commando.CommandHandler {
 	return func(cmd commando.Command) (interface{}, error) {
-		if cmd.Args == nil {
+		if cmd.Args == nil || len(cmd.Args) == 0 {
 			return nil, commando.ErrInsufficientArguments
 		}
 
