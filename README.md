@@ -122,7 +122,7 @@ The features on the roadmap in no particular order:
 - ACL or other authorization scheme
 - Choosable argument encodings (msgpack, protobuf)
 - Projection Engine
-- Asynchronous replication (with Raft for leader election)
+- Asynchronous replication (with external leader election)
 - Optional synchronous replication (with Raft)
 - Backups
 - Pub/Sub notifications
@@ -133,8 +133,6 @@ The features on the roadmap in no particular order:
 ## Contributions
 
 Contributions are most welcome. If you are unsure if a certain feature will benefit the project, please open up an issue.
-
-Discussions are good, arguments are not. Be civil.
 
 ## Authors
 
