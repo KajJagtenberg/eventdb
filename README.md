@@ -77,6 +77,14 @@ The following commands are currently supported:
 | UPTIME         | UP        | -                                                               | Returns the uptime of the server in human readable format                                                                                                                                                                      |                                                                                                        |
 | VERSION        | V         | -                                                               | Returns the version of the database                                                                                                                                                                                            |
 
+Access to the API is also available via HTTP. All commands are done via POST request with the following url:
+
+```
+POST http://<hostname>:16543/api/:cmd
+```
+
+Both the full name and the shorthand name of commands can be used to send the command. The body the JSON arguments if neccessary.
+
 ### Event Format
 
 The event data must adhere to the following format, otherwise an error will be returned.
