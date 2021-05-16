@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base32"
 	"os"
 	"os/signal"
@@ -78,12 +79,31 @@ func main() {
 
 	log.Println("initializing RESP server")
 
+	var tlsConfig *tls.Config
+
+	if tlsEnabled {
+		crt, err := tls.LoadX509KeyPair(certFile, keyFile)
+		check(err, "failed to load certificate")
+
+		tlsConfig = &tls.Config{
+			Certificates: []tls.Certificate{crt},
+		}
+	}
+
 	go func() {
-		log.Printf("RESP API listening on %s", port)
+		if tlsEnabled {
+			log.Printf("RESP API listening on %s over TLS", port)
 
-		server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler())
+			server := redcon.NewServerTLS(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler(), tlsConfig)
 
-		check(server.ListenAndServe(), "failed to run RESP API")
+			check(server.ListenAndServe(), "failed to run RESP API")
+		} else {
+			log.Printf("RESP API listening on %s", port)
+
+			server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler())
+
+			check(server.ListenAndServe(), "failed to run RESP API")
+		}
 	}()
 
 	app, err := web.CreateWebServer(dispatcher)
@@ -91,9 +111,12 @@ func main() {
 
 	go func() {
 		if tlsEnabled {
+			l, err := tls.Listen("tcp", ":"+httpPort, tlsConfig)
+			check(err, "failed to create listener")
+
 			log.Printf("HTTP API listening on %s over TLS", httpPort)
 
-			check(app.ListenTLS(":"+httpPort, certFile, keyFile), "failed to run HTTP APi over TLS")
+			check(app.Listener(l), "failed to run HTTP APi over TLS")
 		} else {
 			log.Printf("HTTP API listening on %s", httpPort)
 
