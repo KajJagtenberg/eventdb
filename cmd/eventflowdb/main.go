@@ -27,8 +27,8 @@ var (
 	password   = env.GetEnv("PASSWORD", "")
 	noPassword = env.GetEnv("NO_PASSWORD", "false") == "true"
 	tlsEnabled = env.GetEnv("TLS_ENABLED", "false") == "true"
-	certFile   = env.GetEnv("TLS_CERT_FILE", "certs/cert.pem") // TODO: Specify in README
-	keyFile    = env.GetEnv("TLS_KEY_FILE", "certs/key.pem")   // TODO: Specify in README
+	certFile   = env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
+	keyFile    = env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
 
 	log = logrus.New()
 )

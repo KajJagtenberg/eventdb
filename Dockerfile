@@ -18,6 +18,8 @@ RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 FROM alpine:3.8
 
 ENV DATA /data
+ENV DATA /certs/cert.pem
+ENV DATA /certs/key.pem
 
 RUN mkdir $DATA
 

@@ -49,7 +49,10 @@ The following environment variables can be used:
 - `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **16543**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
 - `PASSWORD`: Clients need to use this password to authenticate to the server. A random password will be generated if not specified and NO_PASSWORD is not set to true.
-- `NO_PASSWORD`: true/false. Disables authentication. Default: **false**. We do not recommend this.
+- `NO_PASSWORD`: true/false. Disables authentication. Defaults: **false**. Disabling the password is not recommended.
+- `TLS_ENABLED`: true/false. Enable TLS for RESP and HTTP API. Defaults: **false**
+- `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
+- `TLS_KEY_FILE`: Location of the key. Defaults: **certs/key.pem**
 
 ## Usage
 
