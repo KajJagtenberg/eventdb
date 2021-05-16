@@ -73,7 +73,7 @@ func CommandHandler(dispatcher *commando.CommandDispatcher, password string) fun
 		switch r := result.(type) {
 		case commands.UptimeResponse:
 			conn.WriteArray(2)
-			conn.WriteInt64(r.Uptime.Milliseconds())
+			conn.WriteInt64(r.Uptime)
 			conn.WriteString(r.Human)
 
 		case commands.VersionResponse:
