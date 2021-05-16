@@ -43,7 +43,7 @@ docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 -p
 
 ## Configuration
 
-The following environment variables can be used:
+The following environment variables can be used to alter the configuration:
 
 - `PORT`: The port on which the RESP server listens: Defaults: **6543**
 - `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **16543**
