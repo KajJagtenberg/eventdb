@@ -270,8 +270,8 @@ func (s *BoltStore) StreamCountEstimate() (int64, error) {
 	return s.estimateStreamCount, nil
 }
 
-func (s *BoltStore) ListStreams(skip uint32, limit uint32) ([]string, error) {
-	result := make([]string, 0)
+func (s *BoltStore) ListStreams(skip uint32, limit uint32) ([]Stream, error) {
+	result := make([]Stream, 0)
 
 	if limit == 0 {
 		limit = 25
@@ -280,7 +280,7 @@ func (s *BoltStore) ListStreams(skip uint32, limit uint32) ([]string, error) {
 	err := s.db.View(func(t *bbolt.Tx) error {
 		cursor := t.Bucket([]byte("streams")).Cursor()
 
-		for k, _ := cursor.First(); k != nil; k, _ = cursor.Next() {
+		for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
 			if skip > 0 {
 				skip--
 				continue
@@ -290,12 +290,13 @@ func (s *BoltStore) ListStreams(skip uint32, limit uint32) ([]string, error) {
 				return nil
 			}
 
-			var stream uuid.UUID
-			if err := stream.UnmarshalBinary(k); err != nil {
+			var stream Stream
+
+			if err := stream.Unmarshal(v); err != nil {
 				return err
 			}
 
-			result = append(result, stream.String())
+			result = append(result, stream)
 		}
 
 		return nil

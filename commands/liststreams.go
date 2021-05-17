@@ -18,7 +18,7 @@ type ListStreamsRequest struct {
 }
 
 type ListStreamsResponse struct {
-	Streams []string `json:"streams"`
+	Streams []store.Stream `json:"streams"`
 }
 
 func ListStreamsHandler(store store.EventStore) commando.CommandHandler {

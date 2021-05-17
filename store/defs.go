@@ -84,9 +84,9 @@ func (e *Event) Unmarshal(data []byte) error {
 }
 
 type Stream struct {
-	ID      uuid.UUID
-	Events  []ulid.ULID
-	AddedAt time.Time
+	ID      uuid.UUID   `json:"id"`
+	Events  []ulid.ULID `json:"events"`
+	AddedAt time.Time   `json:"added_at"`
 }
 
 func (s *Stream) Marshal() ([]byte, error) {

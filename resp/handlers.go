@@ -141,7 +141,13 @@ func CommandHandler(dispatcher *commando.CommandDispatcher, password string) fun
 			conn.WriteArray(len(r.Streams))
 
 			for _, stream := range r.Streams {
-				conn.WriteString(stream)
+				value, err := json.Marshal(stream)
+				if err != nil {
+					conn.WriteError(err.Error())
+					return
+				}
+
+				conn.WriteString(string(value))
 			}
 		default:
 			log.Println("No known result")
