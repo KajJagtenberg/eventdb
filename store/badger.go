@@ -296,6 +296,7 @@ func (s *BadgerEventStore) ListStreams(skip uint32, limit uint32) ([]Stream, err
 
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
 		cursor.Seek(prefix)
+		defer cursor.Close()
 
 		for cursor.ValidForPrefix(prefix) {
 			if skip > 0 {
