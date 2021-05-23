@@ -54,7 +54,7 @@ func main() {
 
 	log.Println("initializing store")
 
-	db, err := badger.Open(badger.DefaultOptions(path.Join(data)))
+	db, err := badger.Open(badger.DefaultOptions(path.Join(data)).WithLogger(log))
 	check(err, "failed to open database")
 	defer db.Close()
 
