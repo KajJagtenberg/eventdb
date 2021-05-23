@@ -226,6 +226,27 @@ func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, erro
 	return result, nil
 }
 
+func (s *BadgerEventStore) EventCount() (int64, error) {
+	var total int64
+
+	if err := s.db.View(func(txn *badger.Txn) error {
+		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
+		cursor.Seek(BUCKET_EVENTS)
+
+		for cursor.ValidForPrefix(BUCKET_EVENTS) {
+			total++
+
+			cursor.Next()
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
