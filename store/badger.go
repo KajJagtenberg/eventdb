@@ -214,6 +214,10 @@ func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, erro
 		defer cursor.Close()
 
 		for cursor.ValidForPrefix(BUCKET_EVENTS) {
+			if bytes.Equal(cursor.Item().Key(), offset[:]) {
+				continue
+			}
+
 			if len(result) >= int(limit) {
 				break
 			}
@@ -225,6 +229,8 @@ func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, erro
 			}); err != nil {
 				return err
 			}
+
+			result = append(result, event)
 
 			cursor.Next()
 		}
