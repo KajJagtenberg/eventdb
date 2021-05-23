@@ -279,6 +279,51 @@ func (s *BadgerEventStore) StreamCountEstimate() (int64, error) {
 	return s.estimateStreamCount, nil
 }
 
+func (s *BadgerEventStore) ListStreams(skip uint32, limit uint32) ([]Stream, error) {
+	result := make([]Stream, 0)
+
+	if limit == 0 {
+		limit = 25
+	}
+
+	err := s.db.View(func(txn *badger.Txn) error {
+		prefix := BUCKET_STREAMS
+
+		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
+		cursor.Seek(prefix)
+
+		for cursor.ValidForPrefix(prefix) {
+			if skip > 0 {
+				skip--
+				continue
+			}
+
+			if len(result) >= int(limit) {
+				return nil
+			}
+
+			var stream Stream
+
+			if err := cursor.Item().Value(func(val []byte) error {
+				return stream.Unmarshal(val)
+			}); err != nil {
+				return err
+			}
+
+			result = append(result, stream)
+
+			cursor.Next()
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
