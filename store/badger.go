@@ -19,6 +19,11 @@ var (
 	BUCKET_METADATA = []byte{0, 2}
 )
 
+func (s *BadgerEventStore) Size() (int64, error) {
+	lsm, vlog := s.db.Size()
+	return lsm + vlog, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
