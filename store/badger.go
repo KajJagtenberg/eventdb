@@ -2,6 +2,7 @@ package store
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"hash/crc32"
@@ -19,6 +20,10 @@ type BadgerEventStore struct {
 	estimateStreamCount int64
 	estimateEventCount  int64
 }
+
+const (
+	ESTIMATE_SLEEP_TIME = time.Second
+)
 
 var (
 	MAGIC_NUMBER = []byte{32, 179}
@@ -85,7 +90,7 @@ func (s *BadgerEventStore) Add(stream uuid.UUID, version uint32, events []EventD
 				return errors.New("event data cannot be empty")
 			}
 
-			id, err := ulid.New(ulid.Now(), entropy)
+			id, err := ulid.New(ulid.Now(), rand.Reader)
 			if err != nil {
 				return err
 			}
@@ -469,4 +474,9 @@ func getMetadataKey(key []byte) []byte {
 	result := BUCKET_METADATA
 	result = append(result, key...)
 	return result
+}
+
+type Checksum struct {
+	ID  ulid.ULID `json:"ulid"`
+	Sum []byte    `json:"sum"`
 }
