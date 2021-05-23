@@ -24,6 +24,14 @@ func CreateWebServer(options Options) (*fiber.App, error) {
 	app.Use(cors.New())
 
 	app.Post("/api/:cmd", func(c *fiber.Ctx) error {
+		if len(options.Password) == 0 {
+			return c.Next()
+		}
+
+		if c.Get("Authorization") != options.Password {
+			return fiber.ErrUnauthorized
+		}
+
 		return c.Next()
 	}, func(c *fiber.Ctx) error {
 		result, err := options.Dispatcher.Handle(commando.Command{
