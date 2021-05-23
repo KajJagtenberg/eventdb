@@ -3,6 +3,7 @@ package store
 import (
 	"bytes"
 	"errors"
+	"io"
 
 	"github.com/dgraph-io/badger/v3"
 )
@@ -22,6 +23,11 @@ var (
 func (s *BadgerEventStore) Size() (int64, error) {
 	lsm, vlog := s.db.Size()
 	return lsm + vlog, nil
+}
+
+func (s *BadgerEventStore) Backup(dst io.Writer) error {
+	_, err := s.db.Backup(dst, 0)
+	return err
 }
 
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
