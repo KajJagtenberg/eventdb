@@ -206,6 +206,7 @@ func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, erro
 	if err := s.db.View(func(txn *badger.Txn) error {
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
 		cursor.Seek(getEventKey(offset))
+		defer cursor.Close()
 
 		for cursor.ValidForPrefix(BUCKET_EVENTS) {
 			if len(result) >= int(limit) {
@@ -237,6 +238,7 @@ func (s *BadgerEventStore) EventCount() (int64, error) {
 	if err := s.db.View(func(txn *badger.Txn) error {
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
 		cursor.Seek(BUCKET_EVENTS)
+		defer cursor.Close()
 
 		for cursor.ValidForPrefix(BUCKET_EVENTS) {
 			total++
@@ -258,6 +260,7 @@ func (s *BadgerEventStore) StreamCount() (int64, error) {
 	if err := s.db.View(func(txn *badger.Txn) error {
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
 		cursor.Seek(BUCKET_STREAMS)
+		defer cursor.Close()
 
 		for cursor.ValidForPrefix(BUCKET_STREAMS) {
 			total++

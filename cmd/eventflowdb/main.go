@@ -9,6 +9,7 @@ import (
 	"path"
 	"syscall"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/resp"
@@ -17,7 +18,6 @@ import (
 	"github.com/kajjagtenberg/go-commando"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
-	"go.etcd.io/bbolt"
 )
 
 var (
@@ -54,11 +54,11 @@ func main() {
 
 	log.Println("initializing store")
 
-	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
+	db, err := badger.Open(badger.DefaultOptions(path.Join(data)))
 	check(err, "failed to open database")
 	defer db.Close()
 
-	eventstore, err := store.NewBoltStore(db, log)
+	eventstore, err := store.NewBadgerEventStore(db)
 	check(err, "failed to create store")
 	defer eventstore.Close()
 
