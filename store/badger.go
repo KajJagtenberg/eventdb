@@ -191,6 +191,41 @@ func (s *BadgerEventStore) Get(stream uuid.UUID, version uint32, limit uint32) (
 	return result, nil
 }
 
+func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, error) {
+	if limit == 0 {
+		limit = 100
+	}
+
+	result := make([]Event, 0)
+
+	if err := s.db.View(func(txn *badger.Txn) error {
+		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
+		cursor.Seek(getEventKey(offset))
+
+		for cursor.ValidForPrefix(BUCKET_EVENTS) {
+			if len(result) >= int(limit) {
+				break
+			}
+
+			var event Event
+
+			if err := cursor.Item().Value(func(val []byte) error {
+				return event.Unmarshal(val)
+			}); err != nil {
+				return err
+			}
+
+			cursor.Next()
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
