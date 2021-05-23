@@ -2,7 +2,9 @@ package store
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
+	"hash/crc32"
 	"io"
 	"log"
 	"time"
@@ -324,6 +326,73 @@ func (s *BadgerEventStore) ListStreams(skip uint32, limit uint32) ([]Stream, err
 	return result, nil
 }
 
+func (s *BadgerEventStore) Checksum() (ulid.ULID, []byte, error) {
+	h := crc32.NewIEEE()
+	checksum := Checksum{
+		ID:  ulid.ULID{},
+		Sum: make([]byte, 4),
+	}
+
+	err := s.db.Update(func(txn *badger.Txn) error {
+
+		item, err := txn.Get(getMetadataKey([]byte("checksum")))
+		if err == nil {
+			if err := item.Value(func(val []byte) error {
+				return json.Unmarshal(val, &checksum)
+			}); err != nil {
+				return err
+			}
+		} else if err != badger.ErrKeyNotFound {
+			return err
+		}
+
+		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
+		cursor.Seek(getEventKey(checksum.ID))
+
+		for cursor.ValidForPrefix(BUCKET_EVENTS) {
+			if bytes.Equal(item.Key(), checksum.ID[:]) {
+				return nil
+			}
+
+			h.Reset()
+
+			if err := checksum.ID.UnmarshalBinary(item.Key()); err != nil {
+				return err
+			}
+
+			if err := item.Value(func(val []byte) error {
+				_, err := h.Write(val)
+				return err
+			}); err != nil {
+				return err
+			}
+
+			if _, err := h.Write(checksum.Sum); err != nil {
+				return err
+			}
+
+			checksum.Sum = h.Sum(nil)
+
+			cursor.Next()
+		}
+
+		if value, err := json.Marshal(checksum); err != nil {
+			return err
+		} else {
+			if err := txn.Set(getMetadataKey([]byte("checksum")), value); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+	if err != nil {
+		return checksum.ID, checksum.Sum, err
+	}
+
+	return checksum.ID, checksum.Sum, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
@@ -385,5 +454,11 @@ func getStreamKey(stream uuid.UUID) []byte {
 func getEventKey(id ulid.ULID) []byte {
 	result := BUCKET_EVENTS
 	result = append(result, id[:]...)
+	return result
+}
+
+func getMetadataKey(key []byte) []byte {
+	result := BUCKET_METADATA
+	result = append(result, key...)
 	return result
 }
