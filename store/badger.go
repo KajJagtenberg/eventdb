@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/google/uuid"
+	"github.com/oklog/ulid"
 )
 
 type BadgerEventStore struct {
@@ -28,6 +31,109 @@ func (s *BadgerEventStore) Size() (int64, error) {
 func (s *BadgerEventStore) Backup(dst io.Writer) error {
 	_, err := s.db.Backup(dst, 0)
 	return err
+}
+
+func (s *BadgerEventStore) Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error) {
+	if bytes.Equal(stream[:], make([]byte, 16)) {
+		return nil, errors.New("stream cannot be all zeroes")
+	}
+
+	if len(events) == 0 {
+		return nil, errors.New("list of events is empty")
+	}
+
+	result := make([]Event, 0)
+
+	if err := s.db.Update(func(txn *badger.Txn) error {
+		var s Stream
+
+		item, err := txn.Get(getStreamKey(stream))
+		if err == nil {
+			if err := item.Value(func(val []byte) error {
+				return s.Unmarshal(val)
+			}); err != nil {
+				return err
+			}
+		} else if err == badger.ErrKeyNotFound {
+			s.ID = stream
+			s.AddedAt = time.Now()
+		} else {
+			return err
+		}
+
+		if int(version) < len(s.Events) {
+			return errors.New("concurrent stream modification")
+		}
+
+		if int(version) > len(s.Events) {
+			return errors.New("given version leaves gap in stream")
+		}
+
+		now := time.Now()
+
+		for i, event := range events {
+			if event.Type == "" {
+				return errors.New("event type cannot be empty")
+			}
+
+			if len(event.Data) == 0 {
+				return errors.New("event data cannot be empty")
+			}
+
+			id, err := ulid.New(ulid.Now(), entropy)
+			if err != nil {
+				return err
+			}
+
+			record := Event{
+				ID:            id,
+				Stream:        stream,
+				Version:       version + uint32(i),
+				Type:          event.Type,
+				Data:          event.Data,
+				Metadata:      event.Metadata,
+				CausationID:   event.CausationID,
+				CorrelationID: event.CorrelationID,
+				AddedAt:       now,
+			}
+
+			if bytes.Equal(record.CausationID[:], make([]byte, 16)) {
+				record.CausationID = record.ID
+			}
+
+			if bytes.Equal(record.CorrelationID[:], make([]byte, 16)) {
+				record.CorrelationID = record.CausationID
+			}
+
+			result = append(result, record)
+
+			s.Events = append(s.Events, record.ID)
+		}
+
+		for _, record := range result {
+			if value, err := record.Marshal(); err != nil {
+				return err
+			} else {
+				if err := txn.Set(getEventKey(record.ID), value); err != nil {
+					return err
+				}
+			}
+		}
+
+		if value, err := s.Marshal(); err != nil {
+			return err
+		} else {
+			if err := txn.Set(getStreamKey(stream), value); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
@@ -59,4 +165,16 @@ func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	}
 
 	return &BadgerEventStore{db}, nil
+}
+
+func getStreamKey(stream uuid.UUID) []byte {
+	result := BUCKET_STREAMS
+	result = append(result, stream[:]...)
+	return result
+}
+
+func getEventKey(id ulid.ULID) []byte {
+	result := BUCKET_EVENTS
+	result = append(result, id[:]...)
+	return result
 }
