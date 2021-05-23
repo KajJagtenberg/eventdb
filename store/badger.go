@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"log"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -12,7 +13,9 @@ import (
 )
 
 type BadgerEventStore struct {
-	db *badger.DB
+	db                  *badger.DB
+	estimateStreamCount int64
+	estimateEventCount  int64
 }
 
 var (
@@ -268,6 +271,14 @@ func (s *BadgerEventStore) StreamCount() (int64, error) {
 	return total, nil
 }
 
+func (s *BadgerEventStore) EventCountEstimate() (int64, error) {
+	return s.estimateEventCount, nil
+}
+
+func (s *BadgerEventStore) StreamCountEstimate() (int64, error) {
+	return s.estimateStreamCount, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
@@ -296,7 +307,28 @@ func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 		return nil, err
 	}
 
-	return &BadgerEventStore{db}, nil
+	store := &BadgerEventStore{db, 0, 0}
+
+	go func() {
+		for {
+			streamCount, err := store.StreamCount()
+			if err != nil {
+				log.Fatalf("Failed to get stream count: %v", err)
+			}
+
+			eventCount, err := store.EventCount()
+			if err != nil {
+				log.Fatalf("Failed to get stream count: %v", err)
+			}
+
+			store.estimateStreamCount = streamCount
+			store.estimateEventCount = eventCount
+
+			time.Sleep(ESTIMATE_SLEEP_TIME)
+		}
+	}()
+
+	return store, nil
 }
 
 func getStreamKey(stream uuid.UUID) []byte {
