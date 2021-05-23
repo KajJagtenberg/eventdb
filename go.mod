@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/andybalholm/brotli v1.0.2 // indirect
-	github.com/dgraph-io/badger/v3 v3.2011.1 // indirect
+	github.com/dgraph-io/badger/v3 v3.2011.1
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gofiber/fiber/v2 v2.9.0
 	github.com/google/uuid v1.2.0
