@@ -82,13 +82,13 @@ func (s *BadgerEventStore) Add(stream uuid.UUID, version uint32, events []EventD
 		now := time.Now()
 
 		for i, event := range events {
-			if event.Type == "" {
+			if len(event.Type) == 0 {
 				return errors.New("event type cannot be empty")
 			}
 
-			if len(event.Data) == 0 {
-				return errors.New("event data cannot be empty")
-			}
+			// if len(event.Data) == 0 {
+			// 	return errors.New("event data cannot be empty")
+			// }
 
 			id, err := ulid.New(ulid.Now(), rand.Reader)
 			if err != nil {
