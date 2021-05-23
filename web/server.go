@@ -11,7 +11,12 @@ import (
 // 	frontend embed.FS
 // )
 
-func CreateWebServer(dispatcher *commando.CommandDispatcher) (*fiber.App, error) {
+type Options struct {
+	Dispatcher *commando.CommandDispatcher
+	Password   string
+}
+
+func CreateWebServer(options Options) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
@@ -21,7 +26,7 @@ func CreateWebServer(dispatcher *commando.CommandDispatcher) (*fiber.App, error)
 	app.Post("/api/:cmd", func(c *fiber.Ctx) error {
 		return c.Next()
 	}, func(c *fiber.Ctx) error {
-		result, err := dispatcher.Handle(commando.Command{
+		result, err := options.Dispatcher.Handle(commando.Command{
 			Name: c.Params("cmd"),
 			Args: c.Body(),
 		})

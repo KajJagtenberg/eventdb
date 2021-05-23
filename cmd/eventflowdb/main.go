@@ -106,7 +106,10 @@ func main() {
 		}
 	}()
 
-	app, err := web.CreateWebServer(dispatcher)
+	app, err := web.CreateWebServer(web.Options{
+		Dispatcher: dispatcher,
+		Password:   password,
+	})
 	check(err, "failed to create web server")
 
 	go func() {
