@@ -136,6 +136,61 @@ func (s *BadgerEventStore) Add(stream uuid.UUID, version uint32, events []EventD
 	return result, nil
 }
 
+func (s *BadgerEventStore) Get(stream uuid.UUID, version uint32, limit uint32) ([]Event, error) {
+	result := make([]Event, 0)
+
+	if err := s.db.View(func(txn *badger.Txn) error {
+		var s Stream
+
+		item, err := txn.Get(getStreamKey(stream))
+		if err == nil {
+			if err := item.Value(func(val []byte) error {
+				return s.Unmarshal(val)
+			}); err != nil {
+				return err
+			}
+		} else if err == badger.ErrKeyNotFound {
+			return nil
+		} else {
+			return err
+		}
+
+		for _, id := range s.Events {
+			if version > 0 {
+				version--
+				continue
+			}
+			if len(result) >= int(limit) && limit != 0 {
+				return nil
+			}
+			item, err := txn.Get(getEventKey(id))
+			if err == nil {
+
+			} else if err == badger.ErrKeyNotFound {
+				return errors.New("event cannot be found. this should never happen")
+			} else {
+				return err
+			}
+
+			var event Event
+
+			if err := item.Value(func(val []byte) error {
+				return event.Unmarshal(val)
+			}); err != nil {
+				return err
+			}
+
+			result = append(result, event)
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
