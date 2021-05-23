@@ -247,6 +247,27 @@ func (s *BadgerEventStore) EventCount() (int64, error) {
 	return total, nil
 }
 
+func (s *BadgerEventStore) StreamCount() (int64, error) {
+	var total int64
+
+	if err := s.db.View(func(txn *badger.Txn) error {
+		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
+		cursor.Seek(BUCKET_STREAMS)
+
+		for cursor.ValidForPrefix(BUCKET_STREAMS) {
+			total++
+
+			cursor.Next()
+		}
+
+		return nil
+	}); err != nil {
+		return 0, err
+	}
+
+	return total, nil
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
