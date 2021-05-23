@@ -393,6 +393,10 @@ func (s *BadgerEventStore) Checksum() (ulid.ULID, []byte, error) {
 	return checksum.ID, checksum.Sum, nil
 }
 
+func (s *BadgerEventStore) Close() error {
+	return s.db.Close()
+}
+
 func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
