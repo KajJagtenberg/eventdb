@@ -68,7 +68,7 @@ func main() {
 	dispatcher.Register(commands.CMD_EVENT_COUNT, commands.CMD_EVENT_COUNT_SHORT, commands.EventCountHandler(eventstore))
 	dispatcher.Register(commands.CMD_EVENT_COUNT_EST, commands.CMD_EVENT_COUNT_EST_SHORT, commands.EventCountEstimateHandler(eventstore))
 	dispatcher.Register(commands.CMD_GET, commands.CMD_GET_SHORT, commands.GetHandler(eventstore))
-	dispatcher.Register(commands.CMD_GET_ALL, commands.CMD_GET_ALL_SHORT, commands.GetHandler(eventstore))
+	dispatcher.Register(commands.CMD_GET_ALL, commands.CMD_GET_ALL_SHORT, commands.GetAllHandler(eventstore))
 	dispatcher.Register(commands.CMD_PING, commands.CMD_PING_SHORT, commands.PingHandler())
 	dispatcher.Register(commands.CMD_SIZE, commands.CMD_SIZE_SHORT, commands.SizeHandler(eventstore))
 	dispatcher.Register(commands.CMD_STREAM_COUNT, commands.CMD_STREAM_COUNT_SHORT, commands.StreamCountHandler(eventstore))
