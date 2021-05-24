@@ -410,7 +410,14 @@ func (s *BadgerEventStore) Close() error {
 	return s.db.Close()
 }
 
-func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
+type BadgerStoreOptions struct {
+	DB             *badger.DB
+	EstimateCounts bool
+}
+
+func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) {
+	db := options.DB
+
 	if err := db.Update(func(txn *badger.Txn) error {
 		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
 
@@ -440,24 +447,26 @@ func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 
 	store := &BadgerEventStore{db, 0, 0}
 
-	go func() {
-		for {
-			streamCount, err := store.StreamCount()
-			if err != nil {
-				log.Fatalf("failed to get stream count: %v", err)
+	if options.EstimateCounts {
+		go func() {
+			for {
+				streamCount, err := store.StreamCount()
+				if err != nil {
+					log.Fatalf("failed to get stream count: %v", err)
+				}
+
+				eventCount, err := store.EventCount()
+				if err != nil {
+					log.Fatalf("failed to get stream count: %v", err)
+				}
+
+				store.estimateStreamCount = streamCount
+				store.estimateEventCount = eventCount
+
+				time.Sleep(ESTIMATE_SLEEP_TIME)
 			}
-
-			eventCount, err := store.EventCount()
-			if err != nil {
-				log.Fatalf("failed to get stream count: %v", err)
-			}
-
-			store.estimateStreamCount = streamCount
-			store.estimateEventCount = eventCount
-
-			time.Sleep(ESTIMATE_SLEEP_TIME)
-		}
-	}()
+		}()
+	}
 
 	go func() {
 		ticker := time.NewTicker(5 * time.Minute)

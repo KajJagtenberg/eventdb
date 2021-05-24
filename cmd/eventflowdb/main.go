@@ -58,7 +58,10 @@ func main() {
 	check(err, "failed to open database")
 	defer db.Close()
 
-	eventstore, err := store.NewBadgerEventStore(db)
+	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
+		DB:             db,
+		EstimateCounts: true,
+	})
 	check(err, "failed to create store")
 	defer eventstore.Close()
 
