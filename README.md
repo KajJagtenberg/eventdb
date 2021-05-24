@@ -43,13 +43,16 @@ docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 -p
 
 ## Configuration
 
-The following environment variables can be used:
+The following environment variables can be used to alter the configuration:
 
 - `PORT`: The port on which the RESP server listens: Defaults: **6543**
 - `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **16543**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
 - `PASSWORD`: Clients need to use this password to authenticate to the server. A random password will be generated if not specified and NO_PASSWORD is not set to true.
-- `NO_PASSWORD`: true/false. Disables authentication. Default: **false**. We do not recommend this.
+- `NO_PASSWORD`: true/false. Disables authentication. Defaults: **false**. Disabling the password is not recommended.
+- `TLS_ENABLED`: true/false. Enable TLS for RESP and HTTP API. Defaults: **false**
+- `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
+- `TLS_KEY_FILE`: Location of the key. Defaults: **certs/key.pem**
 
 ## Usage
 
@@ -76,6 +79,14 @@ The following commands are currently supported:
 | SIZE           | S         | -                                                               | Returns the size in the form of an array with 2 elements. The first element contains an integer with the size of the database in bytes. The second element contains a string with a human friendly representation of the size. |                                                                                                        |
 | UPTIME         | UP        | -                                                               | Returns the uptime of the server in human readable format                                                                                                                                                                      |                                                                                                        |
 | VERSION        | V         | -                                                               | Returns the version of the database                                                                                                                                                                                            |
+
+Access to the API is also available via HTTP. All commands are done via POST request with the following url:
+
+```
+POST http://<hostname>:16543/api/:cmd
+```
+
+Both the full name and the shorthand name of commands can be used to send the command. The body the JSON arguments if neccessary.
 
 ### Event Format
 

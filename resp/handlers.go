@@ -73,7 +73,7 @@ func CommandHandler(dispatcher *commando.CommandDispatcher, password string) fun
 		switch r := result.(type) {
 		case commands.UptimeResponse:
 			conn.WriteArray(2)
-			conn.WriteInt64(r.Uptime.Milliseconds())
+			conn.WriteInt64(r.Uptime)
 			conn.WriteString(r.Human)
 
 		case commands.VersionResponse:
@@ -137,6 +137,18 @@ func CommandHandler(dispatcher *commando.CommandDispatcher, password string) fun
 		case commands.StreamCountResponse:
 			conn.WriteInt64(r.Count)
 
+		case commands.ListStreamsResponse:
+			conn.WriteArray(len(r.Streams))
+
+			for _, stream := range r.Streams {
+				value, err := json.Marshal(stream)
+				if err != nil {
+					conn.WriteError(err.Error())
+					return
+				}
+
+				conn.WriteString(string(value))
+			}
 		default:
 			log.Println("No known result")
 		}

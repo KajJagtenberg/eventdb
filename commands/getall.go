@@ -14,7 +14,7 @@ const (
 )
 
 type GetAllRequest struct {
-	Offset ulid.ULID `json:"stream"`
+	Offset ulid.ULID `json:"offset"`
 	Limit  uint32    `json:"limit"`
 }
 
@@ -24,7 +24,7 @@ type GetAllResponse struct {
 
 func GetAllHandler(store store.EventStore) commando.CommandHandler {
 	return func(cmd commando.Command) (interface{}, error) {
-		if cmd.Args == nil {
+		if cmd.Args == nil || len(cmd.Args) == 0 {
 			return nil, commando.ErrInsufficientArguments
 		}
 

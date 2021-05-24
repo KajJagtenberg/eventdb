@@ -2,12 +2,14 @@ package main
 
 import (
 	"crypto/rand"
+	"crypto/tls"
 	"encoding/base32"
 	"os"
 	"os/signal"
 	"path"
 	"syscall"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/resp"
@@ -16,7 +18,6 @@ import (
 	"github.com/kajjagtenberg/go-commando"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/redcon"
-	"go.etcd.io/bbolt"
 )
 
 var (
@@ -25,6 +26,9 @@ var (
 	httpPort   = env.GetEnv("HTTP_PORT", "16543")
 	password   = env.GetEnv("PASSWORD", "")
 	noPassword = env.GetEnv("NO_PASSWORD", "false") == "true"
+	tlsEnabled = env.GetEnv("TLS_ENABLED", "false") == "true"
+	certFile   = env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
+	keyFile    = env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
 
 	log = logrus.New()
 )
@@ -50,11 +54,14 @@ func main() {
 
 	log.Println("initializing store")
 
-	db, err := bbolt.Open(path.Join(data, "state.dat"), 0666, bbolt.DefaultOptions)
+	db, err := badger.Open(badger.DefaultOptions(path.Join(data)).WithLogger(log))
 	check(err, "failed to open database")
 	defer db.Close()
 
-	eventstore, err := store.NewBoltStore(db, log)
+	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
+		DB:             db,
+		EstimateCounts: true,
+	})
 	check(err, "failed to create store")
 	defer eventstore.Close()
 
@@ -64,31 +71,64 @@ func main() {
 	dispatcher.Register(commands.CMD_EVENT_COUNT, commands.CMD_EVENT_COUNT_SHORT, commands.EventCountHandler(eventstore))
 	dispatcher.Register(commands.CMD_EVENT_COUNT_EST, commands.CMD_EVENT_COUNT_EST_SHORT, commands.EventCountEstimateHandler(eventstore))
 	dispatcher.Register(commands.CMD_GET, commands.CMD_GET_SHORT, commands.GetHandler(eventstore))
-	dispatcher.Register(commands.CMD_GET_ALL, commands.CMD_GET_ALL_SHORT, commands.GetHandler(eventstore))
+	dispatcher.Register(commands.CMD_GET_ALL, commands.CMD_GET_ALL_SHORT, commands.GetAllHandler(eventstore))
 	dispatcher.Register(commands.CMD_PING, commands.CMD_PING_SHORT, commands.PingHandler())
 	dispatcher.Register(commands.CMD_SIZE, commands.CMD_SIZE_SHORT, commands.SizeHandler(eventstore))
 	dispatcher.Register(commands.CMD_STREAM_COUNT, commands.CMD_STREAM_COUNT_SHORT, commands.StreamCountHandler(eventstore))
 	dispatcher.Register(commands.CMD_STREAM_COUNT_EST, commands.CMD_STREAM_COUNT_EST_SHORT, commands.StreamCountEstimateHandler(eventstore))
 	dispatcher.Register(commands.CMD_UPTIME, commands.CMD_UPTIME_SHORT, commands.UptimeHandler())
 	dispatcher.Register(commands.CMD_VERSION, commands.CMD_VERSION_SHORT, commands.VersionHandler())
+	dispatcher.Register(commands.CMD_LIST_STREAMS, commands.CMD_LIST_STREAMS_SHORT, commands.ListStreamsHandler(eventstore))
 
 	log.Println("initializing RESP server")
 
+	var tlsConfig *tls.Config
+
+	if tlsEnabled {
+		crt, err := tls.LoadX509KeyPair(certFile, keyFile)
+		check(err, "failed to load certificate")
+
+		tlsConfig = &tls.Config{
+			Certificates: []tls.Certificate{crt},
+		}
+	}
+
 	go func() {
-		log.Printf("RESP API listening on %s", port)
+		if tlsEnabled {
+			log.Printf("RESP API listening on %s over TLS", port)
 
-		server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler())
+			server := redcon.NewServerTLS(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler(), tlsConfig)
 
-		check(server.ListenAndServe(), "failed to run RESP API")
+			check(server.ListenAndServe(), "failed to run RESP API")
+		} else {
+			log.Printf("RESP API listening on %s", port)
+
+			server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler())
+
+			check(server.ListenAndServe(), "failed to run RESP API")
+		}
 	}()
 
-	app, err := web.CreateWebServer(dispatcher)
+	app, err := web.CreateWebServer(web.Options{
+		Dispatcher: dispatcher,
+		Password:   password,
+	})
 	check(err, "failed to create web server")
 
 	go func() {
-		log.Printf("HTTP API listening on %s", httpPort)
+		if tlsEnabled {
+			l, err := tls.Listen("tcp", ":"+httpPort, tlsConfig)
+			check(err, "failed to create listener")
 
-		check(app.Listen(":"+httpPort), "failed to run HTTP API")
+			log.Printf("HTTP API listening on %s over TLS", httpPort)
+
+			check(app.Listener(l), "failed to run HTTP APi over TLS")
+		} else {
+			log.Printf("HTTP API listening on %s", httpPort)
+
+			check(app.Listen(":"+httpPort), "failed to run HTTP API")
+		}
+
 	}()
 
 	c := make(chan os.Signal, 1)

@@ -6,40 +6,39 @@ import (
 	"github.com/kajjagtenberg/go-commando"
 )
 
-// var (
-// 	//go:embed frontend/public/*
-// 	frontend embed.FS
-// )
+type Options struct {
+	Dispatcher *commando.CommandDispatcher
+	Password   string
+}
 
-func CreateWebServer(dispatcher *commando.CommandDispatcher) (*fiber.App, error) {
+func CreateWebServer(options Options) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
 
 	app.Use(cors.New())
 
-	app.Post("/api", func(c *fiber.Ctx) error {
-		return c.Next()
-	}, func(c *fiber.Ctx) error {
-		var cmd commando.Command
-		if err := c.BodyParser(&cmd); err != nil {
-			return err
+	app.Post("/api/:cmd", func(c *fiber.Ctx) error {
+		if len(options.Password) == 0 {
+			return c.Next()
 		}
 
-		result, err := dispatcher.Handle(cmd)
+		if c.Get("Authorization") != options.Password {
+			return fiber.ErrUnauthorized
+		}
+
+		return c.Next()
+	}, func(c *fiber.Ctx) error {
+		result, err := options.Dispatcher.Handle(commando.Command{
+			Name: c.Params("cmd"),
+			Args: c.Body(),
+		})
 		if err != nil {
 			return err
 		}
 
 		return c.JSON(result)
 	})
-
-	// f, err := fs.Sub(frontend, "frontend/public")
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// app.Use(adaptor.HTTPHandler(http.FileServer(http.FS(f))))
 
 	return app, nil
 }

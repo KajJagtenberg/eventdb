@@ -12,8 +12,8 @@ const (
 )
 
 type UptimeResponse struct {
-	Uptime time.Duration `json:"uptime"`
-	Human  string        `json:"uptime_human"`
+	Uptime int64  `json:"uptime"`
+	Human  string `json:"uptime_human"`
 }
 
 func UptimeHandler() commando.CommandHandler {
@@ -22,7 +22,7 @@ func UptimeHandler() commando.CommandHandler {
 	return func(cmd commando.Command) (interface{}, error) {
 		uptime := time.Since(start)
 		return UptimeResponse{
-			Uptime: uptime,
+			Uptime: uptime.Milliseconds(),
 			Human:  uptime.String(),
 		}, nil
 	}
