@@ -33,8 +33,14 @@ var (
 	BUCKET_METADATA = []byte{0, 2}
 )
 
+var (
+	ErrConcurrentStreamModification = errors.New("concurrent stream modification")
+	ErrGappedStream                 = errors.New("given version leaves gap in stream")
+)
+
 func (s *BadgerEventStore) Size() (int64, error) {
 	lsm, vlog := s.db.Size()
+
 	return lsm + vlog, nil
 }
 
@@ -72,11 +78,11 @@ func (s *BadgerEventStore) Add(stream uuid.UUID, version uint32, events []EventD
 		}
 
 		if int(version) < len(s.Events) {
-			return errors.New("concurrent stream modification")
+			return ErrConcurrentStreamModification
 		}
 
 		if int(version) > len(s.Events) {
-			return errors.New("given version leaves gap in stream")
+			return ErrGappedStream
 		}
 
 		now := time.Now()
@@ -454,10 +460,14 @@ func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 	}()
 
 	go func() {
-		for {
-			db.RunValueLogGC(0.7)
-
-			time.Sleep(time.Second)
+		ticker := time.NewTicker(5 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+		again:
+			err := db.RunValueLogGC(0.7)
+			if err == nil {
+				goto again
+			}
 		}
 	}()
 
