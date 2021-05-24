@@ -203,18 +203,19 @@ func (s *BadgerEventStore) Get(stream uuid.UUID, version uint32, limit uint32) (
 
 func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, error) {
 	if limit == 0 {
-		limit = 100
+		limit = 10
 	}
 
 	result := make([]Event, 0)
 
 	if err := s.db.View(func(txn *badger.Txn) error {
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
-		cursor.Seek(getEventKey(offset))
+
 		defer cursor.Close()
 
-		for cursor.ValidForPrefix(BUCKET_EVENTS) {
-			if bytes.Equal(cursor.Item().Key(), offset[:]) {
+		for cursor.Seek(getEventKey(offset)); cursor.ValidForPrefix(BUCKET_EVENTS); cursor.Next() {
+			if bytes.Equal(cursor.Item().Key(), getEventKey(offset)) {
+				// cursor.Next()
 				continue
 			}
 
@@ -232,7 +233,7 @@ func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, erro
 
 			result = append(result, event)
 
-			cursor.Next()
+			// cursor.Next()
 		}
 
 		return nil

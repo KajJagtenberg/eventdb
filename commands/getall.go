@@ -14,7 +14,7 @@ const (
 )
 
 type GetAllRequest struct {
-	Offset ulid.ULID `json:"stream"`
+	Offset ulid.ULID `json:"offset"`
 	Limit  uint32    `json:"limit"`
 }
 
