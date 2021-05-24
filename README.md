@@ -38,7 +38,7 @@ Once you've installed Docker, you can execute the following commands to start an
 ```shell
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 -p 16543:16543 kajjagtenberg/eventflowdb:0.6.1
+docker run -d -v eventflowdb:/data -e PASSWORD=<secure password> -p 6543:6543 -p 16543:16543 kajjagtenberg/eventflowdb:0.7.0
 ```
 
 ## Configuration
