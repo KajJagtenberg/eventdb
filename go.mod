@@ -8,7 +8,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.10.0
 	github.com/google/uuid v1.2.0
 	github.com/kajjagtenberg/go-commando v0.0.0-20210515151102-23079595e6df
-	github.com/kr/pretty v0.2.0 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/onsi/gomega v1.12.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
