@@ -210,12 +210,10 @@ func (s *BadgerEventStore) GetAll(offset ulid.ULID, limit uint32) ([]Event, erro
 
 	if err := s.db.View(func(txn *badger.Txn) error {
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
-
 		defer cursor.Close()
 
 		for cursor.Seek(getEventKey(offset)); cursor.ValidForPrefix(BUCKET_EVENTS); cursor.Next() {
 			if bytes.Equal(cursor.Item().Key(), getEventKey(offset)) {
-				// cursor.Next()
 				continue
 			}
 
@@ -249,13 +247,11 @@ func (s *BadgerEventStore) EventCount() (int64, error) {
 
 	if err := s.db.View(func(txn *badger.Txn) error {
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
-		cursor.Seek(BUCKET_EVENTS)
+
 		defer cursor.Close()
 
-		for cursor.ValidForPrefix(BUCKET_EVENTS) {
+		for cursor.Seek(BUCKET_EVENTS); cursor.ValidForPrefix(BUCKET_EVENTS); cursor.Next() {
 			total++
-
-			cursor.Next()
 		}
 
 		return nil
@@ -271,13 +267,11 @@ func (s *BadgerEventStore) StreamCount() (int64, error) {
 
 	if err := s.db.View(func(txn *badger.Txn) error {
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
-		cursor.Seek(BUCKET_STREAMS)
+
 		defer cursor.Close()
 
-		for cursor.ValidForPrefix(BUCKET_STREAMS) {
+		for cursor.Seek(BUCKET_STREAMS); cursor.ValidForPrefix(BUCKET_STREAMS); cursor.Next() {
 			total++
-
-			cursor.Next()
 		}
 
 		return nil
@@ -307,10 +301,10 @@ func (s *BadgerEventStore) ListStreams(skip uint32, limit uint32) ([]Stream, err
 		prefix := BUCKET_STREAMS
 
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
-		cursor.Seek(prefix)
+
 		defer cursor.Close()
 
-		for cursor.ValidForPrefix(prefix) {
+		for cursor.Seek(prefix); cursor.ValidForPrefix(prefix); cursor.Next() {
 			if skip > 0 {
 				skip--
 				continue
@@ -329,8 +323,6 @@ func (s *BadgerEventStore) ListStreams(skip uint32, limit uint32) ([]Stream, err
 			}
 
 			result = append(result, stream)
-
-			cursor.Next()
 		}
 
 		return nil
@@ -363,9 +355,9 @@ func (s *BadgerEventStore) Checksum() (ulid.ULID, []byte, error) {
 		}
 
 		cursor := txn.NewIterator(badger.DefaultIteratorOptions)
-		cursor.Seek(getEventKey(checksum.ID))
+		defer cursor.Close()
 
-		for cursor.ValidForPrefix(BUCKET_EVENTS) {
+		for cursor.Seek(getEventKey(checksum.ID)); cursor.ValidForPrefix(BUCKET_EVENTS); cursor.Next() {
 			if bytes.Equal(item.Key(), checksum.ID[:]) {
 				return nil
 			}
@@ -388,8 +380,6 @@ func (s *BadgerEventStore) Checksum() (ulid.ULID, []byte, error) {
 			}
 
 			checksum.Sum = h.Sum(nil)
-
-			cursor.Next()
 		}
 
 		if value, err := json.Marshal(checksum); err != nil {
