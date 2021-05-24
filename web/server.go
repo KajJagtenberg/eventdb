@@ -6,11 +6,6 @@ import (
 	"github.com/kajjagtenberg/go-commando"
 )
 
-// var (
-// 	//go:embed frontend/public/*
-// 	frontend embed.FS
-// )
-
 type Options struct {
 	Dispatcher *commando.CommandDispatcher
 	Password   string
@@ -44,13 +39,6 @@ func CreateWebServer(options Options) (*fiber.App, error) {
 
 		return c.JSON(result)
 	})
-
-	// f, err := fs.Sub(frontend, "frontend/public")
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// app.Use(adaptor.HTTPHandler(http.FileServer(http.FS(f))))
 
 	return app, nil
 }
