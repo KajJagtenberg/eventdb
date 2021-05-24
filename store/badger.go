@@ -342,7 +342,6 @@ func (s *BadgerEventStore) Checksum() (ulid.ULID, []byte, error) {
 	}
 
 	err := s.db.Update(func(txn *badger.Txn) error {
-
 		item, err := txn.Get(getMetadataKey([]byte("checksum")))
 		if err == nil {
 			if err := item.Value(func(val []byte) error {
@@ -358,13 +357,15 @@ func (s *BadgerEventStore) Checksum() (ulid.ULID, []byte, error) {
 		defer cursor.Close()
 
 		for cursor.Seek(getEventKey(checksum.ID)); cursor.ValidForPrefix(BUCKET_EVENTS); cursor.Next() {
-			if bytes.Equal(item.Key(), checksum.ID[:]) {
+			item := cursor.Item()
+
+			if bytes.Equal(item.Key(), getEventKey(checksum.ID)) {
 				return nil
 			}
 
 			h.Reset()
 
-			if err := checksum.ID.UnmarshalBinary(item.Key()); err != nil {
+			if err := checksum.ID.UnmarshalBinary(item.Key()[2:]); err != nil {
 				return err
 			}
 
