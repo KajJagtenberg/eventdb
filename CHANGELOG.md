@@ -5,6 +5,8 @@
 ### **New**
 
 - Replaced BoltDB with BadgerDB for increase performence and additional features. This change makes older version of data completely unusable. Instead of buckets, keys are prefixed by a constant.
+- Added TLS support
+- Added authentication to the web API and the RESP API
 
 ### **Changed**
 
