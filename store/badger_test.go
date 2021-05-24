@@ -195,3 +195,60 @@ func TestGetAll(t *testing.T) {
 	assert.Equal(events[0].ID, events[0].CorrelationID)
 	assert.Equal(events[0].Version, uint32(0))
 }
+
+func TestEventCount(t *testing.T) {
+	db, err := badger.Open(badger.DefaultOptions("").WithInMemory(true).WithLogger(nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
+		DB:             db,
+		EstimateCounts: false,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stream := uuid.New()
+
+	data := make([]byte, 100)
+	metadata := make([]byte, 50)
+	rand.Read(data)
+	rand.Read(metadata)
+
+	events, err := eventstore.Add(stream, 0, []store.EventData{
+		{
+			Type:     "AccountOpened",
+			Data:     data,
+			Metadata: metadata,
+		},
+		{
+			Type:     "AccountOpened",
+			Data:     data,
+			Metadata: metadata,
+		},
+		{
+			Type:     "AccountOpened",
+			Data:     data,
+			Metadata: metadata,
+		},
+		{
+			Type:     "AccountOpened",
+			Data:     data,
+			Metadata: metadata,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := eventstore.EventCount()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert := assert.New(t)
+	assert.Equal(len(events), int(count))
+}
