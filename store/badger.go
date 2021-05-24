@@ -438,18 +438,26 @@ func NewBadgerEventStore(db *badger.DB) (*BadgerEventStore, error) {
 		for {
 			streamCount, err := store.StreamCount()
 			if err != nil {
-				log.Fatalf("Failed to get stream count: %v", err)
+				log.Fatalf("failed to get stream count: %v", err)
 			}
 
 			eventCount, err := store.EventCount()
 			if err != nil {
-				log.Fatalf("Failed to get stream count: %v", err)
+				log.Fatalf("failed to get stream count: %v", err)
 			}
 
 			store.estimateStreamCount = streamCount
 			store.estimateEventCount = eventCount
 
 			time.Sleep(ESTIMATE_SLEEP_TIME)
+		}
+	}()
+
+	go func() {
+		for {
+			db.RunValueLogGC(0.7)
+
+			time.Sleep(time.Second)
 		}
 	}()
 
