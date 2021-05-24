@@ -7,7 +7,7 @@ require (
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gofiber/fiber/v2 v2.10.0
 	github.com/google/uuid v1.2.0
-	github.com/kajjagtenberg/go-commando v0.0.0-20210515151102-23079595e6df
+	github.com/kajjagtenberg/go-commando v0.0.0-20210524143824-a878ae1a9023
 	github.com/kr/pretty v0.2.1 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/onsi/gomega v1.12.0 // indirect

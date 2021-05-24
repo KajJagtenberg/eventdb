@@ -69,8 +69,8 @@ github.com/hashicorp/golang-lru v0.5.4/go.mod h1:iADmTwqILo4mZ8BN3D2Q6+9jd8WM5uG
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
-github.com/kajjagtenberg/go-commando v0.0.0-20210515151102-23079595e6df h1:pNJBFxmGKVhD0dMzvWvIMz3wXlCnn3bFHO8siGne4pA=
-github.com/kajjagtenberg/go-commando v0.0.0-20210515151102-23079595e6df/go.mod h1:by5XNRXiXO8bZFB22BpKWY2F0Q/47D9+SPOs3VD1Qm4=
+github.com/kajjagtenberg/go-commando v0.0.0-20210524143824-a878ae1a9023 h1:+ttlZ586y6gJi/oiuacwwF9PV0s+Y/DSs3PmEYS30gc=
+github.com/kajjagtenberg/go-commando v0.0.0-20210524143824-a878ae1a9023/go.mod h1:by5XNRXiXO8bZFB22BpKWY2F0Q/47D9+SPOs3VD1Qm4=
 github.com/klauspost/compress v1.11.8/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.11.13/go.mod h1:aoV0uJVorq1K+umq18yTdKaF57EivdYsUV+/s2qKfXs=
 github.com/klauspost/compress v1.12.2 h1:2KCfW3I9M7nSc5wOqXAlW2v2U6v+w6cbjvbfp+OykW8=
