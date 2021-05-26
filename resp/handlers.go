@@ -55,6 +55,15 @@ func CommandHandler(dispatcher *commando.CommandDispatcher, password string) fun
 			return
 		}
 
+		name := strings.ToLower(string(cmd.Args[0]))
+
+		switch name {
+		case "quit":
+			conn.WriteString("OK")
+			conn.Close()
+			return
+		}
+
 		var args []byte
 
 		if len(cmd.Args) > 1 {
@@ -62,7 +71,7 @@ func CommandHandler(dispatcher *commando.CommandDispatcher, password string) fun
 		}
 
 		result, err := dispatcher.Handle(commando.Command{
-			Name: strings.ToLower(string(cmd.Args[0])),
+			Name: name,
 			Args: args,
 		})
 		if err != nil {
