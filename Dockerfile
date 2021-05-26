@@ -27,4 +27,6 @@ COPY --from=build /src/bin/eventflowdb /usr/bin/eventflowdb
 
 STOPSIGNAL SIGINT
 
+ENV ENVIRONMENT=production
+
 CMD ["eventflowdb"]

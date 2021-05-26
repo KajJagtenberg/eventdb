@@ -10,8 +10,4 @@ POST http://127.0.0.1:16543/api/lstreams
 
 ###
 
-POST http://127.0.0.1:16543/api/ga
-
-{
-    "offset":"01F6EWSCBMWAEVP2V8WE08ND8Q"
-}
+POST http://127.0.0.1:16543/api/size

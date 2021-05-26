@@ -29,6 +29,7 @@ var (
 	tlsEnabled = env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile   = env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
 	keyFile    = env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
+	production = env.GetEnv("ENVIRONMENT", "development") == "production"
 
 	log = logrus.New()
 )
@@ -42,14 +43,16 @@ func check(err error, msg string) {
 func main() {
 	log.SetFormatter(&logrus.JSONFormatter{})
 
-	if !noPassword && len(password) == 0 {
-		passwordData := make([]byte, 20)
-		_, err := rand.Read(passwordData)
-		check(err, "failed to generate password")
+	if production {
+		if !noPassword && len(password) == 0 {
+			passwordData := make([]byte, 20)
+			_, err := rand.Read(passwordData)
+			check(err, "failed to generate password")
 
-		password = base32.StdEncoding.EncodeToString(passwordData)
+			password = base32.StdEncoding.EncodeToString(passwordData)
 
-		log.Printf("generated a password since none was given: %s", password)
+			log.Printf("generated a password since none was given: %s", password)
+		}
 	}
 
 	log.Println("initializing store")
