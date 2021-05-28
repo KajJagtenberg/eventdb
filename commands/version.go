@@ -21,3 +21,7 @@ func VersionHandler() commando.CommandHandler {
 		}, nil
 	}
 }
+
+func SetupVersionHandler(dispatcher *commando.CommandDispatcher) {
+	dispatcher.Register(CMD_VERSION, CMD_VERSION_SHORT, VersionHandler())
+}

@@ -37,3 +37,8 @@ func StreamCountEstimateHandler(store store.EventStore) commando.CommandHandler 
 		return StreamCountResponse{count}, nil
 	}
 }
+
+func SetupStreamCountHandler(dispatcher *commando.CommandDispatcher, eventstore store.EventStore) {
+	dispatcher.Register(CMD_STREAM_COUNT, CMD_STREAM_COUNT_SHORT, StreamCountHandler(eventstore))
+	dispatcher.Register(CMD_STREAM_COUNT_EST, CMD_STREAM_COUNT_EST_SHORT, StreamCountEstimateHandler(eventstore))
+}

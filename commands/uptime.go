@@ -27,3 +27,7 @@ func UptimeHandler() commando.CommandHandler {
 		}, nil
 	}
 }
+
+func SetupUptimeHandler(dispatcher *commando.CommandDispatcher) {
+	dispatcher.Register(CMD_UPTIME, CMD_UPTIME_SHORT, UptimeHandler())
+}

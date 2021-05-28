@@ -18,3 +18,7 @@ func PingHandler() commando.CommandHandler {
 		}, nil
 	}
 }
+
+func SetupPingHandler(dispatcher *commando.CommandDispatcher) {
+	dispatcher.Register(CMD_PING, CMD_PING_SHORT, PingHandler())
+}

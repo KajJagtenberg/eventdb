@@ -37,3 +37,8 @@ func EventCountEstimateHandler(store store.EventStore) commando.CommandHandler {
 		return EventCountResponse{count}, nil
 	}
 }
+
+func SetupEventCounterHandler(dispatcher *commando.CommandDispatcher, store store.EventStore) {
+	dispatcher.Register(CMD_EVENT_COUNT, CMD_EVENT_COUNT_SHORT, EventCountHandler(store))
+	dispatcher.Register(CMD_EVENT_COUNT_EST, CMD_EVENT_COUNT_EST_SHORT, EventCountEstimateHandler(store))
+}

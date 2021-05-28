@@ -30,3 +30,7 @@ func ChecksumHandler(s store.EventStore) commando.CommandHandler {
 		}, nil
 	}
 }
+
+func SetupChecksumHandler(dispatcher *commando.CommandDispatcher, store store.EventStore) {
+	dispatcher.Register(CMD_CHECKSUM, CMD_CHECKSUM_SHORT, ChecksumHandler(store))
+}

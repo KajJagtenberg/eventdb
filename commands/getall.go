@@ -41,3 +41,7 @@ func GetAllHandler(store store.EventStore) commando.CommandHandler {
 		return GetAllResponse{events}, nil
 	}
 }
+
+func SetupGetAllHandler(dispatcher *commando.CommandDispatcher, store store.EventStore) {
+	dispatcher.Register(CMD_GET_ALL, CMD_GET_ALL_SHORT, GetAllHandler(store))
+}

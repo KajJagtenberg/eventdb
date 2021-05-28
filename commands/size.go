@@ -26,3 +26,7 @@ func SizeHandler(store store.EventStore) commando.CommandHandler {
 		return SizeResponse{size, si.ByteCountSI(size)}, nil
 	}
 }
+
+func SetupSizeHandler(dispatcher *commando.CommandDispatcher, eventstore store.EventStore) {
+	dispatcher.Register(CMD_SIZE, CMD_SIZE_SHORT, SizeHandler(eventstore))
+}

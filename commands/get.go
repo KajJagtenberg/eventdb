@@ -42,3 +42,7 @@ func GetHandler(store store.EventStore) commando.CommandHandler {
 		return GetResponse{events}, nil
 	}
 }
+
+func SetupGetHandler(dispatcher *commando.CommandDispatcher, store store.EventStore) {
+	dispatcher.Register(CMD_GET, CMD_GET_SHORT, GetHandler(store))
+}

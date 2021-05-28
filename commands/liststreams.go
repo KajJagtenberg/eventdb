@@ -39,3 +39,7 @@ func ListStreamsHandler(store store.EventStore) commando.CommandHandler {
 		return ListStreamsResponse{streams}, nil
 	}
 }
+
+func SetupListStreamsHandler(dispatcher *commando.CommandDispatcher, eventstore store.EventStore) {
+	dispatcher.Register(CMD_LIST_STREAMS, CMD_LIST_STREAMS_SHORT, ListStreamsHandler(eventstore))
+}

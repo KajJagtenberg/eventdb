@@ -42,3 +42,7 @@ func AddHandler(store store.EventStore) commando.CommandHandler {
 		return AddResponse{events}, nil
 	}
 }
+
+func SetupAddHandler(dispatcher *commando.CommandDispatcher, store store.EventStore) {
+	dispatcher.Register(CMD_ADD, CMD_ADD_SHORT, AddHandler(store))
+}
