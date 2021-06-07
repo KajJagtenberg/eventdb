@@ -13,7 +13,7 @@ ctl:
 pb:
 	#  protoc -I=${PWD} --go_out=${PWD} ${PWD}/proto/store.proto
 	protoc -I=${PWD} --go_out=. ${PWD}/proto/store.proto
-	protoc -I=${PWD} --go_out=grpc --go_opt=paths=source_relative --go-grpc_out=./grpc --go-grpc_opt=paths=source_relative proto/service.proto
+	protoc -I=${PWD} --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/service.proto
 
 tidy:
 	go mod tidy

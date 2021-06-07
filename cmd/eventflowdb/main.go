@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"encoding/base32"
+	"net"
 	"os"
 	"os/signal"
 	"path"
@@ -12,12 +13,12 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/env"
-	"github.com/kajjagtenberg/eventflowdb/resp"
+	service "github.com/kajjagtenberg/eventflowdb/grpc"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/kajjagtenberg/eventflowdb/web"
 	"github.com/kajjagtenberg/go-commando"
 	"github.com/sirupsen/logrus"
-	"github.com/tidwall/redcon"
+	"google.golang.org/grpc"
 )
 
 var (
@@ -95,19 +96,25 @@ func main() {
 		}
 	}
 
+	grpcServer := grpc.NewServer()
+
+	service.RegisterEventServiceServer(grpcServer, service.NewEventService(dispatcher))
+
 	go func() {
 		if tlsEnabled {
-			log.Printf("RESP API listening on %s over TLS", port)
+			l, err := tls.Listen("tcp", ":"+port, tlsConfig)
+			check(err, "failed to create listener")
 
-			server := redcon.NewServerTLS(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler(), tlsConfig)
+			log.Printf("gRPC API listening on %s over TLS", port)
 
-			check(server.ListenAndServe(), "failed to run RESP API")
+			check(grpcServer.Serve(l), "failed to run gRPC API over TLS")
 		} else {
-			log.Printf("RESP API listening on %s", port)
+			l, err := net.Listen("tcp", ":"+port)
+			check(err, "failed to create listener")
 
-			server := redcon.NewServer(":"+port, resp.CommandHandler(dispatcher, password), resp.AcceptHandler(), resp.ErrorHandler())
+			log.Printf("gRPC API listening on %s", port)
 
-			check(server.ListenAndServe(), "failed to run RESP API")
+			check(grpcServer.Serve(l), "failed to run gRPC API")
 		}
 	}()
 
@@ -130,7 +137,6 @@ func main() {
 
 			check(app.Listen(":"+httpPort), "failed to run HTTP API")
 		}
-
 	}()
 
 	c := make(chan os.Signal, 1)
