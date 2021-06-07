@@ -113,7 +113,7 @@ func (s *BadgerEventStore) Add(stream uuid.UUID, version uint32, events []EventD
 				AddedAt:       now,
 			}
 
-			if bytes.Equal(record.CausationID[:], make([]byte, 16)) || record.CausationID {
+			if bytes.Equal(record.CausationID[:], make([]byte, 16)) {
 				record.CausationID = record.ID
 			}
 

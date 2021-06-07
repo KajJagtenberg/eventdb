@@ -66,10 +66,66 @@ func (s *EventServiceImpl) Add(ctx context.Context, in *AddRequest) (*EventRespo
 	}, nil
 }
 func (s *EventServiceImpl) Get(ctx context.Context, in *GetRequest) (*EventResponse, error) {
-	return nil, nil
+	stream, err := uuid.Parse(in.Stream)
+	if err != nil {
+		return nil, err
+	}
+
+	events, err := s.store.Get(stream, in.Version, in.Limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var parsedEvent []*EventResponse_Event
+
+	for _, event := range events {
+		parsedEvent = append(parsedEvent, &EventResponse_Event{
+			Id:            event.ID.String(),
+			Stream:        event.Stream.String(),
+			Version:       event.Version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   event.CausationID.String(),
+			CorrelationId: event.CorrelationID.String(),
+			AddedAt:       event.AddedAt.Unix(),
+		})
+	}
+
+	return &EventResponse{
+		Events: parsedEvent,
+	}, nil
 }
 func (s *EventServiceImpl) GetAll(ctx context.Context, in *GetAllRequest) (*EventResponse, error) {
-	return nil, nil
+	offset, err := ulid.Parse(in.Offset)
+	if err != nil {
+		return nil, err
+	}
+
+	events, err := s.store.GetAll(offset, in.Limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var parsedEvent []*EventResponse_Event
+
+	for _, event := range events {
+		parsedEvent = append(parsedEvent, &EventResponse_Event{
+			Id:            event.ID.String(),
+			Stream:        event.Stream.String(),
+			Version:       event.Version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   event.CausationID.String(),
+			CorrelationId: event.CorrelationID.String(),
+			AddedAt:       event.AddedAt.Unix(),
+		})
+	}
+
+	return &EventResponse{
+		Events: parsedEvent,
+	}, nil
 }
 
 func NewEventService(store store.EventStore) *EventServiceImpl {

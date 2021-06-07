@@ -98,7 +98,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	service.RegisterEventServiceServer(grpcServer, service.NewEventService(dispatcher))
+	service.RegisterEventServiceServer(grpcServer, service.NewEventService(eventstore))
 
 	go func() {
 		if tlsEnabled {
