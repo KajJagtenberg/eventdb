@@ -2,6 +2,7 @@ package transport
 
 import (
 	"context"
+	"encoding/base32"
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/store"
@@ -125,6 +126,18 @@ func (s *EventStoreService) GetAll(ctx context.Context, in *GetAllRequest) (*Eve
 
 	return &EventResponse{
 		Events: parsedEvent,
+	}, nil
+}
+
+func (s *EventStoreService) Checksum(context.Context, *ChecksumRequest) (*ChecksumResponse, error) {
+	id, sum, err := s.store.Checksum()
+	if err != nil {
+		return nil, err
+	}
+
+	return &ChecksumResponse{
+		Id:       id.String(),
+		Checksum: base32.StdEncoding.EncodeToString(sum),
 	}, nil
 }
 
