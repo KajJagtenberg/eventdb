@@ -78,6 +78,13 @@ message SizeResponse {
     int64 size = 1;
 }
 
+message UptimeRequest {}
+
+message UptimeResponse {
+    int64 uptime = 1;
+    string uptime_human = 2;
+}
+
 service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
@@ -87,4 +94,5 @@ service EventStoreService {
     rpc EventCountEstimate(EventCountRequest) returns (EventCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
     rpc Size(SizeRequest) returns (SizeResponse) {}
+    rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
 }

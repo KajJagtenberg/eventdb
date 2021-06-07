@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"encoding/base32"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/store"
@@ -198,6 +199,19 @@ func (s *EventStoreService) Size(context.Context, *SizeRequest) (*SizeResponse, 
 
 	return &SizeResponse{
 		Size: size,
+	}, nil
+}
+
+var (
+	start = time.Now()
+)
+
+func (s *EventStoreService) Uptime(context.Context, *UptimeRequest) (*UptimeResponse, error) {
+	uptime := time.Since(start)
+
+	return &UptimeResponse{
+		Uptime:      uptime.Milliseconds(),
+		UptimeHuman: uptime.String(),
 	}, nil
 }
 
