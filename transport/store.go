@@ -152,6 +152,17 @@ func (s *EventStoreService) EventCount(context.Context, *EventCountRequest) (*Ev
 	}, nil
 }
 
+func (s *EventStoreService) EventCountEstimate(context.Context, *EventCountRequest) (*EventCountResponse, error) {
+	count, err := s.store.EventCountEstimate()
+	if err != nil {
+		return nil, err
+	}
+
+	return &EventCountResponse{
+		Count: count,
+	}, nil
+}
+
 func NewEventStoreService(store store.EventStore) *EventStoreService {
 	return &EventStoreService{store: store}
 }

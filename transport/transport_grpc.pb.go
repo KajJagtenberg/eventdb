@@ -23,6 +23,7 @@ type EventStoreServiceClient interface {
 	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error)
 	Checksum(ctx context.Context, in *ChecksumRequest, opts ...grpc.CallOption) (*ChecksumResponse, error)
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
+	EventCountEstimate(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 }
 
 type eventStoreServiceClient struct {
@@ -78,6 +79,15 @@ func (c *eventStoreServiceClient) EventCount(ctx context.Context, in *EventCount
 	return out, nil
 }
 
+func (c *eventStoreServiceClient) EventCountEstimate(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error) {
+	out := new(EventCountResponse)
+	err := c.cc.Invoke(ctx, "/transport.EventStoreService/EventCountEstimate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventStoreServiceServer is the server API for EventStoreService service.
 // All implementations must embed UnimplementedEventStoreServiceServer
 // for forward compatibility
@@ -87,6 +97,7 @@ type EventStoreServiceServer interface {
 	GetAll(context.Context, *GetAllRequest) (*EventResponse, error)
 	Checksum(context.Context, *ChecksumRequest) (*ChecksumResponse, error)
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
+	EventCountEstimate(context.Context, *EventCountRequest) (*EventCountResponse, error)
 	mustEmbedUnimplementedEventStoreServiceServer()
 }
 
@@ -108,6 +119,9 @@ func (UnimplementedEventStoreServiceServer) Checksum(context.Context, *ChecksumR
 }
 func (UnimplementedEventStoreServiceServer) EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventCount not implemented")
+}
+func (UnimplementedEventStoreServiceServer) EventCountEstimate(context.Context, *EventCountRequest) (*EventCountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method EventCountEstimate not implemented")
 }
 func (UnimplementedEventStoreServiceServer) mustEmbedUnimplementedEventStoreServiceServer() {}
 
@@ -212,6 +226,24 @@ func _EventStoreService_EventCount_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EventStoreService_EventCountEstimate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EventCountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventStoreServiceServer).EventCountEstimate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/transport.EventStoreService/EventCountEstimate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventStoreServiceServer).EventCountEstimate(ctx, req.(*EventCountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EventStoreService_ServiceDesc is the grpc.ServiceDesc for EventStoreService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -238,6 +270,10 @@ var EventStoreService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "EventCount",
 			Handler:    _EventStoreService_EventCount_Handler,
+		},
+		{
+			MethodName: "EventCountEstimate",
+			Handler:    _EventStoreService_EventCountEstimate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

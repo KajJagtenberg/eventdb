@@ -64,4 +64,5 @@ service EventStoreService {
     rpc GetAll(GetAllRequest) returns(EventResponse) {}
     rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
+    rpc EventCountEstimate(EventCountRequest) returns (EventCountResponse) {}
 }
