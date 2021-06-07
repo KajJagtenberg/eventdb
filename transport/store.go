@@ -165,6 +165,28 @@ func (s *EventStoreService) EventCountEstimate(context.Context, *EventCountReque
 	}, nil
 }
 
+func (s *EventStoreService) StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error) {
+	count, err := s.store.StreamCount()
+	if err != nil {
+		return nil, err
+	}
+
+	return &StreamCountResponse{
+		Count: count,
+	}, nil
+}
+
+func (s *EventStoreService) StreamCountEstimate(context.Context, *StreamCountRequest) (*StreamCountResponse, error) {
+	count, err := s.store.StreamCountEstimate()
+	if err != nil {
+		return nil, err
+	}
+
+	return &StreamCountResponse{
+		Count: count,
+	}, nil
+}
+
 func (s *EventStoreService) ListStreams(ctx context.Context, in *ListStreamsRequest) (*ListStreamsReponse, error) {
 	streams, err := s.store.ListStreams(in.Skip, in.Limit)
 	if err != nil {

@@ -58,6 +58,12 @@ message EventCountResponse {
     int64 count = 1;
 }
 
+message StreamCountRequest {}
+
+message StreamCountResponse {
+    int64 count = 1;
+}
+
 message ListStreamsRequest {
     uint32 skip = 1;
     uint32 limit = 2;
@@ -98,6 +104,8 @@ service EventStoreService {
     rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc EventCountEstimate(EventCountRequest) returns (EventCountResponse) {}
+    rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
+    rpc StreamCountEstimate(StreamCountRequest) returns (StreamCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
     rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
