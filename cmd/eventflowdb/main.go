@@ -96,7 +96,7 @@ func main() {
 		}
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(transport.AuthenticationInterceptor))
 
 	transport.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
 
