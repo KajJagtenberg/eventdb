@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/constants"
+	"github.com/kajjagtenberg/eventflowdb/si"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
 )
@@ -221,7 +222,8 @@ func (s *EventStoreService) Size(context.Context, *SizeRequest) (*SizeResponse, 
 	}
 
 	return &SizeResponse{
-		Size: size,
+		Size:      size,
+		SizeHuman: si.ByteCountSI(size),
 	}, nil
 }
 
