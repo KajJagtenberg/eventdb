@@ -1,24 +1,25 @@
-package store
+package transport
 
 import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
 )
 
-type EventServiceImpl struct {
-	UnimplementedEventServiceServer
-	store EventStore
+type EventStoreService struct {
+	UnimplementedEventStoreServiceServer
+	store store.EventStore
 }
 
-func (s *EventServiceImpl) Add(ctx context.Context, in *AddRequest) (*EventResponse, error) {
+func (s *EventStoreService) Add(ctx context.Context, in *AddRequest) (*EventResponse, error) {
 	stream, err := uuid.Parse(in.Stream)
 	if err != nil {
 		return nil, err
 	}
 
-	var eventdata []EventData
+	var eventdata []store.EventData
 
 	for _, e := range in.Events {
 		causation_id, err := ulid.Parse(e.CausationId)
@@ -30,7 +31,7 @@ func (s *EventServiceImpl) Add(ctx context.Context, in *AddRequest) (*EventRespo
 			return nil, err
 		}
 
-		eventdata = append(eventdata, EventData{
+		eventdata = append(eventdata, store.EventData{
 			Type:          e.Type,
 			Data:          e.Data,
 			Metadata:      e.Metadata,
@@ -64,7 +65,7 @@ func (s *EventServiceImpl) Add(ctx context.Context, in *AddRequest) (*EventRespo
 		Events: parsedEvent,
 	}, nil
 }
-func (s *EventServiceImpl) Get(ctx context.Context, in *GetRequest) (*EventResponse, error) {
+func (s *EventStoreService) Get(ctx context.Context, in *GetRequest) (*EventResponse, error) {
 	stream, err := uuid.Parse(in.Stream)
 	if err != nil {
 		return nil, err
@@ -95,7 +96,7 @@ func (s *EventServiceImpl) Get(ctx context.Context, in *GetRequest) (*EventRespo
 		Events: parsedEvent,
 	}, nil
 }
-func (s *EventServiceImpl) GetAll(ctx context.Context, in *GetAllRequest) (*EventResponse, error) {
+func (s *EventStoreService) GetAll(ctx context.Context, in *GetAllRequest) (*EventResponse, error) {
 	offset, err := ulid.Parse(in.Offset)
 	if err != nil {
 		return nil, err
@@ -127,6 +128,6 @@ func (s *EventServiceImpl) GetAll(ctx context.Context, in *GetAllRequest) (*Even
 	}, nil
 }
 
-func NewEventService(store EventStore) *EventServiceImpl {
-	return &EventServiceImpl{store: store}
+func NewEventStoreService(store store.EventStore) *EventStoreService {
+	return &EventStoreService{store: store}
 }

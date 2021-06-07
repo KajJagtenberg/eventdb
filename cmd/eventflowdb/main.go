@@ -14,6 +14,7 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/kajjagtenberg/eventflowdb/web"
 	"github.com/kajjagtenberg/go-commando"
 	"github.com/sirupsen/logrus"
@@ -97,7 +98,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	store.RegisterEventServiceServer(grpcServer, store.NewEventService(eventstore))
+	transport.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
 
 	go func() {
 		if tlsEnabled {
