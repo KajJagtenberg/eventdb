@@ -141,6 +141,17 @@ func (s *EventStoreService) Checksum(context.Context, *ChecksumRequest) (*Checks
 	}, nil
 }
 
+func (s *EventStoreService) EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error) {
+	count, err := s.store.EventCount()
+	if err != nil {
+		return nil, err
+	}
+
+	return &EventCountResponse{
+		Count: count,
+	}, nil
+}
+
 func NewEventStoreService(store store.EventStore) *EventStoreService {
 	return &EventStoreService{store: store}
 }

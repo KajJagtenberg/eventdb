@@ -52,9 +52,16 @@ message ChecksumResponse {
     string checksum = 2;
 }
 
+message EventCountRequest {}
+
+message EventCountResponse {
+    int64 count = 1;
+}
+
 service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
     rpc GetAll(GetAllRequest) returns(EventResponse) {}
     rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
+    rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
 }
