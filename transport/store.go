@@ -190,6 +190,17 @@ func (s *EventStoreService) ListStreams(ctx context.Context, in *ListStreamsRequ
 	}, nil
 }
 
+func (s *EventStoreService) Size(context.Context, *SizeRequest) (*SizeResponse, error) {
+	size, err := s.store.Size()
+	if err != nil {
+		return nil, err
+	}
+
+	return &SizeResponse{
+		Size: size,
+	}, nil
+}
+
 func NewEventStoreService(store store.EventStore) *EventStoreService {
 	return &EventStoreService{store: store}
 }

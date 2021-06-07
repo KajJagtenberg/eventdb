@@ -25,6 +25,7 @@ type EventStoreServiceClient interface {
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	EventCountEstimate(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	ListStreams(ctx context.Context, in *ListStreamsRequest, opts ...grpc.CallOption) (*ListStreamsReponse, error)
+	Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error)
 }
 
 type eventStoreServiceClient struct {
@@ -98,6 +99,15 @@ func (c *eventStoreServiceClient) ListStreams(ctx context.Context, in *ListStrea
 	return out, nil
 }
 
+func (c *eventStoreServiceClient) Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error) {
+	out := new(SizeResponse)
+	err := c.cc.Invoke(ctx, "/transport.EventStoreService/Size", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventStoreServiceServer is the server API for EventStoreService service.
 // All implementations must embed UnimplementedEventStoreServiceServer
 // for forward compatibility
@@ -109,6 +119,7 @@ type EventStoreServiceServer interface {
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
 	EventCountEstimate(context.Context, *EventCountRequest) (*EventCountResponse, error)
 	ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error)
+	Size(context.Context, *SizeRequest) (*SizeResponse, error)
 	mustEmbedUnimplementedEventStoreServiceServer()
 }
 
@@ -136,6 +147,9 @@ func (UnimplementedEventStoreServiceServer) EventCountEstimate(context.Context, 
 }
 func (UnimplementedEventStoreServiceServer) ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStreams not implemented")
+}
+func (UnimplementedEventStoreServiceServer) Size(context.Context, *SizeRequest) (*SizeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Size not implemented")
 }
 func (UnimplementedEventStoreServiceServer) mustEmbedUnimplementedEventStoreServiceServer() {}
 
@@ -276,6 +290,24 @@ func _EventStoreService_ListStreams_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EventStoreService_Size_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SizeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventStoreServiceServer).Size(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/transport.EventStoreService/Size",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventStoreServiceServer).Size(ctx, req.(*SizeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EventStoreService_ServiceDesc is the grpc.ServiceDesc for EventStoreService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -310,6 +342,10 @@ var EventStoreService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListStreams",
 			Handler:    _EventStoreService_ListStreams_Handler,
+		},
+		{
+			MethodName: "Size",
+			Handler:    _EventStoreService_Size_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

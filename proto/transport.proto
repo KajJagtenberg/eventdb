@@ -72,6 +72,12 @@ message ListStreamsReponse {
     repeated Stream streams = 1;
 }
 
+message SizeRequest {}
+
+message SizeResponse {
+    int64 size = 1;
+}
+
 service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
@@ -80,4 +86,5 @@ service EventStoreService {
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc EventCountEstimate(EventCountRequest) returns (EventCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
+    rpc Size(SizeRequest) returns (SizeResponse) {}
 }
