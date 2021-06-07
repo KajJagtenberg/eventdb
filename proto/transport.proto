@@ -58,6 +58,20 @@ message EventCountResponse {
     int64 count = 1;
 }
 
+message ListStreamsRequest {
+    uint32 skip = 1;
+    uint32 limit = 2;
+} 
+
+message ListStreamsReponse {
+    message Stream {
+        string id = 1;
+        repeated string events = 2;
+        int64 added_at = 3;
+    }
+    repeated Stream streams = 1;
+}
+
 service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
@@ -65,4 +79,5 @@ service EventStoreService {
     rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc EventCountEstimate(EventCountRequest) returns (EventCountResponse) {}
+    rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
 }

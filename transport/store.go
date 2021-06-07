@@ -163,6 +163,33 @@ func (s *EventStoreService) EventCountEstimate(context.Context, *EventCountReque
 	}, nil
 }
 
+func (s *EventStoreService) ListStreams(ctx context.Context, in *ListStreamsRequest) (*ListStreamsReponse, error) {
+	streams, err := s.store.ListStreams(in.Skip, in.Limit)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []*ListStreamsReponse_Stream
+
+	for _, stream := range streams {
+		var events []string
+
+		for _, event := range stream.Events {
+			events = append(events, event.String())
+		}
+
+		result = append(result, &ListStreamsReponse_Stream{
+			Id:      stream.ID.String(),
+			Events:  events,
+			AddedAt: stream.AddedAt.Unix(),
+		})
+	}
+
+	return &ListStreamsReponse{
+		Streams: result,
+	}, nil
+}
+
 func NewEventStoreService(store store.EventStore) *EventStoreService {
 	return &EventStoreService{store: store}
 }
