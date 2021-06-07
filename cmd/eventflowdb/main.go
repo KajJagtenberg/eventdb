@@ -13,7 +13,6 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/kajjagtenberg/eventflowdb/commands"
 	"github.com/kajjagtenberg/eventflowdb/env"
-	service "github.com/kajjagtenberg/eventflowdb/grpc"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/kajjagtenberg/eventflowdb/web"
 	"github.com/kajjagtenberg/go-commando"
@@ -98,7 +97,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-	service.RegisterEventServiceServer(grpcServer, service.NewEventService(eventstore))
+	store.RegisterEventServiceServer(grpcServer, store.NewEventService(eventstore))
 
 	go func() {
 		if tlsEnabled {

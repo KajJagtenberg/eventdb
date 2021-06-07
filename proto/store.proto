@@ -4,6 +4,8 @@ option go_package="./store";
 
 package store;
 
+// Storage
+
 message PersistedEvent {
     bytes id = 1;
     bytes stream = 2;
@@ -20,4 +22,53 @@ message PersistedStream {
     bytes id = 1;
     repeated bytes events = 2;
     int64 added_at = 3;
+}
+
+// Transport
+
+
+message EventResponse {
+    message Event {
+        string id = 1;
+        string stream = 2;
+        uint32 version = 3;
+        string type = 4;
+        bytes data = 5;
+        bytes metadata = 6;
+        string causation_id = 7;
+        string correlation_id = 8;
+        int64 added_at = 9;
+    }
+    repeated Event events = 1;
+}
+message AddRequest {
+    message EventData {
+        string type = 1;
+        bytes data = 2;
+        bytes metadata = 3;
+        string causation_id = 4;
+        string correlation_id = 5;
+    }
+
+    string stream = 1;
+    uint32 version = 2;
+    repeated EventData events = 3;
+}
+
+message GetRequest {
+    string stream = 1;
+    uint32 version = 2;
+    uint32 limit = 3;
+}
+
+message GetAllRequest {
+    string offset = 1;
+    uint32 limit = 2;
+}
+
+
+service EventService {
+    rpc Add(AddRequest) returns(EventResponse) {}
+    rpc Get(GetRequest) returns(EventResponse) {}
+    rpc GetAll(GetAllRequest) returns(EventResponse) {}
 }

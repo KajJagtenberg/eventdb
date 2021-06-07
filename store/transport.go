@@ -1,16 +1,15 @@
-package grpc
+package store
 
 import (
-	context "context"
+	"context"
 
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
 )
 
 type EventServiceImpl struct {
 	UnimplementedEventServiceServer
-	store store.EventStore
+	store EventStore
 }
 
 func (s *EventServiceImpl) Add(ctx context.Context, in *AddRequest) (*EventResponse, error) {
@@ -19,7 +18,7 @@ func (s *EventServiceImpl) Add(ctx context.Context, in *AddRequest) (*EventRespo
 		return nil, err
 	}
 
-	var eventdata []store.EventData
+	var eventdata []EventData
 
 	for _, e := range in.Events {
 		causation_id, err := ulid.Parse(e.CausationId)
@@ -31,7 +30,7 @@ func (s *EventServiceImpl) Add(ctx context.Context, in *AddRequest) (*EventRespo
 			return nil, err
 		}
 
-		eventdata = append(eventdata, store.EventData{
+		eventdata = append(eventdata, EventData{
 			Type:          e.Type,
 			Data:          e.Data,
 			Metadata:      e.Metadata,
@@ -128,6 +127,6 @@ func (s *EventServiceImpl) GetAll(ctx context.Context, in *GetAllRequest) (*Even
 	}, nil
 }
 
-func NewEventService(store store.EventStore) *EventServiceImpl {
+func NewEventService(store EventStore) *EventServiceImpl {
 	return &EventServiceImpl{store: store}
 }
