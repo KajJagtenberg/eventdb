@@ -27,6 +27,7 @@ type EventStoreServiceClient interface {
 	ListStreams(ctx context.Context, in *ListStreamsRequest, opts ...grpc.CallOption) (*ListStreamsReponse, error)
 	Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error)
 	Uptime(ctx context.Context, in *UptimeRequest, opts ...grpc.CallOption) (*UptimeResponse, error)
+	Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
 }
 
 type eventStoreServiceClient struct {
@@ -118,6 +119,15 @@ func (c *eventStoreServiceClient) Uptime(ctx context.Context, in *UptimeRequest,
 	return out, nil
 }
 
+func (c *eventStoreServiceClient) Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error) {
+	out := new(VersionResponse)
+	err := c.cc.Invoke(ctx, "/transport.EventStoreService/Version", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // EventStoreServiceServer is the server API for EventStoreService service.
 // All implementations must embed UnimplementedEventStoreServiceServer
 // for forward compatibility
@@ -131,6 +141,7 @@ type EventStoreServiceServer interface {
 	ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error)
 	Size(context.Context, *SizeRequest) (*SizeResponse, error)
 	Uptime(context.Context, *UptimeRequest) (*UptimeResponse, error)
+	Version(context.Context, *VersionRequest) (*VersionResponse, error)
 	mustEmbedUnimplementedEventStoreServiceServer()
 }
 
@@ -164,6 +175,9 @@ func (UnimplementedEventStoreServiceServer) Size(context.Context, *SizeRequest) 
 }
 func (UnimplementedEventStoreServiceServer) Uptime(context.Context, *UptimeRequest) (*UptimeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Uptime not implemented")
+}
+func (UnimplementedEventStoreServiceServer) Version(context.Context, *VersionRequest) (*VersionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
 }
 func (UnimplementedEventStoreServiceServer) mustEmbedUnimplementedEventStoreServiceServer() {}
 
@@ -340,6 +354,24 @@ func _EventStoreService_Uptime_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _EventStoreService_Version_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VersionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventStoreServiceServer).Version(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/transport.EventStoreService/Version",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventStoreServiceServer).Version(ctx, req.(*VersionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // EventStoreService_ServiceDesc is the grpc.ServiceDesc for EventStoreService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -382,6 +414,10 @@ var EventStoreService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Uptime",
 			Handler:    _EventStoreService_Uptime_Handler,
+		},
+		{
+			MethodName: "Version",
+			Handler:    _EventStoreService_Version_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/kajjagtenberg/eventflowdb/constants"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/oklog/ulid"
 )
@@ -212,6 +213,12 @@ func (s *EventStoreService) Uptime(context.Context, *UptimeRequest) (*UptimeResp
 	return &UptimeResponse{
 		Uptime:      uptime.Milliseconds(),
 		UptimeHuman: uptime.String(),
+	}, nil
+}
+
+func (s *EventStoreService) Version(context.Context, *VersionRequest) (*VersionResponse, error) {
+	return &VersionResponse{
+		Version: constants.Version,
 	}, nil
 }
 

@@ -85,6 +85,12 @@ message UptimeResponse {
     string uptime_human = 2;
 }
 
+message VersionRequest {}
+
+message VersionResponse {
+    string version = 1;
+}
+
 service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
@@ -95,4 +101,5 @@ service EventStoreService {
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
     rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
+    rpc Version(VersionRequest) returns (VersionResponse) {}
 }
