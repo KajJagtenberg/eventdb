@@ -1,9 +1,7 @@
 package main
 
 import (
-	"crypto/rand"
 	"crypto/tls"
-	"encoding/base32"
 	"net"
 	"os"
 	"os/signal"
@@ -21,82 +19,61 @@ import (
 var (
 	data       = env.GetEnv("DATA", "data")
 	port       = env.GetEnv("PORT", "6543")
-	password   = env.GetEnv("PASSWORD", "")
-	noPassword = env.GetEnv("NO_PASSWORD", "false") == "true"
 	tlsEnabled = env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile   = env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
 	keyFile    = env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
-	production = env.GetEnv("ENVIRONMENT", "development") == "production"
 
 	log = logrus.New()
 )
 
-func check(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %v", msg, err)
-	}
-}
-
 func main() {
 	log.SetFormatter(&logrus.JSONFormatter{})
-
-	if production {
-		if !noPassword && len(password) == 0 {
-			passwordData := make([]byte, 20)
-			_, err := rand.Read(passwordData)
-			check(err, "failed to generate password")
-
-			password = base32.StdEncoding.EncodeToString(passwordData)
-
-			log.Printf("generated a password since none was given: %s", password)
-		}
-	}
 
 	log.Println("initializing store")
 
 	db, err := badger.Open(badger.DefaultOptions(path.Join(data)).WithLogger(log))
-	check(err, "failed to open database")
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
 
 	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
 		DB:             db,
 		EstimateCounts: true,
 	})
-	check(err, "failed to create store")
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer eventstore.Close()
 
-	log.Println("initializing RESP server")
+	server := grpc.NewServer()
 
-	var tlsConfig *tls.Config
+	transport.RegisterEventStoreServiceServer(server, transport.NewEventStoreService(eventstore))
+
+	lis, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if tlsEnabled {
 		crt, err := tls.LoadX509KeyPair(certFile, keyFile)
-		check(err, "failed to load certificate")
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		tlsConfig = &tls.Config{
+		config := &tls.Config{
 			Certificates: []tls.Certificate{crt},
+		}
+
+		lis = tls.NewListener(lis, config)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 
-	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(transport.AuthenticationInterceptor))
-
-	transport.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
-
 	go func() {
-		if tlsEnabled {
-			l, err := tls.Listen("tcp", ":"+port, tlsConfig)
-			check(err, "failed to create listener")
-
-			log.Printf("gRPC API listening on %s over TLS", port)
-
-			check(grpcServer.Serve(l), "failed to run gRPC API over TLS")
-		} else {
-			l, err := net.Listen("tcp", ":"+port)
-			check(err, "failed to create listener")
-
-			log.Printf("gRPC API listening on %s", port)
-
-			check(grpcServer.Serve(l), "failed to run gRPC API")
+		if err := server.Serve(lis); err != nil {
+			log.Fatal(err)
 		}
 	}()
 

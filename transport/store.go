@@ -101,9 +101,14 @@ func (s *EventStoreService) Get(ctx context.Context, in *GetRequest) (*EventResp
 	}, nil
 }
 func (s *EventStoreService) GetAll(ctx context.Context, in *GetAllRequest) (*EventResponse, error) {
-	offset, err := ulid.Parse(in.Offset)
-	if err != nil {
-		return nil, err
+	var offset ulid.ULID
+
+	if len(in.Offset) > 0 {
+		var err error
+		offset, err = ulid.Parse(in.Offset)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	events, err := s.store.GetAll(offset, in.Limit)
