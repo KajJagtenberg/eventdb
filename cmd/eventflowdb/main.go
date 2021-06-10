@@ -9,25 +9,45 @@ import (
 	"syscall"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var (
-	data       = env.GetEnv("DATA", "data")
-	port       = env.GetEnv("PORT", "6543")
-	tlsEnabled = env.GetEnv("TLS_ENABLED", "false") == "true"
-	certFile   = env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
-	keyFile    = env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
-
 	log = logrus.New()
 )
 
-func main() {
+func init() {
 	log.SetFormatter(&logrus.JSONFormatter{})
+
+	godotenv.Load()
+}
+
+func loadTLS(certFile, keyFile string) (credentials.TransportCredentials, error) {
+	crt, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{crt},
+		ClientAuth:   tls.NoClientCert,
+	}
+
+	return credentials.NewTLS(config), nil
+}
+
+func main() {
+	data := env.GetEnv("DATA", "data")
+	port := env.GetEnv("PORT", "6543")
+	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
+	certFile := env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
+	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
 
 	log.Println("initializing store")
 
