@@ -51,10 +51,6 @@ func main() {
 	}
 	defer eventstore.Close()
 
-	server := grpc.NewServer()
-
-	transport.RegisterEventStoreServiceServer(server, transport.NewEventStoreService(eventstore))
-
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal(err)
@@ -76,8 +72,12 @@ func main() {
 		}
 	}
 
+	grpcServer := grpc.NewServer()
+
+	transport.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
+
 	go func() {
-		if err := server.Serve(lis); err != nil {
+		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatal(err)
 		}
 	}()
