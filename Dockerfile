@@ -11,8 +11,6 @@ RUN go mod download
 
 COPY . .
 
-RUN go test ./...
-
 RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 
 FROM alpine:3.8

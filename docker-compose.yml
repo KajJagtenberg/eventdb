@@ -2,6 +2,14 @@ version: "3"
 
 services:
   node1:
-    image: kajjagtenberg/eventflowdb:0.8.0
+    build: .
     ports:
-      - 6543:6543
+      - 3000:3000
+    environment:
+      - SERVER_CONFIG=node2@node2:6544,node3@node3:6544
+
+  node2:
+    build: .
+
+  node3:
+    build: .

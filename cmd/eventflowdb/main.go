@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"strings"
 	"syscall"
 	"time"
 
@@ -115,6 +116,8 @@ func server() {
 }
 
 func testRaft() {
+	serverConfig := env.GetEnv("SERVER_CONFIG", "")
+
 	db, err := badger.Open(badger.DefaultOptions("data/fsm"))
 	if err != nil {
 		log.Fatal(err)
@@ -146,7 +149,7 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
-	raftBindAddr := "127.0.0.1:6544"
+	raftBindAddr := hostname + ":6544"
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", raftBindAddr)
 	if err != nil {
@@ -164,18 +167,32 @@ func testRaft() {
 	}
 	defer raftSrv.Shutdown()
 
-	configuration := raft.Configuration{
-		Servers: []raft.Server{
+	if len(serverConfig) > 0 {
+		var configuration raft.Configuration
+		configuration.Servers = []raft.Server{
 			{
 				ID:      raft.ServerID(raftConf.LocalID),
 				Address: transport.LocalAddr(),
 			},
-		},
+		}
+
+		servers := strings.Split(serverConfig, ",")
+
+		for _, server := range servers {
+			parts := strings.Split(server, "@")
+
+			configuration.Servers = append(configuration.Servers, raft.Server{
+				ID:      raft.ServerID(parts[0]),
+				Address: raft.ServerAddress(parts[1]),
+			})
+		}
+
+		raftSrv.BootstrapCluster(configuration)
 	}
 
-	raftSrv.BootstrapCluster(configuration)
-
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 
 	app.Post("/raft/join", func(c *fiber.Ctx) error {
 		return fiber.ErrNotImplemented
@@ -186,7 +203,11 @@ func testRaft() {
 	})
 
 	app.Get("/raft/stats", func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
+		return c.JSON(raftSrv.Stats())
+	})
+
+	app.Get("/raft/state", func(c *fiber.Ctx) error {
+		return c.JSON(raftSrv.State().String())
 	})
 
 	app.Post("/raft/join", func(c *fiber.Ctx) error {
@@ -301,9 +322,17 @@ func testRaft() {
 		return c.SendString("key deleted")
 	})
 
-	if err := app.Listen(":3000"); err != nil {
-		log.Fatal(err)
-	}
+	go func() {
+		log.Println("API server listening")
+
+		if err := app.Listen(":3000"); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT)
+	<-c
 }
 
 func main() {
