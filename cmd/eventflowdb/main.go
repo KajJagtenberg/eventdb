@@ -2,6 +2,8 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
+	"errors"
 	"net"
 	"os"
 	"os/signal"
@@ -181,7 +183,43 @@ func testRaft() {
 	})
 
 	app.Post("/store/set", func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
+		var body struct {
+			Key   string `json:"key"`
+			Value string `json:"value"`
+		}
+
+		if err := c.BodyParser(body); err != nil {
+			return err
+		}
+
+		if len(body.Key) == 0 {
+			return errors.New("key cannot be empty")
+		}
+
+		if len(body.Value) == 0 {
+			return errors.New("value cannot be empty")
+		}
+
+		cmd, err := json.Marshal(fsm.CommandPayload{
+			Operation: "SET",
+			Key:       body.Key,
+			Value:     body.Value,
+		})
+		if err != nil {
+			return err
+		}
+
+		applyFuture := raftSrv.Apply(cmd, time.Millisecond*500)
+		if err := applyFuture.Error(); err != nil {
+			return err
+		}
+
+		_, ok := applyFuture.Response().(*fsm.ApplyResponse)
+		if !ok {
+			return errors.New("invalid return value")
+		}
+
+		return c.SendString("key set")
 	})
 
 	app.Get("/store/get", func(c *fiber.Ctx) error {
