@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"errors"
+	"io"
 	"log"
 	"time"
 
@@ -331,6 +332,20 @@ func (s *boltEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err 
 	res.SizeHuman = si.ByteCountSI(res.Size)
 
 	return res, txn.Commit()
+}
+
+func (s *boltEventStore) Backup(dst io.Writer) error {
+	txn, err := s.db.Begin(false)
+	if err != nil {
+		return err
+	}
+	defer txn.Rollback()
+
+	if _, err := txn.WriteTo(dst); err != nil {
+		return err
+	}
+
+	return txn.Commit()
 }
 
 func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
