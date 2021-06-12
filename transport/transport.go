@@ -39,44 +39,48 @@ func (s *EventStoreService) handle(op string, req proto.Message) (interface{}, e
 	return response.Data, response.Error
 }
 
-func (s *EventStoreService) Add(ctx context.Context, in *api.AddRequest) (*api.EventResponse, error) {
-	res, err := s.handle("ADD", in)
+func (s *EventStoreService) Add(ctx context.Context, req *api.AddRequest) (*api.EventResponse, error) {
+	res, err := s.handle("ADD", req)
 	return res.(*api.EventResponse), err
 }
 
-func (s *EventStoreService) Get(ctx context.Context, in *api.GetRequest) (*api.EventResponse, error) {
-	return nil, nil
+func (s *EventStoreService) Get(ctx context.Context, req *api.GetRequest) (*api.EventResponse, error) {
+	res, err := s.handle("GET", req)
+	return res.(*api.EventResponse), err
 }
-func (s *EventStoreService) GetAll(ctx context.Context, in *api.GetAllRequest) (*api.EventResponse, error) {
-	return nil, nil
-}
-
-func (s *EventStoreService) Checksum(context.Context, *api.ChecksumRequest) (*api.ChecksumResponse, error) {
-	return nil, nil
+func (s *EventStoreService) GetAll(ctx context.Context, req *api.GetAllRequest) (*api.EventResponse, error) {
+	res, err := s.handle("GET_ALL", req)
+	return res.(*api.EventResponse), err
 }
 
-func (s *EventStoreService) EventCount(context.Context, *api.EventCountRequest) (*api.EventCountResponse, error) {
-	return nil, nil
+func (s *EventStoreService) EventCount(ctx context.Context, req *api.EventCountRequest) (*api.EventCountResponse, error) {
+	res, err := s.handle("EVENT_COUNT", req)
+	return res.(*api.EventCountResponse), err
 }
 
-func (s *EventStoreService) EventCountEstimate(context.Context, *api.EventCountRequest) (*api.EventCountResponse, error) {
-	return nil, nil
+func (s *EventStoreService) EventCountEstimate(ctx context.Context, req *api.EventCountRequest) (*api.EventCountResponse, error) {
+	res, err := s.handle("EVENT_COUNT_ESTIMATE", req)
+	return res.(*api.EventCountResponse), err
 }
 
-func (s *EventStoreService) StreamCount(context.Context, *api.StreamCountRequest) (*api.StreamCountResponse, error) {
-	return nil, nil
+func (s *EventStoreService) StreamCount(ctx context.Context, req *api.StreamCountRequest) (*api.StreamCountResponse, error) {
+	res, err := s.handle("STREAM_COUNT", req)
+	return res.(*api.StreamCountResponse), err
 }
 
-func (s *EventStoreService) StreamCountEstimate(context.Context, *api.StreamCountRequest) (*api.StreamCountResponse, error) {
-	return nil, nil
+func (s *EventStoreService) StreamCountEstimate(ctx context.Context, req *api.StreamCountRequest) (*api.StreamCountResponse, error) {
+	res, err := s.handle("STREAM_COUNT_ESTIMATE", req)
+	return res.(*api.StreamCountResponse), err
 }
 
-func (s *EventStoreService) ListStreams(ctx context.Context, in *api.ListStreamsRequest) (*api.ListStreamsReponse, error) {
-	return nil, nil
+func (s *EventStoreService) ListStreams(ctx context.Context, req *api.ListStreamsRequest) (*api.ListStreamsReponse, error) {
+	res, err := s.handle("LIST_STREAMS", req)
+	return res.(*api.ListStreamsReponse), err
 }
 
-func (s *EventStoreService) Size(context.Context, *api.SizeRequest) (*api.SizeResponse, error) {
-	return nil, nil
+func (s *EventStoreService) Size(ctx context.Context, req *api.SizeRequest) (*api.SizeResponse, error) {
+	res, err := s.handle("SIZE", req)
+	return res.(*api.SizeResponse), err
 }
 
 var (

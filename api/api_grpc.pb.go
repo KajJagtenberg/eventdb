@@ -21,7 +21,7 @@ type EventStoreServiceClient interface {
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*EventResponse, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*EventResponse, error)
 	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error)
-	Checksum(ctx context.Context, in *ChecksumRequest, opts ...grpc.CallOption) (*ChecksumResponse, error)
+	// rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
@@ -61,15 +61,6 @@ func (c *eventStoreServiceClient) Get(ctx context.Context, in *GetRequest, opts 
 func (c *eventStoreServiceClient) GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error) {
 	out := new(EventResponse)
 	err := c.cc.Invoke(ctx, "/api.EventStoreService/GetAll", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *eventStoreServiceClient) Checksum(ctx context.Context, in *ChecksumRequest, opts ...grpc.CallOption) (*ChecksumResponse, error) {
-	out := new(ChecksumResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStoreService/Checksum", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +146,7 @@ type EventStoreServiceServer interface {
 	Add(context.Context, *AddRequest) (*EventResponse, error)
 	Get(context.Context, *GetRequest) (*EventResponse, error)
 	GetAll(context.Context, *GetAllRequest) (*EventResponse, error)
-	Checksum(context.Context, *ChecksumRequest) (*ChecksumResponse, error)
+	// rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
 	EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountResponse, error)
 	StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error)
@@ -179,9 +170,6 @@ func (UnimplementedEventStoreServiceServer) Get(context.Context, *GetRequest) (*
 }
 func (UnimplementedEventStoreServiceServer) GetAll(context.Context, *GetAllRequest) (*EventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
-}
-func (UnimplementedEventStoreServiceServer) Checksum(context.Context, *ChecksumRequest) (*ChecksumResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Checksum not implemented")
 }
 func (UnimplementedEventStoreServiceServer) EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventCount not implemented")
@@ -270,24 +258,6 @@ func _EventStoreService_GetAll_Handler(srv interface{}, ctx context.Context, dec
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventStoreServiceServer).GetAll(ctx, req.(*GetAllRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EventStoreService_Checksum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChecksumRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServiceServer).Checksum(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStoreService/Checksum",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServiceServer).Checksum(ctx, req.(*ChecksumRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -454,10 +424,6 @@ var EventStoreService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAll",
 			Handler:    _EventStoreService_GetAll_Handler,
-		},
-		{
-			MethodName: "Checksum",
-			Handler:    _EventStoreService_Checksum_Handler,
 		},
 		{
 			MethodName: "EventCount",

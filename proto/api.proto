@@ -47,12 +47,12 @@ message GetAllRequest {
     uint32 limit = 2;
 }
 
-message ChecksumRequest {}
+// message ChecksumRequest {}
 
-message ChecksumResponse {
-    string id = 1;
-    string checksum = 2;
-}
+// message ChecksumResponse {
+//     string id = 1;
+//     string checksum = 2;
+// }
 
 message EventCountRequest {}
 
@@ -108,7 +108,7 @@ service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
     rpc GetAll(GetAllRequest) returns(EventResponse) {}
-    rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
+    // rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
