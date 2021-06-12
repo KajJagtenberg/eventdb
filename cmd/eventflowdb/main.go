@@ -54,15 +54,6 @@ func server() {
 	}
 	defer db.Close()
 
-	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
-		DB:             db,
-		EstimateCounts: true,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer eventstore.Close()
-
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatal(err)

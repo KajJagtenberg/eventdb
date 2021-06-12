@@ -20,6 +20,11 @@ const (
 	ESTIMATE_SLEEP_TIME = time.Second
 )
 
+var (
+	ErrConcurrentStreamModification = errors.New("concurrent stream modification")
+	ErrGappedStream                 = errors.New("given version leaves gap in stream")
+)
+
 type boltEventStore struct {
 	db                  *bbolt.DB
 	estimateStreamCount int64
