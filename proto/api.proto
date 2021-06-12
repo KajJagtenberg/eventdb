@@ -5,8 +5,6 @@ package transport;
 
 option go_package="./transport";
 
-// Transport
-
 message EventResponse {
     message Event {
         string id = 1;
