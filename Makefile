@@ -11,7 +11,11 @@ ctl:
 	go run cmd/eventflowctl/main.go
 
 pb:
-	protoc -I=${PWD} --go_out=${PWD}/ ${PWD}/proto/store.proto
+	protoc -I=${PWD} --go_out=. ${PWD}/proto/store.proto
+	protoc -I=${PWD} --go_out=.  --go-grpc_out=. ${PWD}/proto/transport.proto
+
+tidy:
+	go mod tidy
 
 clean:
 	rm -rf data/*

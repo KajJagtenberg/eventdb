@@ -11,4 +11,4 @@ data
 *.env
 proto
 *.md
-certs
+*.pem
