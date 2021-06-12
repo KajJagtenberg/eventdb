@@ -27,7 +27,7 @@ func init() {
 	godotenv.Load()
 }
 
-func main() {
+func server() {
 	data := env.GetEnv("DATA", "data")
 	port := env.GetEnv("PORT", "6543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
@@ -87,4 +87,8 @@ func main() {
 	<-c
 
 	log.Println("eventflowDB is shutting down...")
+}
+
+func main() {
+	server()
 }
