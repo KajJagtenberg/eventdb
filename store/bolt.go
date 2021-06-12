@@ -87,14 +87,29 @@ func (s *boltEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err e
 			return nil, err
 		}
 
-		causationId, err := ulid.Parse(event.CausationId)
-		if err != nil {
-			return nil, err
+		var causationId ulid.ULID
+		var correlationId ulid.ULID
+
+		if len(event.CausationId) > 0 {
+			causationId, err = ulid.Parse(event.CausationId)
+			if err != nil {
+				return nil, err
+			}
 		}
 
-		correlationId, err := ulid.Parse(event.CorrelationId)
-		if err != nil {
-			return nil, err
+		if len(event.CorrelationId) > 0 {
+			correlationId, err = ulid.Parse(event.CorrelationId)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if causationId.String() == "00000000000000000000000000" {
+			causationId = id
+		}
+
+		if correlationId.String() == "00000000000000000000000000" {
+			correlationId = id
 		}
 
 		record := PersistedEvent{
