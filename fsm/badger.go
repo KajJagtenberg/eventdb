@@ -3,7 +3,7 @@ package fsm
 import (
 	"io"
 
-	"github.com/dgraph-io/badger"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/hashicorp/raft"
 )
 

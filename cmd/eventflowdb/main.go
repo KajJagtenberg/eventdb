@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/gofiber/fiber/v2"
@@ -23,6 +24,24 @@ import (
 
 var (
 	log = logrus.New()
+)
+
+const (
+	// The maxPool controls how many connections we will pool.
+	maxPool = 3
+
+	// The timeout is used to apply I/O deadlines. For InstallSnapshot, we multiply
+	// the timeout by (SnapshotSize / TimeoutScale).
+	// https://github.com/hashicorp/raft/blob/v1.1.2/net_transport.go#L177-L181
+	tcpTimeout = 10 * time.Second
+
+	// The `retain` parameter controls how many
+	// snapshots are retained. Must be at least 1.
+	raftSnapShotRetain = 2
+
+	// raftLogCacheSize is the maximum number of logs to cache in-memory.
+	// This is used to reduce disk I/O for the recently committed entries.
+	raftLogCacheSize = 512
 )
 
 func init() {
@@ -94,14 +113,19 @@ func server() {
 }
 
 func testRaft() {
+	db, err := badger.Open(badger.DefaultOptions("data/fsm"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	db, err := badger.Open(badger.DefaultOptions("fsm_data"))
+	hostname, err := os.Hostname()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	raftConf := raft.DefaultConfig()
 	raftConf.SnapshotThreshold = 1024
+	raftConf.LocalID = raft.ServerID(hostname)
 
 	fsmStore := fsm.NewBadgerFSM(db)
 
@@ -110,12 +134,24 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
-	cacheStore, err := raft.NewLogCache(1024, store)
+	cacheStore, err := raft.NewLogCache(raftLogCacheSize, store)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	snapshotStore, err := raft.NewFileSnapshotStore("data/snapshots", 1, os.Stdout)
+	snapshotStore, err := raft.NewFileSnapshotStore("data/snapshots", raftSnapShotRetain, os.Stdout)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	raftBindAddr := "127.0.0.1:16543"
+
+	tcpAddr, err := net.ResolveTCPAddr("tcp", raftBindAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	transport, err := raft.NewTCPTransport(raftBindAddr, tcpAddr, maxPool, tcpTimeout, os.Stdout)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,6 +160,7 @@ func testRaft() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer raftSrv.Shutdown()
 
 	app := fiber.New()
 

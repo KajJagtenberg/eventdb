@@ -3,7 +3,6 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
-	github.com/dgraph-io/badger v1.6.2
 	github.com/dgraph-io/badger/v3 v3.2103.0
 	github.com/gofiber/fiber/v2 v2.12.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
