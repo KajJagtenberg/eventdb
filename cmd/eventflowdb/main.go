@@ -146,7 +146,7 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
-	raftBindAddr := "127.0.0.1:16543"
+	raftBindAddr := "127.0.0.1:6544"
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", raftBindAddr)
 	if err != nil {
@@ -163,6 +163,17 @@ func testRaft() {
 		log.Fatal(err)
 	}
 	defer raftSrv.Shutdown()
+
+	configuration := raft.Configuration{
+		Servers: []raft.Server{
+			{
+				ID:      raft.ServerID(raftConf.LocalID),
+				Address: transport.LocalAddr(),
+			},
+		},
+	}
+
+	raftSrv.BootstrapCluster(configuration)
 
 	app := fiber.New()
 
@@ -188,7 +199,7 @@ func testRaft() {
 			Value string `json:"value"`
 		}
 
-		if err := c.BodyParser(body); err != nil {
+		if err := c.BodyParser(&body); err != nil {
 			return err
 		}
 
@@ -223,14 +234,76 @@ func testRaft() {
 	})
 
 	app.Get("/store/get", func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
+		var body struct {
+			Key string `json:"key"`
+		}
+
+		if err := c.BodyParser(&body); err != nil {
+			return err
+		}
+
+		if len(body.Key) == 0 {
+			return errors.New("key cannot be empty")
+		}
+
+		cmd, err := json.Marshal(fsm.CommandPayload{
+			Operation: "GET",
+			Key:       body.Key,
+		})
+		if err != nil {
+			return err
+		}
+
+		applyFuture := raftSrv.Apply(cmd, time.Millisecond*500)
+		if err := applyFuture.Error(); err != nil {
+			return err
+		}
+
+		applyResponse, ok := applyFuture.Response().(*fsm.ApplyResponse)
+		if !ok {
+			return errors.New("invalid return value")
+		}
+
+		return c.JSON(applyResponse.Data)
 	})
 
 	app.Post("/store/delete", func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
+		var body struct {
+			Key string `json:"key"`
+		}
+
+		if err := c.BodyParser(&body); err != nil {
+			return err
+		}
+
+		if len(body.Key) == 0 {
+			return errors.New("key cannot be empty")
+		}
+
+		cmd, err := json.Marshal(fsm.CommandPayload{
+			Operation: "DELETE",
+			Key:       body.Key,
+		})
+		if err != nil {
+			return err
+		}
+
+		applyFuture := raftSrv.Apply(cmd, time.Millisecond*500)
+		if err := applyFuture.Error(); err != nil {
+			return err
+		}
+
+		_, ok := applyFuture.Response().(*fsm.ApplyResponse)
+		if !ok {
+			return errors.New("invalid return value")
+		}
+
+		return c.SendString("key deleted")
 	})
 
-	app.Listen(":3000")
+	if err := app.Listen(":3000"); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {

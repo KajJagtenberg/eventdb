@@ -1,0 +1,24 @@
+POST http://127.0.0.1:3000/store/set
+Content-Type: application/json
+
+{
+    "key":"x",
+    "value":"4"
+}
+
+###
+
+GET http://127.0.0.1:3000/store/get
+Content-Type: application/json
+
+{
+    "key":"x"
+}
+
+###
+POST http://127.0.0.1:3000/store/delete
+Content-Type: application/json
+
+{
+    "key":"x"
+}
