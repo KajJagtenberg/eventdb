@@ -270,6 +270,22 @@ func (s *boltEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse,
 	return res, txn.Commit()
 }
 
+func (s *boltEventStore) EventCount(req *api.EventCountRequest) (res *api.EventCountResponse, err error) {
+	txn, err := s.db.Begin(false)
+	if err != nil {
+		return nil, err
+	}
+	defer txn.Rollback()
+
+	cursor := txn.Bucket([]byte("events")).Cursor()
+
+	for k, _ := cursor.First(); k != nil; cursor.Next() {
+		res.Count++
+	}
+
+	return res, txn.Commit()
+}
+
 func NewBoltEventStore(db *bbolt.DB) (*boltEventStore, error) {
 	txn, err := db.Begin(true)
 	if err != nil {
