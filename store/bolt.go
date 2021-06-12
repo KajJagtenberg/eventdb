@@ -318,7 +318,7 @@ func (s *boltEventStore) EventCount(req *api.EventCountRequest) (res *api.EventC
 		res.Count++
 	}
 
-	return res, txn.Commit()
+	return res, txn.Rollback()
 }
 
 func (s *boltEventStore) StreamCount(req *api.StreamCountRequest) (res *api.StreamCountResponse, err error) {
@@ -471,7 +471,7 @@ func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
 
 				eventCount, err := store.EventCount(&api.EventCountRequest{})
 				if err != nil {
-					log.Fatalf("failed to get stream count: %v", err)
+					log.Fatalf("failed to get event count: %v", err)
 				}
 
 				store.estimateStreamCount = streamCount.Count
