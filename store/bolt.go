@@ -131,6 +131,75 @@ func (s *boltEventStore) Add(req *api.AddRequest) (*api.EventResponse, error) {
 	return res, txn.Commit()
 }
 
+func (s *boltEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err error) {
+	stream, err := uuid.Parse(req.Stream)
+	if err != nil {
+		return nil, err
+	}
+
+	txn, err := s.db.Begin(false)
+	if err != nil {
+		return nil, err
+	}
+	defer txn.Rollback()
+
+	streams := txn.Bucket([]byte("streams"))
+	events := txn.Bucket([]byte("streams"))
+
+	data := streams.Get(stream[:])
+	if data == nil {
+		return res, nil
+	}
+
+	var persistedStream PersistedStream
+	if err := proto.Unmarshal(data, &persistedStream); err != nil {
+		return nil, err
+	}
+
+	for _, key := range persistedStream.Events {
+		data := events.Get(key)
+
+		var event PersistedEvent
+		if err := proto.Unmarshal(data, &event); err != nil {
+			return nil, err
+		}
+
+		var id ulid.ULID
+		if err := id.UnmarshalBinary(key); err != nil {
+			return nil, err
+		}
+
+		var stream uuid.UUID
+		if err := stream.UnmarshalBinary(event.Stream); err != nil {
+			return nil, err
+		}
+
+		var causationId ulid.ULID
+		if err := causationId.UnmarshalBinary(event.CausationId); err != nil {
+			return nil, err
+		}
+
+		var correlationId ulid.ULID
+		if err := correlationId.UnmarshalBinary(event.CorrelationId); err != nil {
+			return nil, err
+		}
+
+		res.Events = append(res.Events, &api.EventResponse_Event{
+			Id:            id.String(),
+			Stream:        stream.String(),
+			Version:       event.Version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   causationId.String(),
+			CorrelationId: correlationId.String(),
+			AddedAt:       event.AddedAt,
+		})
+	}
+
+	return res, txn.Commit()
+}
+
 func NewBoltEventStore(db *bbolt.DB) (*boltEventStore, error) {
 	txn, err := db.Begin(true)
 	if err != nil {
