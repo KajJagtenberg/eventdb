@@ -7,14 +7,41 @@ import (
 	"github.com/hashicorp/raft"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/constants"
+	"github.com/kajjagtenberg/eventflowdb/fsm"
+	"google.golang.org/protobuf/proto"
 )
 
 type EventStoreService struct {
 	raft *raft.Raft
 }
 
+func (s *EventStoreService) handle(op string, req proto.Message) (interface{}, error) {
+	payload, err := proto.Marshal(req)
+	if err != nil {
+		return nil, err
+	}
+
+	cmd, err := proto.Marshal(&api.Command{
+		Op:      op,
+		Payload: payload,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	future := s.raft.Apply(cmd, 500*time.Millisecond)
+	if err := future.Error(); err != nil {
+		return nil, err
+	}
+
+	response := future.Response().(fsm.ApplyResponse)
+
+	return response.Data, response.Error
+}
+
 func (s *EventStoreService) Add(ctx context.Context, in *api.AddRequest) (*api.EventResponse, error) {
-	return nil, nil
+	res, err := s.handle("ADD", in)
+	return res.(*api.EventResponse), err
 }
 
 func (s *EventStoreService) Get(ctx context.Context, in *api.GetRequest) (*api.EventResponse, error) {
