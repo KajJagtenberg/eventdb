@@ -26,7 +26,9 @@ type boltEventStore struct {
 	estimateEventCount  int64
 }
 
-func (s *boltEventStore) Add(req *api.AddRequest) (*api.EventResponse, error) {
+func (s *boltEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err error) {
+	res = &api.EventResponse{}
+
 	stream, err := uuid.Parse(req.Stream)
 	if err != nil {
 		return nil, err
@@ -39,8 +41,6 @@ func (s *boltEventStore) Add(req *api.AddRequest) (*api.EventResponse, error) {
 	if len(req.Events) == 0 {
 		return nil, errors.New("list of events is empty")
 	}
-
-	res := &api.EventResponse{}
 
 	txn, err := s.db.Begin(true)
 	if err != nil {
@@ -141,6 +141,8 @@ func (s *boltEventStore) Add(req *api.AddRequest) (*api.EventResponse, error) {
 }
 
 func (s *boltEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err error) {
+	res = &api.EventResponse{}
+
 	stream, err := uuid.Parse(req.Stream)
 	if err != nil {
 		return nil, err
@@ -210,6 +212,8 @@ func (s *boltEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err e
 }
 
 func (s *boltEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse, err error) {
+	res = &api.EventResponse{}
+
 	if req.Limit == 0 {
 		req.Limit = 10
 	}
@@ -280,7 +284,9 @@ func (s *boltEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse,
 }
 
 func (s *boltEventStore) EventCount(req *api.EventCountRequest) (res *api.EventCountResponse, err error) {
-	txn, err := s.db.Begin(false)
+	res = &api.EventCountResponse{}
+
+	txn, err := s.db.Begin(true)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +302,9 @@ func (s *boltEventStore) EventCount(req *api.EventCountRequest) (res *api.EventC
 }
 
 func (s *boltEventStore) StreamCount(req *api.StreamCountRequest) (res *api.StreamCountResponse, err error) {
-	txn, err := s.db.Begin(false)
+	res = &api.StreamCountResponse{}
+
+	txn, err := s.db.Begin(true)
 	if err != nil {
 		return nil, err
 	}
@@ -312,16 +320,20 @@ func (s *boltEventStore) StreamCount(req *api.StreamCountRequest) (res *api.Stre
 }
 
 func (s *boltEventStore) EventCountEstimate(req *api.EventCountEstimateRequest) (res *api.EventCountResponse, err error) {
-	res.Count = s.estimateEventCount
-	return res, err
+	return &api.EventCountResponse{
+		Count: s.estimateEventCount,
+	}, err
 }
 
 func (s *boltEventStore) StreamCountEstimate(req *api.StreamCountEstimateRequest) (res *api.StreamCountResponse, err error) {
-	res.Count = s.estimateStreamCount
-	return res, err
+	return &api.StreamCountResponse{
+		Count: s.estimateStreamCount,
+	}, err
 }
 
 func (s *boltEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err error) {
+	res = &api.SizeResponse{}
+
 	txn, err := s.db.Begin(false)
 	if err != nil {
 		return nil, err
@@ -334,21 +346,9 @@ func (s *boltEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err 
 	return res, txn.Commit()
 }
 
-func (s *boltEventStore) Backup(dst io.Writer) error {
-	txn, err := s.db.Begin(false)
-	if err != nil {
-		return err
-	}
-	defer txn.Rollback()
-
-	if _, err := txn.WriteTo(dst); err != nil {
-		return err
-	}
-
-	return txn.Commit()
-}
-
 func (s *boltEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.ListStreamsReponse, err error) {
+	res = &api.ListStreamsReponse{}
+
 	if req.Limit == 0 {
 		req.Limit = 10
 	}
@@ -402,6 +402,20 @@ func (s *boltEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.List
 	return res, txn.Commit()
 }
 
+func (s *boltEventStore) Backup(dst io.Writer) error {
+	txn, err := s.db.Begin(false)
+	if err != nil {
+		return err
+	}
+	defer txn.Rollback()
+
+	if _, err := txn.WriteTo(dst); err != nil {
+		return err
+	}
+
+	return txn.Commit()
+}
+
 func (s *boltEventStore) Close() error {
 	return s.db.Close()
 }
@@ -419,6 +433,10 @@ func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
 		if _, err := txn.CreateBucketIfNotExists([]byte(bucket)); err != nil {
 			return nil, err
 		}
+	}
+
+	if err := txn.Commit(); err != nil {
+		return nil, err
 	}
 
 	store := &boltEventStore{db, 0, 0}
@@ -444,7 +462,7 @@ func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
 		}()
 	}
 
-	return store, txn.Commit()
+	return store, err
 }
 
 type BoltStoreOptions struct {

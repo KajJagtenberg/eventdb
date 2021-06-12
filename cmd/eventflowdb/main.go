@@ -17,8 +17,8 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/fsm"
 	"github.com/kajjagtenberg/eventflowdb/store"
-	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/bbolt"
 	"google.golang.org/grpc"
 )
 
@@ -86,7 +86,7 @@ func server() {
 
 	grpcServer := grpc.NewServer()
 
-	transport.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
+	// transport.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
 
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
@@ -106,12 +106,13 @@ func testRaft() {
 	raftPort := env.GetEnv("RAFT_PORT", "26543")
 	followers := env.GetEnv("FOLLOWERS", "")
 
-	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")))
+	db, err := bbolt.Open(path.Join(data, "fsm"), 0666, bbolt.DefaultOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.Close()
 
-	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
+	eventstore, err := store.NewBoltEventStore(store.BoltStoreOptions{
 		DB:             db,
 		EstimateCounts: true,
 	})
@@ -131,7 +132,7 @@ func testRaft() {
 	raftConf.SnapshotThreshold = 1024
 	raftConf.LocalID = raft.ServerID(nodeID)
 
-	fsmStore := fsm.NewBadgerFSM(db, eventstore)
+	fsmStore := fsm.NewFSM(eventstore)
 
 	store, err := raftboltdb.NewBoltStore(path.Join(data, "store"))
 	if err != nil {

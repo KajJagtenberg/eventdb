@@ -49,12 +49,12 @@ type EventStore interface {
 	/*
 		Returns an estimate of the total number of events stored in the database
 	*/
-	EventCountEstimate(*api.EventCountRequest) (*api.EventCountResponse, error)
+	EventCountEstimate(*api.EventCountEstimateRequest) (*api.EventCountResponse, error)
 
 	/*
 		Returns an estimate of the total number of streams in the database
 	*/
-	StreamCountEstimate(*api.StreamCountRequest) (*api.StreamCountResponse, error)
+	StreamCountEstimate(*api.StreamCountEstimateRequest) (*api.StreamCountResponse, error)
 
 	/*
 		Returns the names of streams, with skip and limit options
