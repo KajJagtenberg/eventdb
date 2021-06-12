@@ -21,10 +21,6 @@ type BadgerEventStore struct {
 	estimateEventCount  int64
 }
 
-const (
-	ESTIMATE_SLEEP_TIME = time.Second
-)
-
 var (
 	MAGIC_NUMBER = []byte{32, 179}
 

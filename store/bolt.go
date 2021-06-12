@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/rand"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,8 +14,14 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+const (
+	ESTIMATE_SLEEP_TIME = time.Second
+)
+
 type boltEventStore struct {
-	db *bbolt.DB
+	db                  *bbolt.DB
+	estimateStreamCount int64
+	estimateEventCount  int64
 }
 
 func (s *boltEventStore) Add(req *api.AddRequest) (*api.EventResponse, error) {
@@ -302,7 +309,19 @@ func (s *boltEventStore) StreamCount(req *api.StreamCountRequest) (res *api.Stre
 	return res, txn.Commit()
 }
 
-func NewBoltEventStore(db *bbolt.DB) (*boltEventStore, error) {
+func (s *boltEventStore) EventCountEstimate(req *api.EventCountEstimateRequest) (res *api.EventCountResponse, err error) {
+	res.Count = s.estimateEventCount
+	return res, err
+}
+
+func (s *boltEventStore) StreamCountEstimate(req *api.StreamCountEstimateRequest) (res *api.StreamCountResponse, err error) {
+	res.Count = s.estimateStreamCount
+	return res, err
+}
+
+func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
+	db := options.DB
+
 	txn, err := db.Begin(true)
 	if err != nil {
 		return nil, err
@@ -315,5 +334,33 @@ func NewBoltEventStore(db *bbolt.DB) (*boltEventStore, error) {
 		}
 	}
 
-	return &boltEventStore{db}, txn.Commit()
+	store := &boltEventStore{db, 0, 0}
+
+	if options.EstimateCounts {
+		go func() {
+			for {
+				streamCount, err := store.StreamCount(&api.StreamCountRequest{})
+				if err != nil {
+					log.Fatalf("failed to get stream count: %v", err)
+				}
+
+				eventCount, err := store.EventCount(&api.EventCountRequest{})
+				if err != nil {
+					log.Fatalf("failed to get stream count: %v", err)
+				}
+
+				store.estimateStreamCount = streamCount.Count
+				store.estimateEventCount = eventCount.Count
+
+				time.Sleep(ESTIMATE_SLEEP_TIME)
+			}
+		}()
+	}
+
+	return store, txn.Commit()
+}
+
+type BoltStoreOptions struct {
+	DB             *bbolt.DB
+	EstimateCounts bool
 }
