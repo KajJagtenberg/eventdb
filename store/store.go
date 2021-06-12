@@ -62,7 +62,7 @@ type EventStore interface {
 
 	ListStreams(*api.ListStreamsRequest) (*api.ListStreamsReponse, error)
 
-	Checksum(*api.ChecksumRequest) (*api.ChecksumResponse, error)
+	// Checksum(*api.ChecksumRequest) (*api.ChecksumResponse, error)
 
 	Close() error
 }

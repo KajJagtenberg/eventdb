@@ -402,6 +402,10 @@ func (s *boltEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.List
 	return res, txn.Commit()
 }
 
+func (s *boltEventStore) Close() error {
+	return s.db.Close()
+}
+
 func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
 	db := options.DB
 
