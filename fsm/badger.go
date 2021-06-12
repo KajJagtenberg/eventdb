@@ -97,7 +97,19 @@ func (b *badgerFSM) get(key string) (interface{}, error) {
 }
 
 func (b *badgerFSM) delete(key string) error {
-	return nil
+	var keyByte = []byte(key)
+
+	txn := b.db.NewTransaction(true)
+	defer func() {
+		_ = txn.Commit()
+	}()
+
+	err := txn.Delete(keyByte)
+	if err != nil {
+		return err
+	}
+
+	return txn.Commit()
 }
 
 func NewBadgerFSM(db *badger.DB) *badgerFSM {
