@@ -116,7 +116,6 @@ func server() {
 }
 
 func testRaft() {
-	serverConfig := env.GetEnv("SERVER_CONFIG", "")
 
 	db, err := badger.Open(badger.DefaultOptions("data/fsm"))
 	if err != nil {
@@ -128,9 +127,11 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
+	nodeID := env.GetEnv("NODE_ID", hostname)
+
 	raftConf := raft.DefaultConfig()
 	raftConf.SnapshotThreshold = 1024
-	raftConf.LocalID = raft.ServerID(hostname)
+	raftConf.LocalID = raft.ServerID(nodeID)
 
 	fsmStore := fsm.NewBadgerFSM(db)
 
@@ -149,7 +150,7 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
-	raftBindAddr := hostname + ":6544"
+	raftBindAddr := nodeID + ":6544"
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", raftBindAddr)
 	if err != nil {
@@ -167,7 +168,9 @@ func testRaft() {
 	}
 	defer raftSrv.Shutdown()
 
-	if len(serverConfig) > 0 {
+	followers := env.GetEnv("FOLLOWERS", "")
+
+	if len(followers) > 0 {
 		var configuration raft.Configuration
 		configuration.Servers = []raft.Server{
 			{
@@ -176,15 +179,14 @@ func testRaft() {
 			},
 		}
 
-		servers := strings.Split(serverConfig, ",")
+		for _, follower := range strings.Split(followers, ",") {
+			parts := strings.Split(follower, "@")
 
-		for _, server := range servers {
-			parts := strings.Split(server, "@")
-
-			configuration.Servers = append(configuration.Servers, raft.Server{
-				ID:      raft.ServerID(parts[0]),
-				Address: raft.ServerAddress(parts[1]),
-			})
+			configuration.Servers = append(configuration.Servers,
+				raft.Server{
+					ID:      raft.ServerID(parts[0]),
+					Address: raft.ServerAddress(parts[1]),
+				})
 		}
 
 		raftSrv.BootstrapCluster(configuration)
@@ -196,10 +198,6 @@ func testRaft() {
 
 	app.Get("/raft/stats", func(c *fiber.Ctx) error {
 		return c.JSON(raftSrv.Stats())
-	})
-
-	app.Get("/raft/state", func(c *fiber.Ctx) error {
-		return c.JSON(raftSrv.State().String())
 	})
 
 	app.Post("/raft/join", func(c *fiber.Ctx) error {

@@ -24,9 +24,5 @@ Content-Type: application/json
 }
 
 ###
-GET http://127.0.0.1:3000/raft/state
-Content-Type: application/json
-
-###
 GET http://127.0.0.1:3000/raft/stats
 Content-Type: application/json

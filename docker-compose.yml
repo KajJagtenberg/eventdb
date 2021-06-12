@@ -6,10 +6,15 @@ services:
     ports:
       - 3000:3000
     environment:
-      - SERVER_CONFIG=node2@node2:6544,node3@node3:6544
+      - NODE_ID=node1
+      - FOLLOWERS=node2@node2:6544,node3@node3:6544
 
   node2:
     build: .
+    environment:
+      - NODE_ID=node2
 
   node3:
     build: .
+    environment:
+      - NODE_ID=node3
