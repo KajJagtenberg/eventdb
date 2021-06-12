@@ -3,21 +3,16 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
-	github.com/armon/go-metrics v0.3.8 // indirect
+	github.com/dgraph-io/badger v1.6.2
 	github.com/dgraph-io/badger/v3 v3.2103.0
-	github.com/fatih/color v1.12.0 // indirect
+	github.com/gofiber/fiber/v2 v2.12.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/hashicorp/go-hclog v0.16.1 // indirect
-	github.com/hashicorp/go-immutable-radix v1.3.0 // indirect
-	github.com/hashicorp/go-msgpack v1.1.5 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/hashicorp/raft v1.3.1 // indirect
+	github.com/hashicorp/raft v1.3.1
+	github.com/hashicorp/raft-boltdb v0.0.0-20210422161416-485fa74b0b01
 	github.com/joho/godotenv v1.3.0
 	github.com/kr/text v0.2.0 // indirect
-	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/sirupsen/logrus v1.8.1

@@ -1,0 +1,7 @@
+version: "3"
+
+services:
+  node1:
+    image: kajjagtenberg/eventflowdb:0.8.0
+    ports:
+      - 6543:6543

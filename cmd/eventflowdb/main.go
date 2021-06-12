@@ -9,8 +9,12 @@ import (
 	"syscall"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/gofiber/fiber/v2"
+	"github.com/hashicorp/raft"
+	raftboltdb "github.com/hashicorp/raft-boltdb"
 	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/env"
+	"github.com/kajjagtenberg/eventflowdb/fsm"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/sirupsen/logrus"
@@ -89,6 +93,72 @@ func server() {
 	log.Println("eventflowDB is shutting down...")
 }
 
+func testRaft() {
+
+	db, err := badger.Open(badger.DefaultOptions("fsm_data"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	raftConf := raft.DefaultConfig()
+	raftConf.SnapshotThreshold = 1024
+
+	fsmStore := fsm.NewBadgerFSM(db)
+
+	store, err := raftboltdb.NewBoltStore("data/store")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cacheStore, err := raft.NewLogCache(1024, store)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	snapshotStore, err := raft.NewFileSnapshotStore("data/snapshots", 1, os.Stdout)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	raftSrv, err := raft.NewRaft(raftConf, fsmStore, cacheStore, store, snapshotStore, transport)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	app := fiber.New()
+
+	app.Post("/raft/join", func(c *fiber.Ctx) error {
+		return fiber.ErrNotImplemented
+	})
+
+	app.Post("/raft/remove", func(c *fiber.Ctx) error {
+		return fiber.ErrNotImplemented
+	})
+
+	app.Get("/raft/stats", func(c *fiber.Ctx) error {
+		return fiber.ErrNotImplemented
+	})
+
+	app.Post("/raft/join", func(c *fiber.Ctx) error {
+		return fiber.ErrNotImplemented
+	})
+
+	app.Post("/store/set", func(c *fiber.Ctx) error {
+		return fiber.ErrNotImplemented
+	})
+
+	app.Get("/store/get", func(c *fiber.Ctx) error {
+		return fiber.ErrNotImplemented
+	})
+
+	app.Post("/store/delete", func(c *fiber.Ctx) error {
+		return fiber.ErrNotImplemented
+	})
+
+	app.Listen(":3000")
+}
+
 func main() {
-	server()
+	// server()
+	testRaft()
 }
