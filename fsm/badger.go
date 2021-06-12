@@ -40,8 +40,23 @@ func (b *badgerFSM) Snapshot() (raft.FSMSnapshot, error) {
 func (b *badgerFSM) Restore(io.ReadCloser) error {
 	return nil
 }
-func (b *badgerFSM) set(key, value string) error {
-	return nil
+func (b *badgerFSM) set(key string, value interface{}) error {
+	var data = make([]byte, 0)
+	data, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+
+	if data == nil || len(data) <= 0 {
+		return nil
+	}
+
+	txn := b.db.NewTransaction(true)
+	if err := txn.Set([]byte(key), data); err != nil {
+		return err
+	}
+
+	return txn.Commit()
 }
 
 func (b *badgerFSM) get(key string) (interface{}, error) {
