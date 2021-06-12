@@ -105,6 +105,7 @@ func server() {
 }
 
 func testRaft() {
+	raftPort := env.GetEnv("RAFT_PORT", "26543")
 
 	db, err := badger.Open(badger.DefaultOptions("data/fsm"))
 	if err != nil {
@@ -139,7 +140,7 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
-	raftBindAddr := nodeID + ":6544"
+	raftBindAddr := nodeID + ":" + raftPort
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", raftBindAddr)
 	if err != nil {
