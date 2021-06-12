@@ -53,12 +53,12 @@ func TestAdd(t *testing.T) {
 	events := res.Events
 
 	assert := assert.New(t)
-	assert.Equal(len(events), 1)
-	assert.Equal(len(events[0].Id), 26)
-	assert.Equal(len(events[0].CausationId), 26)
-	assert.Equal(len(events[0].CorrelationId), 26)
-	assert.Equal(events[0].Data, []byte("data"))
-	assert.Equal(events[0].Metadata, []byte("metadata"))
-	assert.Equal(events[0].CausationId, events[0].Id)
-	assert.Equal(events[0].CorrelationId, events[0].Id)
+	assert.Equal(1, len(events))
+	assert.Equal(26, len(events[0].Id))
+	assert.Equal(26, len(events[0].CausationId))
+	assert.Equal(26, len(events[0].CorrelationId))
+	assert.Equal([]byte("data"), events[0].Data)
+	assert.Equal([]byte("metadata"), events[0].Metadata)
+	assert.Equal(events[0].Id, events[0].CausationId)
+	assert.Equal(events[0].Id, events[0].CorrelationId)
 }

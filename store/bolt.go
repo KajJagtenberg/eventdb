@@ -140,8 +140,8 @@ func (s *boltEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err e
 			Type:          event.Type,
 			Data:          event.Data,
 			Metadata:      event.Metadata,
-			CausationId:   event.CorrelationId,
-			CorrelationId: event.CorrelationId,
+			CausationId:   causationId.String(),
+			CorrelationId: correlationId.String(),
 			AddedAt:       now.Unix(),
 		})
 
