@@ -25,8 +25,21 @@ func (b *badgerFSM) Apply(log *raft.Log) interface{} {
 
 		switch op {
 		case "SET":
+			return &ApplyResponse{
+				Error: b.set(payload.Key, payload.Value),
+				Data:  payload.Value,
+			}
 		case "GET":
+			data, err := b.get(payload.Key)
+			return &ApplyResponse{
+				Error: err,
+				Data:  data,
+			}
 		case "DELETE":
+			return &ApplyResponse{
+				Error: b.delete(payload.Key),
+				Data:  nil,
+			}
 		}
 	}
 
