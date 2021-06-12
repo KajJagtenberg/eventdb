@@ -145,7 +145,7 @@ func (s *boltEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err e
 			AddedAt:       now.Unix(),
 		})
 
-		persistedStream.Events = append(persistedStream.Events, record.Id)
+		persistedStream.Events = append(persistedStream.Events, id[:])
 	}
 
 	data, err := proto.Marshal(&persistedStream)
@@ -175,7 +175,7 @@ func (s *boltEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err e
 	defer txn.Rollback()
 
 	streams := txn.Bucket([]byte("streams"))
-	events := txn.Bucket([]byte("streams"))
+	events := txn.Bucket([]byte("events"))
 
 	data := streams.Get(stream[:])
 	if data == nil {
@@ -228,7 +228,7 @@ func (s *boltEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err e
 		})
 	}
 
-	return res, txn.Commit()
+	return res, txn.Rollback()
 }
 
 func (s *boltEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse, err error) {
@@ -300,13 +300,13 @@ func (s *boltEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse,
 		})
 	}
 
-	return res, txn.Commit()
+	return res, txn.Rollback()
 }
 
 func (s *boltEventStore) EventCount(req *api.EventCountRequest) (res *api.EventCountResponse, err error) {
 	res = &api.EventCountResponse{}
 
-	txn, err := s.db.Begin(true)
+	txn, err := s.db.Begin(false)
 	if err != nil {
 		return nil, err
 	}
@@ -324,7 +324,7 @@ func (s *boltEventStore) EventCount(req *api.EventCountRequest) (res *api.EventC
 func (s *boltEventStore) StreamCount(req *api.StreamCountRequest) (res *api.StreamCountResponse, err error) {
 	res = &api.StreamCountResponse{}
 
-	txn, err := s.db.Begin(true)
+	txn, err := s.db.Begin(false)
 	if err != nil {
 		return nil, err
 	}
@@ -336,7 +336,7 @@ func (s *boltEventStore) StreamCount(req *api.StreamCountRequest) (res *api.Stre
 		res.Count++
 	}
 
-	return res, txn.Commit()
+	return res, txn.Rollback()
 }
 
 func (s *boltEventStore) EventCountEstimate(req *api.EventCountEstimateRequest) (res *api.EventCountResponse, err error) {
@@ -363,7 +363,7 @@ func (s *boltEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err 
 	res.Size = txn.Size()
 	res.SizeHuman = si.ByteCountSI(res.Size)
 
-	return res, txn.Commit()
+	return res, txn.Rollback()
 }
 
 func (s *boltEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.ListStreamsReponse, err error) {
@@ -419,7 +419,7 @@ func (s *boltEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.List
 		})
 	}
 
-	return res, txn.Commit()
+	return res, txn.Rollback()
 }
 
 func (s *boltEventStore) Backup(dst io.Writer) error {
@@ -433,7 +433,7 @@ func (s *boltEventStore) Backup(dst io.Writer) error {
 		return err
 	}
 
-	return txn.Commit()
+	return txn.Rollback()
 }
 
 func (s *boltEventStore) Close() error {
