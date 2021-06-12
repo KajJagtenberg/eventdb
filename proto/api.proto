@@ -26,7 +26,6 @@ message AddRequest {
         string causation_id = 4;
         string correlation_id = 5;
     }
-
     string stream = 1;
     uint32 version = 2;
     repeated EventData events = 3;
