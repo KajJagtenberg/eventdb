@@ -105,9 +105,10 @@ func server() {
 }
 
 func testRaft() {
+	data := env.GetEnv("DATA", "data")
 	raftPort := env.GetEnv("RAFT_PORT", "26543")
 
-	db, err := badger.Open(badger.DefaultOptions("data/fsm"))
+	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -125,7 +126,7 @@ func testRaft() {
 
 	fsmStore := fsm.NewBadgerFSM(db)
 
-	store, err := raftboltdb.NewBoltStore("data/store")
+	store, err := raftboltdb.NewBoltStore(path.Join(data, "store"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -135,7 +136,7 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
-	snapshotStore, err := raft.NewFileSnapshotStore("data/snapshots", raftSnapShotRetain, os.Stdout)
+	snapshotStore, err := raft.NewFileSnapshotStore(path.Join(data, "snapshots"), raftSnapShotRetain, os.Stdout)
 	if err != nil {
 		log.Fatal(err)
 	}
