@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/kajjagtenberg/eventflowdb/si"
 	"github.com/oklog/ulid"
 	"go.etcd.io/bbolt"
 	"google.golang.org/protobuf/proto"
@@ -317,6 +318,19 @@ func (s *boltEventStore) EventCountEstimate(req *api.EventCountEstimateRequest) 
 func (s *boltEventStore) StreamCountEstimate(req *api.StreamCountEstimateRequest) (res *api.StreamCountResponse, err error) {
 	res.Count = s.estimateStreamCount
 	return res, err
+}
+
+func (s *boltEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err error) {
+	txn, err := s.db.Begin(false)
+	if err != nil {
+		return nil, err
+	}
+	defer txn.Rollback()
+
+	res.Size = txn.Size()
+	res.SizeHuman = si.ByteCountSI(res.Size)
+
+	return res, txn.Commit()
 }
 
 func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
