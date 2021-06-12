@@ -194,14 +194,6 @@ func testRaft() {
 		DisableStartupMessage: true,
 	})
 
-	app.Post("/raft/join", func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
-	})
-
-	app.Post("/raft/remove", func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
-	})
-
 	app.Get("/raft/stats", func(c *fiber.Ctx) error {
 		return c.JSON(raftSrv.Stats())
 	})
