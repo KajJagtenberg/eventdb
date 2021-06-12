@@ -348,6 +348,60 @@ func (s *boltEventStore) Backup(dst io.Writer) error {
 	return txn.Commit()
 }
 
+func (s *boltEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.ListStreamsReponse, err error) {
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
+
+	txn, err := s.db.Begin(false)
+	if err != nil {
+		return nil, err
+	}
+	defer txn.Rollback()
+
+	cursor := txn.Bucket([]byte("streams")).Cursor()
+
+	for k, v := cursor.First(); k != nil; k, v = cursor.Next() {
+		if req.Skip > 0 {
+			req.Skip--
+			continue
+		}
+
+		if len(res.Streams) >= int(req.Limit) {
+			break
+		}
+
+		var persistedStream PersistedStream
+		if err := proto.Unmarshal(v, &persistedStream); err != nil {
+			return nil, err
+		}
+
+		var id ulid.ULID
+		if err := id.UnmarshalBinary(persistedStream.Id); err != nil {
+			return nil, err
+		}
+
+		var events []string
+
+		for _, idByte := range persistedStream.Events {
+			var id ulid.ULID
+			if err := id.UnmarshalBinary(idByte); err != nil {
+				return nil, err
+			}
+
+			events = append(events, id.String())
+		}
+
+		res.Streams = append(res.Streams, &api.ListStreamsReponse_Stream{
+			Id:      id.String(),
+			Events:  events,
+			AddedAt: persistedStream.AddedAt,
+		})
+	}
+
+	return res, txn.Commit()
+}
+
 func NewBoltEventStore(options BoltStoreOptions) (*boltEventStore, error) {
 	db := options.DB
 
