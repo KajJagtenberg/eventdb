@@ -238,9 +238,13 @@ func (s *boltEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse,
 		req.Limit = 10
 	}
 
-	offset, err := ulid.Parse(req.Offset)
-	if err != nil {
-		return nil, err
+	var offset ulid.ULID
+
+	if len(req.Offset) > 0 {
+		offset, err = ulid.Parse(req.Offset)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	txn, err := s.db.Begin(false)
@@ -249,7 +253,7 @@ func (s *boltEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse,
 	}
 	defer txn.Rollback()
 
-	events := txn.Bucket([]byte("streams"))
+	events := txn.Bucket([]byte("events"))
 
 	cursor := events.Cursor()
 
