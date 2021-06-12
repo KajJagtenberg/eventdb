@@ -12,7 +12,9 @@ ctl:
 
 pb:
 	protoc -I=${PWD} --go_out=. ${PWD}/proto/store.proto
+	protoc -I=${PWD} --go_out=. ${PWD}/proto/fsm.proto
 	protoc -I=${PWD} --go_out=.  --go-grpc_out=. ${PWD}/proto/transport.proto
+
 
 tidy:
 	go mod tidy

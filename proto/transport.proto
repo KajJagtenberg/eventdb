@@ -1,8 +1,9 @@
 syntax = "proto3";
 
-option go_package="./transport";
 
 package transport;
+
+option go_package="./transport";
 
 // Transport
 
@@ -54,11 +55,15 @@ message ChecksumResponse {
 
 message EventCountRequest {}
 
+message EventCountEstimateRequest {}
+
 message EventCountResponse {
     int64 count = 1;
 }
 
 message StreamCountRequest {}
+
+message StreamCountEstimateRequest {}
 
 message StreamCountResponse {
     int64 count = 1;
@@ -104,9 +109,9 @@ service EventStoreService {
     rpc GetAll(GetAllRequest) returns(EventResponse) {}
     rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
-    rpc EventCountEstimate(EventCountRequest) returns (EventCountResponse) {}
+    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
-    rpc StreamCountEstimate(StreamCountRequest) returns (StreamCountResponse) {}
+    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
     rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Uptime(UptimeRequest) returns (UptimeResponse) {}

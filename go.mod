@@ -4,9 +4,9 @@ go 1.16
 
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.0
-	github.com/gofiber/fiber/v2 v2.12.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/raft v1.3.1
 	github.com/hashicorp/raft-boltdb v0.0.0-20210422161416-485fa74b0b01

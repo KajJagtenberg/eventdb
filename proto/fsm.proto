@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package fsm;
+
+option go_package="./fsm";
+
+message Command {
+    string op = 1;
+    bytes payload = 2;
+}

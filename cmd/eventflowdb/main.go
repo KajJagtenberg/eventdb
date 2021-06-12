@@ -2,8 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"encoding/json"
-	"errors"
 	"net"
 	"os"
 	"os/signal"
@@ -13,7 +11,6 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/gofiber/fiber/v2"
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb"
 	"github.com/joho/godotenv"
@@ -107,11 +104,21 @@ func server() {
 func testRaft() {
 	data := env.GetEnv("DATA", "data")
 	raftPort := env.GetEnv("RAFT_PORT", "26543")
+	followers := env.GetEnv("FOLLOWERS", "")
 
 	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")))
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
+		DB:             db,
+		EstimateCounts: true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer eventstore.Close()
 
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -124,7 +131,7 @@ func testRaft() {
 	raftConf.SnapshotThreshold = 1024
 	raftConf.LocalID = raft.ServerID(nodeID)
 
-	fsmStore := fsm.NewBadgerFSM(db)
+	fsmStore := fsm.NewBadgerFSM(db, eventstore)
 
 	store, err := raftboltdb.NewBoltStore(path.Join(data, "store"))
 	if err != nil {
@@ -159,8 +166,6 @@ func testRaft() {
 	}
 	defer raftSrv.Shutdown()
 
-	followers := env.GetEnv("FOLLOWERS", "")
-
 	if len(followers) > 0 {
 		var configuration raft.Configuration
 		configuration.Servers = []raft.Server{
@@ -182,134 +187,6 @@ func testRaft() {
 
 		raftSrv.BootstrapCluster(configuration)
 	}
-
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-
-	app.Get("/raft/stats", func(c *fiber.Ctx) error {
-		return c.JSON(raftSrv.Stats())
-	})
-
-	app.Post("/raft/join", func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
-	})
-
-	app.Post("/store/set", func(c *fiber.Ctx) error {
-		var body struct {
-			Key   string `json:"key"`
-			Value string `json:"value"`
-		}
-
-		if err := c.BodyParser(&body); err != nil {
-			return err
-		}
-
-		if len(body.Key) == 0 {
-			return errors.New("key cannot be empty")
-		}
-
-		if len(body.Value) == 0 {
-			return errors.New("value cannot be empty")
-		}
-
-		cmd, err := json.Marshal(fsm.CommandPayload{
-			Operation: "SET",
-			Key:       body.Key,
-			Value:     body.Value,
-		})
-		if err != nil {
-			return err
-		}
-
-		applyFuture := raftSrv.Apply(cmd, time.Millisecond*500)
-		if err := applyFuture.Error(); err != nil {
-			return err
-		}
-
-		_, ok := applyFuture.Response().(*fsm.ApplyResponse)
-		if !ok {
-			return errors.New("invalid return value")
-		}
-
-		return c.SendString("key set")
-	})
-
-	app.Get("/store/get", func(c *fiber.Ctx) error {
-		var body struct {
-			Key string `json:"key"`
-		}
-
-		if err := c.BodyParser(&body); err != nil {
-			return err
-		}
-
-		if len(body.Key) == 0 {
-			return errors.New("key cannot be empty")
-		}
-
-		cmd, err := json.Marshal(fsm.CommandPayload{
-			Operation: "GET",
-			Key:       body.Key,
-		})
-		if err != nil {
-			return err
-		}
-
-		applyFuture := raftSrv.Apply(cmd, time.Millisecond*500)
-		if err := applyFuture.Error(); err != nil {
-			return err
-		}
-
-		applyResponse, ok := applyFuture.Response().(*fsm.ApplyResponse)
-		if !ok {
-			return errors.New("invalid return value")
-		}
-
-		return c.JSON(applyResponse.Data)
-	})
-
-	app.Post("/store/delete", func(c *fiber.Ctx) error {
-		var body struct {
-			Key string `json:"key"`
-		}
-
-		if err := c.BodyParser(&body); err != nil {
-			return err
-		}
-
-		if len(body.Key) == 0 {
-			return errors.New("key cannot be empty")
-		}
-
-		cmd, err := json.Marshal(fsm.CommandPayload{
-			Operation: "DELETE",
-			Key:       body.Key,
-		})
-		if err != nil {
-			return err
-		}
-
-		applyFuture := raftSrv.Apply(cmd, time.Millisecond*500)
-		if err := applyFuture.Error(); err != nil {
-			return err
-		}
-
-		_, ok := applyFuture.Response().(*fsm.ApplyResponse)
-		if !ok {
-			return errors.New("invalid return value")
-		}
-
-		return c.SendString("key deleted")
-	})
-
-	go func() {
-		log.Println("API server listening")
-
-		if err := app.Listen(":3000"); err != nil {
-			log.Fatal(err)
-		}
-	}()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT)
