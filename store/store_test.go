@@ -21,7 +21,6 @@ func TempStore() (EventStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer db.Close()
 
 	return NewBadgerEventStore(BadgerStoreOptions{
 		DB: db,
