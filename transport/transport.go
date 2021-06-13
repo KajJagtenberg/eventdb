@@ -1,4 +1,4 @@
-package api
+package transport
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 )
 
 type EventStoreService struct {
+	api.UnimplementedEventStoreServiceServer
 	raft *raft.Raft
 }
 
@@ -58,7 +59,7 @@ func (s *EventStoreService) EventCount(ctx context.Context, req *api.EventCountR
 	return res.(*api.EventCountResponse), err
 }
 
-func (s *EventStoreService) EventCountEstimate(ctx context.Context, req *api.EventCountRequest) (*api.EventCountResponse, error) {
+func (s *EventStoreService) EventCountEstimate(ctx context.Context, req *api.EventCountEstimateRequest) (*api.EventCountResponse, error) {
 	res, err := s.handle("EVENT_COUNT_ESTIMATE", req)
 	return res.(*api.EventCountResponse), err
 }
@@ -68,7 +69,7 @@ func (s *EventStoreService) StreamCount(ctx context.Context, req *api.StreamCoun
 	return res.(*api.StreamCountResponse), err
 }
 
-func (s *EventStoreService) StreamCountEstimate(ctx context.Context, req *api.StreamCountRequest) (*api.StreamCountResponse, error) {
+func (s *EventStoreService) StreamCountEstimate(ctx context.Context, req *api.StreamCountEstimateRequest) (*api.StreamCountResponse, error) {
 	res, err := s.handle("STREAM_COUNT_ESTIMATE", req)
 	return res.(*api.StreamCountResponse), err
 }

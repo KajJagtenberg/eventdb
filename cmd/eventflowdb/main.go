@@ -14,9 +14,11 @@ import (
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb"
 	"github.com/joho/godotenv"
+	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/fsm"
 	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -40,61 +42,12 @@ func init() {
 
 func server() {
 	data := env.GetEnv("DATA", "data")
+	raftPort := env.GetEnv("RAFT_PORT", "26543")
+	followers := env.GetEnv("FOLLOWERS", "")
 	port := env.GetEnv("PORT", "6543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
 	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
-
-	log.Println("initializing store")
-
-	db, err := badger.Open(badger.DefaultOptions(path.Join(data)).WithLogger(log))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	lis, err := net.Listen("tcp", ":"+port)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if tlsEnabled {
-		crt, err := tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		config := &tls.Config{
-			Certificates: []tls.Certificate{crt},
-		}
-
-		lis = tls.NewListener(lis, config)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	grpcServer := grpc.NewServer()
-
-	// transport.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
-
-	go func() {
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT)
-	<-c
-
-	log.Println("eventflowDB is shutting down...")
-}
-
-func testRaft() {
-	data := env.GetEnv("DATA", "data")
-	raftPort := env.GetEnv("RAFT_PORT", "26543")
-	followers := env.GetEnv("FOLLOWERS", "")
 
 	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(log))
 	if err != nil {
@@ -147,12 +100,12 @@ func testRaft() {
 		log.Fatal(err)
 	}
 
-	transport, err := raft.NewTCPTransport(raftBindAddr, tcpAddr, maxPool, tcpTimeout, os.Stdout)
+	raftTransport, err := raft.NewTCPTransport(raftBindAddr, tcpAddr, maxPool, tcpTimeout, os.Stdout)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	raftSrv, err := raft.NewRaft(raftConf, fsmStore, cacheStore, store, snapshotStore, transport)
+	raftSrv, err := raft.NewRaft(raftConf, fsmStore, cacheStore, store, snapshotStore, raftTransport)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -163,7 +116,7 @@ func testRaft() {
 		configuration.Servers = []raft.Server{
 			{
 				ID:      raft.ServerID(raftConf.LocalID),
-				Address: transport.LocalAddr(),
+				Address: raftTransport.LocalAddr(),
 			},
 		}
 
@@ -180,12 +133,46 @@ func testRaft() {
 		raftSrv.BootstrapCluster(configuration)
 	}
 
+	lis, err := net.Listen("tcp", ":"+port)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if tlsEnabled {
+		crt, err := tls.LoadX509KeyPair(certFile, keyFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		config := &tls.Config{
+			Certificates: []tls.Certificate{crt},
+		}
+
+		lis = tls.NewListener(lis, config)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	grpcServer := grpc.NewServer()
+
+	api.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(raftSrv))
+
+	go func() {
+		log.Printf("gRPC server listening on %s", port)
+
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT)
 	<-c
+
+	log.Println("eventflowDB is shutting down...")
 }
 
 func main() {
-	// server()
-	testRaft()
+	server()
 }
