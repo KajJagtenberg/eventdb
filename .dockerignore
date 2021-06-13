@@ -13,3 +13,4 @@ proto
 *.md
 *.pem
 fsm_data
+tmp

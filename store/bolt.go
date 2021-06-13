@@ -23,6 +23,7 @@ const (
 var (
 	ErrConcurrentStreamModification = errors.New("concurrent stream modification")
 	ErrGappedStream                 = errors.New("given version leaves gap in stream")
+	ErrEmptyEventType               = errors.New("event type cannot be empty")
 )
 
 type boltEventStore struct {
@@ -47,117 +48,225 @@ func (s *boltEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err e
 		return nil, errors.New("list of events is empty")
 	}
 
-	txn, err := s.db.Begin(true)
-	if err != nil {
-		return nil, err
-	}
-	defer txn.Rollback()
+	err = s.db.Update(func(txn *bbolt.Tx) error {
+		streams := txn.Bucket([]byte("streams"))
+		events := txn.Bucket([]byte("events"))
 
-	streams := txn.Bucket([]byte("streams"))
-	events := txn.Bucket([]byte("events"))
+		var persistedStream PersistedStream
 
-	var persistedStream PersistedStream
-
-	if data := streams.Get(stream[:]); err != nil {
-		if err := proto.Unmarshal(data, &persistedStream); err != nil {
-			return nil, err
-		}
-	} else {
-		persistedStream.Id = stream[:]
-		persistedStream.AddedAt = time.Now().Unix()
-	}
-
-	if int(req.Version) < len(persistedStream.Events) {
-		return nil, ErrConcurrentStreamModification
-	}
-
-	if int(req.Version) > len(persistedStream.Events) {
-		return nil, ErrGappedStream
-	}
-
-	now := time.Now()
-
-	for i, event := range req.Events {
-		if len(event.Type) == 0 {
-			return nil, errors.New("event type cannot be empty")
-		}
-
-		id, err := ulid.New(ulid.Now(), rand.Reader)
-		if err != nil {
-			return nil, err
-		}
-
-		var causationId ulid.ULID
-		var correlationId ulid.ULID
-
-		if len(event.CausationId) > 0 {
-			causationId, err = ulid.Parse(event.CausationId)
-			if err != nil {
-				return nil, err
+		if data := streams.Get(stream[:]); err != nil {
+			if err := proto.Unmarshal(data, &persistedStream); err != nil {
+				return err
 			}
+		} else {
+			persistedStream.Id = stream[:]
+			persistedStream.AddedAt = time.Now().Unix()
 		}
 
-		if len(event.CorrelationId) > 0 {
-			correlationId, err = ulid.Parse(event.CorrelationId)
-			if err != nil {
-				return nil, err
+		if int(req.Version) < len(persistedStream.Events) {
+			return ErrConcurrentStreamModification
+		}
+
+		if int(req.Version) > len(persistedStream.Events) {
+			return ErrGappedStream
+		}
+
+		now := time.Now()
+
+		for i, event := range req.Events {
+			if len(event.Type) == 0 {
+				return ErrEmptyEventType
 			}
+
+			id, err := ulid.New(ulid.Now(), rand.Reader)
+			if err != nil {
+				return err
+			}
+
+			var causationId ulid.ULID
+			var correlationId ulid.ULID
+
+			if len(event.CausationId) > 0 {
+				causationId, err = ulid.Parse(event.CausationId)
+				if err != nil {
+					return err
+				}
+			}
+
+			if len(event.CorrelationId) > 0 {
+				correlationId, err = ulid.Parse(event.CorrelationId)
+				if err != nil {
+					return err
+				}
+			}
+
+			if causationId.String() == "00000000000000000000000000" {
+				causationId = id
+			}
+
+			if correlationId.String() == "00000000000000000000000000" {
+				correlationId = id
+			}
+
+			record := PersistedEvent{
+				Id:            id[:],
+				Stream:        stream[:],
+				Version:       req.Version + uint32(i),
+				Type:          event.Type,
+				Data:          event.Data,
+				Metadata:      event.Metadata,
+				CausationId:   causationId[:],
+				CorrelationId: correlationId[:],
+				AddedAt:       now.Unix(),
+			}
+
+			data, err := proto.Marshal(&record)
+			if err != nil {
+				return err
+			}
+
+			if err := events.Put(id[:], data); err != nil {
+				return err
+			}
+
+			res.Events = append(res.Events, &api.EventResponse_Event{
+				Id:            id.String(),
+				Stream:        stream.String(),
+				Version:       req.Version + uint32(i),
+				Type:          event.Type,
+				Data:          event.Data,
+				Metadata:      event.Metadata,
+				CausationId:   causationId.String(),
+				CorrelationId: correlationId.String(),
+				AddedAt:       now.Unix(),
+			})
+
+			persistedStream.Events = append(persistedStream.Events, id[:])
 		}
 
-		if causationId.String() == "00000000000000000000000000" {
-			causationId = id
-		}
-
-		if correlationId.String() == "00000000000000000000000000" {
-			correlationId = id
-		}
-
-		record := PersistedEvent{
-			Id:            id[:],
-			Stream:        stream[:],
-			Version:       req.Version + uint32(i),
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId[:],
-			CorrelationId: correlationId[:],
-			AddedAt:       now.Unix(),
-		}
-
-		data, err := proto.Marshal(&record)
+		data, err := proto.Marshal(&persistedStream)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		if err := events.Put(id[:], data); err != nil {
-			return nil, err
+		if err := streams.Put(stream[:], data); err != nil {
+			return err
 		}
 
-		res.Events = append(res.Events, &api.EventResponse_Event{
-			Id:            id.String(),
-			Stream:        stream.String(),
-			Version:       req.Version + uint32(i),
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId.String(),
-			CorrelationId: correlationId.String(),
-			AddedAt:       now.Unix(),
-		})
+		return nil
+	})
 
-		persistedStream.Events = append(persistedStream.Events, id[:])
-	}
+	// txn, err := s.db.Begin(true)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// defer txn.Rollback()
 
-	data, err := proto.Marshal(&persistedStream)
-	if err != nil {
-		return nil, err
-	}
+	// streams := txn.Bucket([]byte("streams"))
+	// events := txn.Bucket([]byte("events"))
 
-	if err := streams.Put(stream[:], data); err != nil {
-		return nil, err
-	}
+	// var persistedStream PersistedStream
 
-	return res, txn.Commit()
+	// if data := streams.Get(stream[:]); err != nil {
+	// 	if err := proto.Unmarshal(data, &persistedStream); err != nil {
+	// 		return nil, err
+	// 	}
+	// } else {
+	// 	persistedStream.Id = stream[:]
+	// 	persistedStream.AddedAt = time.Now().Unix()
+	// }
+
+	// if int(req.Version) < len(persistedStream.Events) {
+	// 	return nil, ErrConcurrentStreamModification
+	// }
+
+	// if int(req.Version) > len(persistedStream.Events) {
+	// 	return nil, ErrGappedStream
+	// }
+
+	// now := time.Now()
+
+	// for i, event := range req.Events {
+	// 	if len(event.Type) == 0 {
+	// 		return nil, errors.New("event type cannot be empty")
+	// 	}
+
+	// 	id, err := ulid.New(ulid.Now(), rand.Reader)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	var causationId ulid.ULID
+	// 	var correlationId ulid.ULID
+
+	// 	if len(event.CausationId) > 0 {
+	// 		causationId, err = ulid.Parse(event.CausationId)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 	}
+
+	// 	if len(event.CorrelationId) > 0 {
+	// 		correlationId, err = ulid.Parse(event.CorrelationId)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 	}
+
+	// 	if causationId.String() == "00000000000000000000000000" {
+	// 		causationId = id
+	// 	}
+
+	// 	if correlationId.String() == "00000000000000000000000000" {
+	// 		correlationId = id
+	// 	}
+
+	// 	record := PersistedEvent{
+	// 		Id:            id[:],
+	// 		Stream:        stream[:],
+	// 		Version:       req.Version + uint32(i),
+	// 		Type:          event.Type,
+	// 		Data:          event.Data,
+	// 		Metadata:      event.Metadata,
+	// 		CausationId:   causationId[:],
+	// 		CorrelationId: correlationId[:],
+	// 		AddedAt:       now.Unix(),
+	// 	}
+
+	// 	data, err := proto.Marshal(&record)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	if err := events.Put(id[:], data); err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	res.Events = append(res.Events, &api.EventResponse_Event{
+	// 		Id:            id.String(),
+	// 		Stream:        stream.String(),
+	// 		Version:       req.Version + uint32(i),
+	// 		Type:          event.Type,
+	// 		Data:          event.Data,
+	// 		Metadata:      event.Metadata,
+	// 		CausationId:   causationId.String(),
+	// 		CorrelationId: correlationId.String(),
+	// 		AddedAt:       now.Unix(),
+	// 	})
+
+	// 	persistedStream.Events = append(persistedStream.Events, id[:])
+	// }
+
+	// data, err := proto.Marshal(&persistedStream)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if err := streams.Put(stream[:], data); err != nil {
+	// 	return nil, err
+	// }
+
+	return res, err
 }
 
 func (s *boltEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err error) {

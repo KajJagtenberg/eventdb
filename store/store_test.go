@@ -1,9 +1,12 @@
 package store
 
 import (
-	"io/ioutil"
+	"encoding/binary"
+	"math/rand"
+	"os"
 	"testing"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/stretchr/testify/assert"
@@ -11,12 +14,10 @@ import (
 )
 
 func TempStore() (EventStore, error) {
-	f, err := ioutil.TempFile("/tmp", "*")
-	if err != nil {
-		return nil, err
-	}
+	path := "tmp/store.db"
+	os.Remove(path)
 
-	db, err := bbolt.Open(f.Name(), 0666, bbolt.DefaultOptions)
+	db, err := bbolt.Open(path, 0666, bbolt.DefaultOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -164,11 +165,19 @@ func TestGetAll(t *testing.T) {
 }
 
 func BenchmarkAdd(b *testing.B) {
-	store, err := TempStore()
+	opts := bbolt.DefaultOptions
+	db, err := bbolt.Open("tmp/store.db", 0666, opts)
 	if err != nil {
 		b.Fatal(err)
 	}
-	defer store.Close()
+	defer db.Close()
+
+	store, err := NewBoltEventStore(BoltStoreOptions{
+		DB: db,
+	})
+	if err != nil {
+		b.Fatal(err)
+	}
 
 	for i := 0; i < b.N; i++ {
 		var data []*api.AddRequest_EventData
@@ -187,6 +196,70 @@ func BenchmarkAdd(b *testing.B) {
 			Events:  data,
 		}
 
-		store.Add(req)
+		if _, err := store.Add(req); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkTxn(b *testing.B) {
+	db, err := bbolt.Open("tmp/store.db", 0666, bbolt.DefaultOptions)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer db.Close()
+
+	for i := 0; i < b.N; i++ {
+		txn, err := db.Begin(true)
+		if err != nil {
+			b.Fatal(err)
+		}
+		defer txn.Rollback()
+
+		bucket, err := txn.CreateBucketIfNotExists([]byte("bucket"))
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		key := make([]byte, 16)
+		value := make([]byte, 150)
+		rand.Read(key)
+		rand.Read(value)
+
+		if err := bucket.Put(key, value); err != nil {
+			b.Fatal(err)
+		}
+
+		if err := txn.Commit(); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkBadgerWrites(t *testing.B) {
+	db, err := badger.Open(badger.DefaultOptions("tmp/badger").WithLogger(nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	for i := 0; i < t.N; i++ {
+		txn := db.NewTransaction(true)
+		defer txn.Discard()
+
+		key := make([]byte, 4)
+		value := make([]byte, 150)
+
+		rand.Read(value)
+
+		binary.BigEndian.PutUint32(key, uint32(i))
+
+		if err := txn.Set(key, value); err != nil {
+			t.Fatal(err)
+		}
+
+		if err := txn.Commit(); err != nil {
+			t.Fatal(err)
+		}
 	}
 }

@@ -1,4 +1,4 @@
 data
 *.env
 *.pem
-fsm_data
+tmp
