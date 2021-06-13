@@ -130,7 +130,7 @@ func (s *EventStoreService) Version(context.Context, *api.VersionRequest) (*api.
 	}, nil
 }
 
-func (s *EventStoreService) ClusterState(context.Context, *api.ClusterStatsRequest) (*api.ClusterStatsResponse, error) {
+func (s *EventStoreService) ClusterStats(context.Context, *api.ClusterStatsRequest) (*api.ClusterStatsResponse, error) {
 	return &api.ClusterStatsResponse{
 		Stats: s.raft.Stats(),
 	}, nil
