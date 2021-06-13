@@ -2,8 +2,8 @@ package store
 
 import (
 	"encoding/binary"
+	"io/ioutil"
 	"math/rand"
-	"os"
 	"testing"
 
 	"github.com/dgraph-io/badger/v3"
@@ -14,8 +14,10 @@ import (
 )
 
 func TempStore() (EventStore, error) {
-	path := "tmp/badger/*"
-	os.RemoveAll(path)
+	path, err := ioutil.TempDir("/tmp", "*")
+	if err != nil {
+		return nil, err
+	}
 
 	db, err := badger.Open(badger.DefaultOptions(path).WithLogger(nil))
 	if err != nil {
