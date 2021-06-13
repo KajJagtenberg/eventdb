@@ -35,7 +35,7 @@ func (s *EventStoreService) handle(op string, req proto.Message) (interface{}, e
 		return nil, err
 	}
 
-	response := future.Response().(fsm.ApplyResponse)
+	response := future.Response().(*fsm.ApplyResponse)
 
 	return response.Data, response.Error
 }

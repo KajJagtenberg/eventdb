@@ -3,6 +3,7 @@ package fsm
 import (
 	"errors"
 	"io"
+	"log"
 
 	"github.com/hashicorp/raft"
 	"github.com/kajjagtenberg/eventflowdb/api"
@@ -14,11 +15,11 @@ type fsm struct {
 	store store.EventStore
 }
 
-func (b *fsm) Apply(log *raft.Log) interface{} {
-	switch log.Type {
+func (b *fsm) Apply(l *raft.Log) interface{} {
+	switch l.Type {
 	case raft.LogCommand:
 		var cmd api.Command
-		if err := proto.Unmarshal(log.Data, &cmd); err != nil {
+		if err := proto.Unmarshal(l.Data, &cmd); err != nil {
 			return &ApplyResponse{
 				Error: err,
 			}
@@ -130,17 +131,19 @@ func (b *fsm) Apply(log *raft.Log) interface{} {
 			}
 
 		case "SIZE":
-			var req *api.SizeRequest
-			if err := proto.Unmarshal(cmd.Payload, req); err != nil {
+			var req api.SizeRequest
+			if err := proto.Unmarshal(cmd.Payload, &req); err != nil {
 				return &ApplyResponse{
 					Error: err,
 				}
 			}
-			res, err := b.store.Size(req)
+			res, err := b.store.Size(&req)
 			return &ApplyResponse{
 				Data:  res,
 				Error: err,
 			}
+		default:
+			log.Println(cmd.Op)
 		}
 	}
 
