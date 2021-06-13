@@ -19,7 +19,6 @@ import (
 	"github.com/kajjagtenberg/eventflowdb/fsm"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/bbolt"
 	"google.golang.org/grpc"
 )
 
@@ -98,15 +97,15 @@ func testRaft() {
 	raftPort := env.GetEnv("RAFT_PORT", "26543")
 	followers := env.GetEnv("FOLLOWERS", "")
 
-	db, err := bbolt.Open(path.Join(data, "fsm"), 0666, bbolt.DefaultOptions)
+	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")))
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
-	eventstore, err := store.NewBoltEventStore(store.BoltStoreOptions{
+	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
 		DB:             db,
-		EstimateCounts: true,
+		EstimateCounts: false,
 	})
 	if err != nil {
 		log.Fatal(err)
