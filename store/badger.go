@@ -430,7 +430,7 @@ func (s *BadgerEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.Li
 			return nil, err
 		}
 
-		var id ulid.ULID
+		var id uuid.UUID
 		if err := id.UnmarshalBinary(persistedStream.Id); err != nil {
 			return nil, err
 		}

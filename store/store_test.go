@@ -242,6 +242,46 @@ func TestStreamCount(t *testing.T) {
 	assert.Equal(int64(1), res.Count)
 }
 
+func TestListStreams(t *testing.T) {
+	store, err := TempStore()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+
+	stream := uuid.New().String()
+
+	func() {
+		req := &api.AddRequest{
+			Stream:  stream,
+			Version: 0,
+			Events: []*api.AddRequest_EventData{
+				{
+					Type:     "TestEvent",
+					Data:     []byte("data"),
+					Metadata: []byte("metadata"),
+				},
+			},
+		}
+
+		_, err := store.Add(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
+
+	req := &api.ListStreamsRequest{}
+
+	res, err := store.ListStreams(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert := assert.New(t)
+	assert.Equal(1, len(res.Streams))
+	assert.Equal(stream, res.Streams[0].Id)
+}
+
 func BenchmarkAdd(t *testing.B) {
 	store, err := TempStore()
 	if err != nil {
