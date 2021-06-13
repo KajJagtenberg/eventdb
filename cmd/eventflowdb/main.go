@@ -13,7 +13,6 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb"
-	raftmdb "github.com/hashicorp/raft-mdb"
 	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/fsm"
@@ -97,7 +96,7 @@ func testRaft() {
 	raftPort := env.GetEnv("RAFT_PORT", "26543")
 	followers := env.GetEnv("FOLLOWERS", "")
 
-	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")))
+	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(log))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -124,8 +123,6 @@ func testRaft() {
 	raftConf.LocalID = raft.ServerID(nodeID)
 
 	fsmStore := fsm.NewFSM(eventstore)
-
-	raftmdb.NewMDBStore(path.Join(data, "store"))
 
 	store, err := raftboltdb.NewBoltStore(path.Join(data, "store"))
 	if err != nil {

@@ -3,7 +3,6 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
-	github.com/armon/gomdb v0.0.0-20180202201627-75f545a47e89 // indirect
 	github.com/dgraph-io/badger/v3 v3.2103.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -11,7 +10,6 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/hashicorp/raft v1.3.1
 	github.com/hashicorp/raft-boltdb v0.0.0-20210422161416-485fa74b0b01
-	github.com/hashicorp/raft-mdb v0.0.0-20180824152511-9ee9663b6ffa
 	github.com/joho/godotenv v1.3.0
 	github.com/oklog/ulid v1.3.1
 	github.com/sirupsen/logrus v1.8.1

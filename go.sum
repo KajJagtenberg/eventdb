@@ -8,8 +8,6 @@ github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAE
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 h1:EFSB7Zo9Eg91v7MJPVsifUysc/wPdN+NOnVe6bWbdBM=
 github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878/go.mod h1:3AMJUQhVx52RsWOnlkpikZr01T/yAVN2gn0861vByNg=
-github.com/armon/gomdb v0.0.0-20180202201627-75f545a47e89 h1:A1SPjPcl2LdF2Skv9Zt41jWu4XYQAyvBDzrveQjlkhQ=
-github.com/armon/gomdb v0.0.0-20180202201627-75f545a47e89/go.mod h1:wSblbytRgcqD+U+gGCKz5145DyjUYPh5fqh2uyXxfZw=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/boltdb/bolt v1.3.1 h1:JQmyP4ZBrce+ZQu0dY660FMfatumYDLun9hBCUVIkF4=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
@@ -94,8 +92,6 @@ github.com/hashicorp/raft v1.3.1 h1:zDT8ke8y2aP4wf9zPTB2uSIeavJ3Hx/ceY4jxI2JxuY=
 github.com/hashicorp/raft v1.3.1/go.mod h1:4Ak7FSPnuvmb0GV6vgIAJ4vYT4bek9bb6Q+7HVbyzqM=
 github.com/hashicorp/raft-boltdb v0.0.0-20210422161416-485fa74b0b01 h1:EfDtu7qY4bD9hNY9sIryn1L/Ycvo+/WPEFT2Crwdclg=
 github.com/hashicorp/raft-boltdb v0.0.0-20210422161416-485fa74b0b01/go.mod h1:L6EUYfWjwPIkX9uqJBsGb3fppuOcRx3t7z2joJnIf/g=
-github.com/hashicorp/raft-mdb v0.0.0-20180824152511-9ee9663b6ffa h1:ccwcWyXHTaonH6yzx+t/3p9aNm/ogSTfd6YobZOtHmE=
-github.com/hashicorp/raft-mdb v0.0.0-20180824152511-9ee9663b6ffa/go.mod h1:ooP3NrrH0GG/sVjF9pbRvhF6nVHRR4mkkwscLqReN1o=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/joho/godotenv v1.3.0 h1:Zjp+RcGpHhGlrMbJzXTrZZPrWj+1vfm90La1wgB6Bhc=
 github.com/joho/godotenv v1.3.0/go.mod h1:7hK45KPybAkOC6peb+G5yklZfMxEjkZhHbwpqxOKXbg=
