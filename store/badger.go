@@ -361,12 +361,16 @@ func (s *BadgerEventStore) StreamCount(req *api.StreamCountRequest) (res *api.St
 	return res, nil
 }
 
-func (s *BadgerEventStore) EventCountEstimate() (int64, error) {
-	return s.estimateEventCount, nil
+func (s *BadgerEventStore) EventCountEstimate(req *api.EventCountEstimateRequest) (res *api.EventCountResponse, err error) {
+	return &api.EventCountResponse{
+		Count: s.estimateEventCount,
+	}, err
 }
 
-func (s *BadgerEventStore) StreamCountEstimate() (int64, error) {
-	return s.estimateStreamCount, nil
+func (s *BadgerEventStore) StreamCountEstimate(req *api.StreamCountEstimateRequest) (res *api.StreamCountResponse, err error) {
+	return &api.StreamCountResponse{
+		Count: s.estimateStreamCount,
+	}, err
 }
 
 func (s *BadgerEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err error) {
