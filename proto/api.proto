@@ -104,17 +104,10 @@ message VersionResponse {
     string version = 1;
 }
 
-message ClusterStatsRequest {}
-
-message ClusterStatsResponse {
-    map<string, string> stats = 1;
-}
-
 service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
     rpc GetAll(GetAllRequest) returns(EventResponse) {}
-    // rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
@@ -123,5 +116,4 @@ service EventStoreService {
     rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
     rpc Version(VersionRequest) returns (VersionResponse) {}
-    rpc ClusterStats(ClusterStatsRequest) returns (ClusterStatsResponse) {}
 }

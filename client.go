@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/sirupsen/logrus"
@@ -20,10 +22,12 @@ func main() {
 
 	store := api.NewEventStoreServiceClient(conn)
 
-	res, err := store.ClusterStats(context.Background(), &api.ClusterStatsRequest{})
+	res, err := store.GetAll(context.Background(), &api.GetAllRequest{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println(res.Stats)
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", " ")
+	enc.Encode(res.Events)
 }

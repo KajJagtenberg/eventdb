@@ -8,8 +8,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0
-	github.com/hashicorp/raft v1.3.1
-	github.com/hashicorp/raft-boltdb v0.0.0-20210422161416-485fa74b0b01
 	github.com/joho/godotenv v1.3.0
 	github.com/oklog/ulid v1.3.1
 	github.com/sirupsen/logrus v1.8.1

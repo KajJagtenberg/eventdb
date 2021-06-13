@@ -6,17 +6,13 @@ import (
 	"os"
 	"os/signal"
 	"path"
-	"strings"
 	"syscall"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/hashicorp/raft"
-	raftboltdb "github.com/hashicorp/raft-boltdb"
 	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/kajjagtenberg/eventflowdb/env"
-	"github.com/kajjagtenberg/eventflowdb/fsm"
 	"github.com/kajjagtenberg/eventflowdb/store"
 	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/sirupsen/logrus"
@@ -42,8 +38,6 @@ func init() {
 
 func server() {
 	data := env.GetEnv("DATA", "data")
-	raftPort := env.GetEnv("RAFT_PORT", "26543")
-	followers := env.GetEnv("FOLLOWERS", "")
 	grpcPort := env.GetEnv("PORT", "6543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
@@ -63,75 +57,6 @@ func server() {
 		log.Fatal(err)
 	}
 	defer eventstore.Close()
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nodeID := env.GetEnv("NODE_ID", hostname)
-
-	raftConf := raft.DefaultConfig()
-	raftConf.SnapshotThreshold = 1024
-	raftConf.LocalID = raft.ServerID(nodeID)
-
-	fsmStore := fsm.NewFSM(eventstore)
-
-	store, err := raftboltdb.NewBoltStore(path.Join(data, "store"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer store.Close()
-
-	cacheStore, err := raft.NewLogCache(raftLogCacheSize, store)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	snapshotStore, err := raft.NewFileSnapshotStore(path.Join(data, "snapshots"), raftSnapShotRetain, os.Stdout)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	raftBindAddr := nodeID + ":" + raftPort
-
-	tcpAddr, err := net.ResolveTCPAddr("tcp", raftBindAddr)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	raftTransport, err := raft.NewTCPTransport(raftBindAddr, tcpAddr, maxPool, tcpTimeout, os.Stdout)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	raftSrv, err := raft.NewRaft(raftConf, fsmStore, cacheStore, store, snapshotStore, raftTransport)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer raftSrv.Shutdown()
-
-	var configuration raft.Configuration
-	configuration.Servers = []raft.Server{
-		{
-			ID:      raft.ServerID(raftConf.LocalID),
-			Address: raftTransport.LocalAddr(),
-		},
-	}
-
-	if len(followers) > 0 {
-		for _, follower := range strings.Split(followers, ",") {
-			parts := strings.Split(follower, "@")
-
-			configuration.Servers = append(configuration.Servers,
-				raft.Server{
-					ID:      raft.ServerID(parts[0]),
-					Address: raft.ServerAddress(parts[1]),
-				})
-		}
-	}
-
-	raftSrv.BootstrapCluster(configuration)
 
 	lis, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
@@ -155,8 +80,9 @@ func server() {
 	}
 
 	grpcServer := grpc.NewServer()
+	defer grpcServer.Stop()
 
-	api.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(raftSrv))
+	api.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
 
 	go func() {
 		log.Printf("gRPC server listening on %s", grpcPort)

@@ -3,14 +3,14 @@ version: "3"
 services:
   node1:
     build: .
-    ports:
-      - 6543:6543
     environment:
       - NODE_ID=node1
       - FOLLOWERS=node2@node2:26543,node3@node3:26543
 
   node2:
     build: .
+    ports:
+      - 6543:6543
     environment:
       - NODE_ID=node2
 
