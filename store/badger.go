@@ -365,7 +365,7 @@ func (s *BadgerEventStore) StreamCount(req *api.StreamCountRequest) (res *api.St
 
 	defer cursor.Close()
 
-	for cursor.Seek(BUCKET_EVENTS); cursor.ValidForPrefix(BUCKET_STREAMS); cursor.Next() {
+	for cursor.Seek(BUCKET_STREAMS); cursor.ValidForPrefix(BUCKET_STREAMS); cursor.Next() {
 		res.Count++
 	}
 
