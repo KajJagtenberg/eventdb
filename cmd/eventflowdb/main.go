@@ -13,6 +13,7 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb"
+	raftmdb "github.com/hashicorp/raft-mdb"
 	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/env"
 	"github.com/kajjagtenberg/eventflowdb/fsm"
@@ -125,10 +126,13 @@ func testRaft() {
 
 	fsmStore := fsm.NewFSM(eventstore)
 
+	raftmdb.NewMDBStore(path.Join(data, "store"))
+
 	store, err := raftboltdb.NewBoltStore(path.Join(data, "store"))
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer store.Close()
 
 	cacheStore, err := raft.NewLogCache(raftLogCacheSize, store)
 	if err != nil {

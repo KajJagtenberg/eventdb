@@ -162,3 +162,31 @@ func TestGetAll(t *testing.T) {
 	assert.Equal(events[0].Id, events[0].CausationId)
 	assert.Equal(events[0].Id, events[0].CorrelationId)
 }
+
+func BenchmarkAdd(b *testing.B) {
+	store, err := TempStore()
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer store.Close()
+
+	for i := 0; i < b.N; i++ {
+		var data []*api.AddRequest_EventData
+
+		for j := 0; j < 1; j++ {
+			data = append(data, &api.AddRequest_EventData{
+				Type:     "TestEvent",
+				Data:     []byte("data"),
+				Metadata: []byte("metadata"),
+			})
+		}
+
+		req := &api.AddRequest{
+			Stream:  uuid.New().String(),
+			Version: 0,
+			Events:  data,
+		}
+
+		store.Add(req)
+	}
+}
