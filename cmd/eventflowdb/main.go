@@ -44,7 +44,7 @@ func server() {
 	data := env.GetEnv("DATA", "data")
 	raftPort := env.GetEnv("RAFT_PORT", "26543")
 	followers := env.GetEnv("FOLLOWERS", "")
-	port := env.GetEnv("PORT", "6543")
+	grpcPort := env.GetEnv("PORT", "6543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
 	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
@@ -133,7 +133,7 @@ func server() {
 
 	raftSrv.BootstrapCluster(configuration)
 
-	lis, err := net.Listen("tcp", ":"+port)
+	lis, err := net.Listen("tcp", ":"+grpcPort)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -159,7 +159,7 @@ func server() {
 	api.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(raftSrv))
 
 	go func() {
-		log.Printf("gRPC server listening on %s", port)
+		log.Printf("gRPC server listening on %s", grpcPort)
 
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatal(err)
