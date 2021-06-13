@@ -14,15 +14,16 @@ import (
 )
 
 func TempStore() (EventStore, error) {
-	path := "tmp/store.db"
-	os.Remove(path)
+	path := "tmp/badger/*"
+	os.RemoveAll(path)
 
-	db, err := bbolt.Open(path, 0666, bbolt.DefaultOptions)
+	db, err := badger.Open(badger.DefaultOptions(path).WithLogger(nil))
 	if err != nil {
 		return nil, err
 	}
+	defer db.Close()
 
-	return NewBoltEventStore(BoltStoreOptions{
+	return NewBadgerEventStore(BadgerStoreOptions{
 		DB: db,
 	})
 }
