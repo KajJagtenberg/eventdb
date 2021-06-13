@@ -164,22 +164,14 @@ func TestGetAll(t *testing.T) {
 	assert.Equal(events[0].Id, events[0].CorrelationId)
 }
 
-func BenchmarkAdd(b *testing.B) {
-	opts := bbolt.DefaultOptions
-	db, err := bbolt.Open("tmp/store.db", 0666, opts)
+func BenchmarkAdd(t *testing.B) {
+	store, err := TempStore()
 	if err != nil {
-		b.Fatal(err)
+		t.Fatal(err)
 	}
-	defer db.Close()
+	defer store.Close()
 
-	store, err := NewBoltEventStore(BoltStoreOptions{
-		DB: db,
-	})
-	if err != nil {
-		b.Fatal(err)
-	}
-
-	for i := 0; i < b.N; i++ {
+	for i := 0; i < t.N; i++ {
 		var data []*api.AddRequest_EventData
 
 		for j := 0; j < 1; j++ {
@@ -197,7 +189,7 @@ func BenchmarkAdd(b *testing.B) {
 		}
 
 		if _, err := store.Add(req); err != nil {
-			b.Fatal(err)
+			t.Fatal(err)
 		}
 	}
 }

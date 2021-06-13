@@ -163,11 +163,15 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 		return nil, err
 	}
 
-	return res, err
+	return res, txn.Commit()
 }
 
 func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err error) {
 	res = &api.EventResponse{}
+
+	if req.Limit == 0 {
+		req.Limit = 10
+	}
 
 	stream, err := uuid.Parse(req.Stream)
 	if err != nil {
@@ -178,6 +182,9 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 	defer txn.Discard()
 
 	item, err := txn.Get(getStreamKey(stream))
+	log.Println(stream)
+	log.Println(item, err)
+
 	if err != nil {
 		if err == badger.ErrKeyNotFound {
 			return res, nil
@@ -197,6 +204,10 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 	}
 
 	for _, key := range persistedStream.Events {
+		if len(res.Events) >= int(req.Limit) {
+			break
+		}
+
 		var id ulid.ULID
 		if err := id.UnmarshalBinary(key); err != nil {
 			return nil, err
@@ -292,7 +303,7 @@ func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventRespons
 		}
 
 		var id ulid.ULID
-		if err := id.UnmarshalBinary(item.Key()); err != nil {
+		if err := id.UnmarshalBinary(item.Key()[2:]); err != nil {
 			return nil, err
 		}
 
