@@ -1,6 +1,9 @@
 package main
 
 import (
+	"context"
+
+	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -14,4 +17,13 @@ func main() {
 		log.Fatal(err)
 	}
 	defer conn.Close()
+
+	store := api.NewEventStoreServiceClient(conn)
+
+	res, err := store.Size(context.Background(), &api.SizeRequest{})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(res.SizeHuman)
 }

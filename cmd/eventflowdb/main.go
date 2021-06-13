@@ -111,15 +111,15 @@ func server() {
 	}
 	defer raftSrv.Shutdown()
 
-	if len(followers) > 0 {
-		var configuration raft.Configuration
-		configuration.Servers = []raft.Server{
-			{
-				ID:      raft.ServerID(raftConf.LocalID),
-				Address: raftTransport.LocalAddr(),
-			},
-		}
+	var configuration raft.Configuration
+	configuration.Servers = []raft.Server{
+		{
+			ID:      raft.ServerID(raftConf.LocalID),
+			Address: raftTransport.LocalAddr(),
+		},
+	}
 
+	if len(followers) > 0 {
 		for _, follower := range strings.Split(followers, ",") {
 			parts := strings.Split(follower, "@")
 
@@ -129,9 +129,9 @@ func server() {
 					Address: raft.ServerAddress(parts[1]),
 				})
 		}
-
-		raftSrv.BootstrapCluster(configuration)
 	}
+
+	raftSrv.BootstrapCluster(configuration)
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {

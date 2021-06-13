@@ -42,46 +42,73 @@ func (s *EventStoreService) handle(op string, req proto.Message) (interface{}, e
 
 func (s *EventStoreService) Add(ctx context.Context, req *api.AddRequest) (*api.EventResponse, error) {
 	res, err := s.handle("ADD", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.EventResponse), err
 }
 
 func (s *EventStoreService) Get(ctx context.Context, req *api.GetRequest) (*api.EventResponse, error) {
 	res, err := s.handle("GET", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.EventResponse), err
 }
 func (s *EventStoreService) GetAll(ctx context.Context, req *api.GetAllRequest) (*api.EventResponse, error) {
 	res, err := s.handle("GET_ALL", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.EventResponse), err
 }
 
 func (s *EventStoreService) EventCount(ctx context.Context, req *api.EventCountRequest) (*api.EventCountResponse, error) {
 	res, err := s.handle("EVENT_COUNT", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.EventCountResponse), err
 }
 
 func (s *EventStoreService) EventCountEstimate(ctx context.Context, req *api.EventCountEstimateRequest) (*api.EventCountResponse, error) {
 	res, err := s.handle("EVENT_COUNT_ESTIMATE", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.EventCountResponse), err
 }
 
 func (s *EventStoreService) StreamCount(ctx context.Context, req *api.StreamCountRequest) (*api.StreamCountResponse, error) {
 	res, err := s.handle("STREAM_COUNT", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.StreamCountResponse), err
 }
 
 func (s *EventStoreService) StreamCountEstimate(ctx context.Context, req *api.StreamCountEstimateRequest) (*api.StreamCountResponse, error) {
 	res, err := s.handle("STREAM_COUNT_ESTIMATE", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.StreamCountResponse), err
 }
 
 func (s *EventStoreService) ListStreams(ctx context.Context, req *api.ListStreamsRequest) (*api.ListStreamsReponse, error) {
 	res, err := s.handle("LIST_STREAMS", req)
+	if err != nil {
+		return nil, err
+	}
 	return res.(*api.ListStreamsReponse), err
 }
 
 func (s *EventStoreService) Size(ctx context.Context, req *api.SizeRequest) (*api.SizeResponse, error) {
 	res, err := s.handle("SIZE", req)
-	return res.(*api.SizeResponse), err
+	if err != nil {
+		return nil, err
+	}
+	return res.(*api.SizeResponse), nil
 }
 
 var (
