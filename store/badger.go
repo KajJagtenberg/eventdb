@@ -533,8 +533,3 @@ func getEventKey(id ulid.ULID) []byte {
 	result = append(result, id[:]...)
 	return result
 }
-
-type Checksum struct {
-	ID  ulid.ULID `json:"ulid"`
-	Sum []byte    `json:"sum"`
-}
