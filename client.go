@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"os"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -22,12 +22,23 @@ func main() {
 
 	store := api.NewEventStoreServiceClient(conn)
 
-	res, err := store.GetAll(context.Background(), &api.GetAllRequest{})
-	if err != nil {
-		log.Fatal(err)
-	}
+	for {
+		ctx, _ := context.WithTimeout(context.Background(), time.Second)
 
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", " ")
-	enc.Encode(res)
+		_, err := store.Add(ctx, &api.AddRequest{
+			Stream:  uuid.New().String(),
+			Version: 0,
+			Events: []*api.AddRequest_EventData{
+				{
+					Type: "TestEvent",
+					Data: []byte(""),
+				},
+			},
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		time.Sleep(10 * time.Millisecond)
+	}
 }

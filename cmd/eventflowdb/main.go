@@ -63,6 +63,8 @@ func server() {
 	var err error
 
 	if memory {
+		log.Println("running in memory mode")
+
 		db, err = badger.Open(badger.DefaultOptions("").WithLogger(log).WithInMemory(true))
 		if err != nil {
 			log.Fatal(err)
