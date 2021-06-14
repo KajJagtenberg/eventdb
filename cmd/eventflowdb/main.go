@@ -39,11 +39,23 @@ func server() {
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
 	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
+	memory := env.GetEnv("IN_MEMORY", "false") == "true"
 
-	db, err := badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(log))
-	if err != nil {
-		log.Fatal(err)
+	var db *badger.DB
+	var err error
+
+	if memory {
+		db, err = badger.Open(badger.DefaultOptions("").WithLogger(log).WithInMemory(true))
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		db, err = badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(log))
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+
 	defer db.Close()
 
 	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
