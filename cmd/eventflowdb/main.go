@@ -33,6 +33,24 @@ func init() {
 	godotenv.Load()
 }
 
+func setupTLS(lis net.Listener, certFile, keyFile string) (net.Listener, error) {
+	crt, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &tls.Config{
+		Certificates: []tls.Certificate{crt},
+	}
+
+	lis = tls.NewListener(lis, config)
+	if err != nil {
+		return nil, err
+	}
+
+	return lis, nil
+}
+
 func server() {
 	data := env.GetEnv("DATA", "data")
 	grpcPort := env.GetEnv("PORT", "6543")
@@ -73,16 +91,7 @@ func server() {
 	}
 
 	if tlsEnabled {
-		crt, err := tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		config := &tls.Config{
-			Certificates: []tls.Certificate{crt},
-		}
-
-		lis = tls.NewListener(lis, config)
+		lis, err = setupTLS(lis, certFile, keyFile)
 		if err != nil {
 			log.Fatal(err)
 		}
