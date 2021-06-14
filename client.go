@@ -29,5 +29,5 @@ func main() {
 
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", " ")
-	enc.Encode(res.Events)
+	enc.Encode(res)
 }

@@ -31,7 +31,9 @@ var (
 )
 
 func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err error) {
-	res = &api.EventResponse{}
+	res = &api.EventResponse{
+		Events: make([]*api.EventResponse_Event, 0),
+	}
 
 	stream, err := uuid.Parse(req.Stream)
 	if err != nil {
@@ -167,7 +169,9 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 }
 
 func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err error) {
-	res = &api.EventResponse{}
+	res = &api.EventResponse{
+		Events: make([]*api.EventResponse_Event, 0),
+	}
 
 	if req.Limit == 0 {
 		req.Limit = 10
@@ -204,6 +208,11 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 	}
 
 	for _, key := range persistedStream.Events {
+		if req.Version > 0 {
+			req.Version--
+			continue
+		}
+
 		if len(res.Events) >= int(req.Limit) {
 			break
 		}
@@ -260,7 +269,9 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 }
 
 func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse, err error) {
-	res = &api.EventResponse{}
+	res = &api.EventResponse{
+		Events: make([]*api.EventResponse_Event, 0),
+	}
 
 	if req.Limit == 0 {
 		req.Limit = 10
