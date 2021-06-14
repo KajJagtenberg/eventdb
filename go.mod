@@ -13,7 +13,7 @@ require (
 	github.com/oklog/ulid v1.3.1
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/urfave/cli v1.22.5
+	github.com/urfave/cli/v2 v2.3.0
 	go.etcd.io/bbolt v1.3.6
 	go.etcd.io/etcd/client/v3 v3.5.0-rc.1
 	golang.org/x/net v0.0.0-20210610132358-84b48f89b13b // indirect
