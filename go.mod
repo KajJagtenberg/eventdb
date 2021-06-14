@@ -3,6 +3,7 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgraph-io/badger/v3 v3.2103.0
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/snappy v0.0.3 // indirect
@@ -11,8 +12,8 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/stretchr/testify v1.7.0
+	github.com/urfave/cli v1.22.5
 	go.etcd.io/bbolt v1.3.6
 	go.etcd.io/etcd/client/v3 v3.5.0-rc.1
 	golang.org/x/net v0.0.0-20210610132358-84b48f89b13b // indirect
