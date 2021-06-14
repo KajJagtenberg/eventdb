@@ -15,6 +15,7 @@ func main() {
 			flowctl.VersionCommand,
 			flowctl.SizeCommand,
 			flowctl.GetCommand,
+			flowctl.GetAllCommand,
 		},
 	}
 
