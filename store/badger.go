@@ -550,12 +550,6 @@ func getEventKey(id ulid.ULID) []byte {
 	return result
 }
 
-func getMetadataKey(key []byte) []byte {
-	result := BUCKET_METADATA
-	result = append(result, key...)
-	return result
-}
-
 type Checksum struct {
 	ID  ulid.ULID `json:"ulid"`
 	Sum []byte    `json:"sum"`
