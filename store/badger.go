@@ -23,7 +23,7 @@ type BadgerEventStore struct {
 }
 
 var (
-	MAGIC_NUMBER = []byte{32, 179}
+	// MAGIC_NUMBER = []byte{32, 179}
 
 	BUCKET_EVENTS   = []byte{0, 0}
 	BUCKET_STREAMS  = []byte{0, 1}
@@ -472,33 +472,6 @@ type BadgerStoreOptions struct {
 
 func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) {
 	db := options.DB
-
-	if err := db.Update(func(txn *badger.Txn) error {
-		k := append(BUCKET_METADATA, []byte("MAGIC_NUMBER")...)
-
-		item, err := txn.Get(k)
-		if err == nil {
-			if err := item.Value(func(val []byte) error {
-				if !bytes.Equal(val, MAGIC_NUMBER) {
-					return errors.New("invalid magic number found. database could be in a corrupt state")
-				}
-
-				return nil
-			}); err != nil {
-				return err
-			}
-		} else if err == badger.ErrKeyNotFound {
-			if err := txn.Set(k, MAGIC_NUMBER); err != nil {
-				return err
-			}
-		} else {
-			return err
-		}
-
-		return nil
-	}); err != nil {
-		return nil, err
-	}
 
 	store := &BadgerEventStore{db, 0, 0}
 
