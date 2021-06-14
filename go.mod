@@ -4,13 +4,14 @@ go 1.16
 
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.0
+	github.com/gofiber/adaptor/v2 v2.1.6
+	github.com/gofiber/fiber/v2 v2.12.0
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
-	github.com/golang/snappy v0.0.3 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
-	github.com/prometheus/client_golang v1.11.0 // indirect
+	github.com/prometheus/client_golang v1.11.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	go.etcd.io/bbolt v1.3.6

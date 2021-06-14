@@ -11,6 +11,9 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/gofiber/adaptor/v2"
+	"github.com/gofiber/fiber/v2"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	concurrency "go.etcd.io/etcd/client/v3/concurrency"
 
@@ -53,7 +56,8 @@ func setupTLS(lis net.Listener, certFile, keyFile string) (net.Listener, error) 
 
 func server() {
 	data := env.GetEnv("DATA", "data")
-	grpcPort := env.GetEnv("PORT", "6543")
+	grpcPort := env.GetEnv("GRPC_PORT", "6543")
+	httpPort := env.GetEnv("HTTP_PORT", "16543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
 	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
@@ -80,7 +84,7 @@ func server() {
 
 	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
 		DB:             db,
-		EstimateCounts: false,
+		EstimateCounts: true,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -108,6 +112,20 @@ func server() {
 		log.Printf("gRPC server listening on %s", grpcPort)
 
 		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
+
+	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+
+	go func() {
+		log.Printf("HTTP server listening on %s", httpPort)
+
+		if err := app.Listen(":" + httpPort); err != nil {
 			log.Fatal(err)
 		}
 	}()

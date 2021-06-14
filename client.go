@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
@@ -25,20 +26,24 @@ func main() {
 	for {
 		ctx, _ := context.WithTimeout(context.Background(), time.Second)
 
+		data := make([]byte, 150)
+		metadata := make([]byte, 50)
+		rand.Read(data)
+		rand.Read(metadata)
+
 		_, err := store.Add(ctx, &api.AddRequest{
 			Stream:  uuid.New().String(),
 			Version: 0,
 			Events: []*api.AddRequest_EventData{
 				{
-					Type: "TestEvent",
-					Data: []byte(""),
+					Type:     "TestEvent",
+					Data:     data,
+					Metadata: metadata,
 				},
 			},
 		})
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		time.Sleep(10 * time.Millisecond)
 	}
 }

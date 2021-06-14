@@ -13,3 +13,4 @@ proto
 *.md
 *.pem
 tmp
+prometheus.yml
