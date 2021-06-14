@@ -159,6 +159,6 @@ func etcd() {
 }
 
 func main() {
-	// server()
-	etcd()
+	server()
+	// etcd()
 }
