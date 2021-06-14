@@ -11,7 +11,7 @@ import (
 	"github.com/dgraph-io/badger/v3"
 	"github.com/google/uuid"
 	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/si"
+	"github.com/kajjagtenberg/eventflowdb/conv"
 	"github.com/oklog/ulid"
 	"google.golang.org/protobuf/proto"
 )
@@ -401,7 +401,7 @@ func (s *BadgerEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, er
 	lsm, vlog := s.db.Size()
 
 	res.Size = lsm + vlog
-	res.SizeHuman = si.ByteCountSI(res.Size)
+	res.SizeHuman = conv.ByteCountSI(res.Size)
 
 	return res, nil
 }
