@@ -12,3 +12,4 @@ data
 proto
 *.md
 *.pem
+tmp

@@ -1,6 +1,4 @@
-FROM golang:1.16-alpine AS build
-
-RUN apk add g++
+FROM golang:1.16 AS build
 
 WORKDIR /src
 
@@ -11,17 +9,15 @@ RUN go mod download
 
 COPY . .
 
-RUN go test ./...
-
 RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 
-FROM alpine:3.8
+FROM debian
 
 ENV DATA /data
 ENV TLS_CERT_FILE /certs/cert.pem
 ENV TLS_KEY_FILE /certs/key.pem
 
-RUN mkdir $DATA
+RUN mkdir $DATA/{fsm,snapshots} -p
 
 COPY --from=build /src/bin/eventflowdb /usr/bin/eventflowdb
 

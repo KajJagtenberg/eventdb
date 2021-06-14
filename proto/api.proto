@@ -1,10 +1,13 @@
 syntax = "proto3";
 
-option go_package="./transport";
+package api;
 
-package transport;
+option go_package="./api";
 
-// Transport
+message Command {
+    string op = 1;
+    bytes payload = 2;
+}
 
 message EventResponse {
     message Event {
@@ -28,7 +31,6 @@ message AddRequest {
         string causation_id = 4;
         string correlation_id = 5;
     }
-
     string stream = 1;
     uint32 version = 2;
     repeated EventData events = 3;
@@ -45,20 +47,24 @@ message GetAllRequest {
     uint32 limit = 2;
 }
 
-message ChecksumRequest {}
+// message ChecksumRequest {}
 
-message ChecksumResponse {
-    string id = 1;
-    string checksum = 2;
-}
+// message ChecksumResponse {
+//     string id = 1;
+//     string checksum = 2;
+// }
 
 message EventCountRequest {}
+
+message EventCountEstimateRequest {}
 
 message EventCountResponse {
     int64 count = 1;
 }
 
 message StreamCountRequest {}
+
+message StreamCountEstimateRequest {}
 
 message StreamCountResponse {
     int64 count = 1;
@@ -102,11 +108,10 @@ service EventStoreService {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
     rpc GetAll(GetAllRequest) returns(EventResponse) {}
-    rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
-    rpc EventCountEstimate(EventCountRequest) returns (EventCountResponse) {}
+    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
-    rpc StreamCountEstimate(StreamCountRequest) returns (StreamCountResponse) {}
+    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
     rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
