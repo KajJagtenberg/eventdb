@@ -1,20 +1,29 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/urfave/cli"
 )
 
+const (
+	Version = "0.1.0"
+)
+
 func main() {
 	app := &cli.App{
-		Name:  "boom",
-		Usage: "make an explosive entrance",
-		Action: func(c *cli.Context) error {
-			fmt.Println("boom! I say!")
-			return nil
+		Name: "flowctl",
+		Commands: []cli.Command{
+			{
+				Name:      "version",
+				ShortName: "v",
+				Usage:     "Returns the cli version",
+				Action: func(c *cli.Context) error {
+					log.Println(Version)
+					return nil
+				},
+			},
 		},
 	}
 
