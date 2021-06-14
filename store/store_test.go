@@ -13,15 +13,25 @@ import (
 	"go.etcd.io/bbolt"
 )
 
-func TempStore() (EventStore, error) {
-	path, err := ioutil.TempDir("/tmp", "*")
-	if err != nil {
-		return nil, err
-	}
+func TempStore(memory bool) (EventStore, error) {
+	var db *badger.DB
+	var err error
 
-	db, err := badger.Open(badger.DefaultOptions(path).WithLogger(nil))
-	if err != nil {
-		return nil, err
+	if memory {
+		db, err = badger.Open(badger.DefaultOptions("").WithLogger(nil).WithInMemory(memory))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		path, err := ioutil.TempDir("/tmp", "*")
+		if err != nil {
+			return nil, err
+		}
+
+		db, err = badger.Open(badger.DefaultOptions(path).WithLogger(nil))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return NewBadgerEventStore(BadgerStoreOptions{
@@ -30,7 +40,7 @@ func TempStore() (EventStore, error) {
 }
 
 func TestAdd(t *testing.T) {
-	store, err := TempStore()
+	store, err := TempStore(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +77,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	store, err := TempStore()
+	store, err := TempStore(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +129,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	store, err := TempStore()
+	store, err := TempStore(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -167,7 +177,7 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestEventCount(t *testing.T) {
-	store, err := TempStore()
+	store, err := TempStore(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,7 +216,7 @@ func TestEventCount(t *testing.T) {
 }
 
 func TestStreamCount(t *testing.T) {
-	store, err := TempStore()
+	store, err := TempStore(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -245,7 +255,7 @@ func TestStreamCount(t *testing.T) {
 }
 
 func TestListStreams(t *testing.T) {
-	store, err := TempStore()
+	store, err := TempStore(true)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -285,7 +295,7 @@ func TestListStreams(t *testing.T) {
 }
 
 func BenchmarkAdd(t *testing.B) {
-	store, err := TempStore()
+	store, err := TempStore(true)
 	if err != nil {
 		t.Fatal(err)
 	}
