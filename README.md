@@ -62,18 +62,15 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 The features on the roadmap in no particular order:
 
-- Advanced authentication
-- TLS support
+- TLS Client Authentication
 - ACL or other authorization scheme
-- Choosable argument encodings (msgpack, protobuf)
 - Projection Engine
-- Asynchronous replication (with external leader election)
-- Optional synchronous replication (with Raft)
-- Backups
-- Pub/Sub notifications
+- Asynchronous replication (with etcd for leader election)
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
 - Web UI
 - Client libraries for other languages
+- CLI
+- Prometheus metrics
 
 ## Contributions
 
