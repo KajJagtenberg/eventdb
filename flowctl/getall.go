@@ -12,7 +12,7 @@ import (
 
 var GetAllCommand = &cli.Command{
 	Name:  "getall",
-	Usage: "Returns events for given stream",
+	Usage: "Returns events from the global stream",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "address",
