@@ -20,12 +20,6 @@ var SizeCommand = &cli.Command{
 			EnvVars: []string{"ADDRESS"},
 			Value:   "127.0.0.1:6543",
 		},
-		&cli.StringFlag{
-			Name:    "port",
-			Usage:   "Port of the cluster",
-			EnvVars: []string{"PORT"},
-			Value:   "6543",
-		},
 		&cli.BoolFlag{
 			Name:  "human",
 			Usage: "Whether to report the size in a human readable format",

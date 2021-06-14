@@ -14,6 +14,7 @@ func main() {
 		Commands: []*cli.Command{
 			flowctl.VersionCommand,
 			flowctl.SizeCommand,
+			flowctl.GetCommand,
 		},
 	}
 
