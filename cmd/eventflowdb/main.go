@@ -80,7 +80,7 @@ func server() {
 
 	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
 		DB:             db,
-		EstimateCounts: false,
+		EstimateCounts: true,
 	})
 	if err != nil {
 		log.Fatal(err)
