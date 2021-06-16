@@ -20,6 +20,7 @@ func main() {
 			flowctl.EventCountEstimateCommand,
 			flowctl.StreamCountCommand,
 			flowctl.StreamCountEstimateCommand,
+			flowctl.ListStreamsCommand,
 		},
 	}
 
