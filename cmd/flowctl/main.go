@@ -18,6 +18,8 @@ func main() {
 			flowctl.GetAllCommand,
 			flowctl.EventCountCommand,
 			flowctl.EventCountEstimateCommand,
+			flowctl.StreamCountCommand,
+			flowctl.StreamCountEstimateCommand,
 		},
 	}
 
