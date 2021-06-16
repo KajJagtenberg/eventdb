@@ -1,18 +1,14 @@
 package main
 
 import (
-	"context"
 	"crypto/tls"
 	"net"
 	"os"
 	"os/signal"
 	"path"
 	"syscall"
-	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	clientv3 "go.etcd.io/etcd/client/v3"
-	concurrency "go.etcd.io/etcd/client/v3/concurrency"
 
 	"github.com/joho/godotenv"
 	"github.com/kajjagtenberg/eventflowdb/api"
@@ -119,57 +115,6 @@ func server() {
 	log.Println("eventflowDB is shutting down...")
 }
 
-func etcd() {
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	id := env.GetEnv("NODE_ID", hostname)
-
-	log.Println("node id:", id)
-
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"localhost:2379"},
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer cli.Close()
-
-	log.Println("connected to etcd")
-
-	session, err := concurrency.NewSession(cli)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer session.Close()
-
-	ctx := context.Background()
-
-	election := concurrency.NewElection(session, "/leader-election/")
-
-	leader, err := election.Leader(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(leader.Kvs)
-
-	log.Println("trying to elect")
-
-	if err := election.Campaign(ctx, id); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("elected as leader")
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT)
-	<-c
-}
-
 func main() {
 	server()
-	// etcd()
 }
