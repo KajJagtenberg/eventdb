@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -20,11 +21,10 @@ type BadgerEventStore struct {
 	db                  *badger.DB
 	estimateStreamCount int64
 	estimateEventCount  int64
+	lock                sync.Mutex
 }
 
 var (
-	// MAGIC_NUMBER = []byte{32, 179}
-
 	BUCKET_EVENTS   = []byte{0, 0}
 	BUCKET_STREAMS  = []byte{0, 1}
 	BUCKET_METADATA = []byte{0, 2}
@@ -84,6 +84,8 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 	}
 
 	now := time.Now()
+
+	s.lock.Lock()
 
 	for i, event := range req.Events {
 		if len(event.Type) == 0 {
@@ -155,6 +157,8 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 
 		persistedStream.Events = append(persistedStream.Events, id[:])
 	}
+
+	s.lock.Unlock()
 
 	data, err := proto.Marshal(&persistedStream)
 	if err != nil {
@@ -484,7 +488,7 @@ type BadgerStoreOptions struct {
 func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) {
 	db := options.DB
 
-	store := &BadgerEventStore{db, 0, 0}
+	store := &BadgerEventStore{db, 0, 0, sync.Mutex{}}
 
 	if options.EstimateCounts {
 		go func() {
