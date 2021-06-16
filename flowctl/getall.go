@@ -11,8 +11,9 @@ import (
 )
 
 var GetAllCommand = &cli.Command{
-	Name:  "getall",
-	Usage: "Returns events from the global stream",
+	Name:    "getall",
+	Aliases: []string{"ga"},
+	Usage:   "Returns events from the global stream",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "address",

@@ -10,8 +10,9 @@ import (
 )
 
 var GetCommand = &cli.Command{
-	Name:  "get",
-	Usage: "Returns events for given stream",
+	Name:    "get",
+	Aliases: []string{"g"},
+	Usage:   "Returns events for given stream",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:    "address",

@@ -16,6 +16,8 @@ func main() {
 			flowctl.SizeCommand,
 			flowctl.GetCommand,
 			flowctl.GetAllCommand,
+			flowctl.EventCountCommand,
+			flowctl.EventCountEstimateCommand,
 		},
 	}
 
