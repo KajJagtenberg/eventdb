@@ -402,9 +402,9 @@ func (s *BadgerEventStore) StreamCountEstimate(req *api.StreamCountEstimateReque
 func (s *BadgerEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err error) {
 	res = &api.SizeResponse{}
 
-	lsm, vlog := s.db.Size()
+	lsm, _ := s.db.Size()
 
-	res.Size = lsm + vlog
+	res.Size = lsm
 	res.SizeHuman = conv.ByteCountSI(res.Size)
 
 	return res, nil
