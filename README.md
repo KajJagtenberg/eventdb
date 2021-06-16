@@ -44,15 +44,16 @@ docker run -d -v eventflowdb:/data -p 6543:6543 kajjagtenberg/eventflowdb:0.8.0
 
 The following environment variables can be used to alter the configuration:
 
-- `PORT`: The port on which the RESP server listens: Defaults: **6543**
+- `GRPC_PORT`: The port on which the gRPC server listens: Defaults: **6543**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
 - `TLS_ENABLED`: true/false. Enable TLS for RESP and HTTP API. Defaults: **false**
 - `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
 - `TLS_KEY_FILE`: Location of the key. Defaults: **certs/key.pem**
+- `IN_MEMORY`: Whether the data should resize in memory only. Defaults: **false**
 
 ## Usage
 
-EventflowDB is using gRPC with Protobuf as its method of transport and encoding. The transport.proto file is the source of truth for the API.
+EventflowDB is using gRPC with Protobuf as its method of transport and encoding. The [api.proto](proto/api.proto) file is the source of truth for the API.
 
 ## Versioning
 
@@ -62,18 +63,15 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 The features on the roadmap in no particular order:
 
-- Advanced authentication
-- TLS support
+- TLS Client Authentication
 - ACL or other authorization scheme
-- Choosable argument encodings (msgpack, protobuf)
 - Projection Engine
-- Asynchronous replication (with external leader election)
-- Optional synchronous replication (with Raft)
-- Backups
-- Pub/Sub notifications
+- Asynchronous replication (with etcd for leader election)
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
 - Web UI
 - Client libraries for other languages
+- CLI
+- Prometheus metrics
 
 ## Contributions
 
