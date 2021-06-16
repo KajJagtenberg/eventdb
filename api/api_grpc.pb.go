@@ -21,7 +21,6 @@ type EventStoreServiceClient interface {
 	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*EventResponse, error)
 	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*EventResponse, error)
 	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error)
-	// rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
@@ -30,7 +29,6 @@ type EventStoreServiceClient interface {
 	Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error)
 	Uptime(ctx context.Context, in *UptimeRequest, opts ...grpc.CallOption) (*UptimeResponse, error)
 	Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
-	ClusterStats(ctx context.Context, in *ClusterStatsRequest, opts ...grpc.CallOption) (*ClusterStatsResponse, error)
 }
 
 type eventStoreServiceClient struct {
@@ -140,15 +138,6 @@ func (c *eventStoreServiceClient) Version(ctx context.Context, in *VersionReques
 	return out, nil
 }
 
-func (c *eventStoreServiceClient) ClusterStats(ctx context.Context, in *ClusterStatsRequest, opts ...grpc.CallOption) (*ClusterStatsResponse, error) {
-	out := new(ClusterStatsResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStoreService/ClusterStats", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // EventStoreServiceServer is the server API for EventStoreService service.
 // All implementations must embed UnimplementedEventStoreServiceServer
 // for forward compatibility
@@ -156,7 +145,6 @@ type EventStoreServiceServer interface {
 	Add(context.Context, *AddRequest) (*EventResponse, error)
 	Get(context.Context, *GetRequest) (*EventResponse, error)
 	GetAll(context.Context, *GetAllRequest) (*EventResponse, error)
-	// rpc Checksum(ChecksumRequest) returns (ChecksumResponse) {}
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
 	EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountResponse, error)
 	StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error)
@@ -165,7 +153,6 @@ type EventStoreServiceServer interface {
 	Size(context.Context, *SizeRequest) (*SizeResponse, error)
 	Uptime(context.Context, *UptimeRequest) (*UptimeResponse, error)
 	Version(context.Context, *VersionRequest) (*VersionResponse, error)
-	ClusterStats(context.Context, *ClusterStatsRequest) (*ClusterStatsResponse, error)
 	mustEmbedUnimplementedEventStoreServiceServer()
 }
 
@@ -205,9 +192,6 @@ func (UnimplementedEventStoreServiceServer) Uptime(context.Context, *UptimeReque
 }
 func (UnimplementedEventStoreServiceServer) Version(context.Context, *VersionRequest) (*VersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
-}
-func (UnimplementedEventStoreServiceServer) ClusterStats(context.Context, *ClusterStatsRequest) (*ClusterStatsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ClusterStats not implemented")
 }
 func (UnimplementedEventStoreServiceServer) mustEmbedUnimplementedEventStoreServiceServer() {}
 
@@ -420,24 +404,6 @@ func _EventStoreService_Version_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventStoreService_ClusterStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ClusterStatsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServiceServer).ClusterStats(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStoreService/ClusterStats",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServiceServer).ClusterStats(ctx, req.(*ClusterStatsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // EventStoreService_ServiceDesc is the grpc.ServiceDesc for EventStoreService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -488,10 +454,6 @@ var EventStoreService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Version",
 			Handler:    _EventStoreService_Version_Handler,
-		},
-		{
-			MethodName: "ClusterStats",
-			Handler:    _EventStoreService_ClusterStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

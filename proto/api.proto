@@ -4,11 +4,6 @@ package api;
 
 option go_package="./api";
 
-message Command {
-    string op = 1;
-    bytes payload = 2;
-}
-
 message EventResponse {
     message Event {
         string id = 1;
