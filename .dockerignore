@@ -4,12 +4,12 @@
 .dockerignore
 Dockerfile
 Makefile
-docker-compose.yml
-webui
 data
 *.rest
 *.env
-proto
+*.proto
 *.md
 *.pem
-tmp
+*.yml
+CNAME
+example
