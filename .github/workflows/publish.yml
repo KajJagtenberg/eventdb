@@ -27,7 +27,6 @@ jobs:
         run: go test -v ./...
 
   push:
-    needs: integrate
     runs-on: ubuntu-latest
     steps:
       - name: Set short commit hash in env
