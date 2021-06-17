@@ -1,0 +1,16 @@
+POST http://127.0.0.1:8080/api/v1/account/register
+Content-Type: application/json
+
+{
+    "id": "3fdd16d0-04ff-4915-ad7e-b32b83beee75",
+    "name": "Kaj Jagtenberg"
+}
+
+###
+POST http://127.0.0.1:8080/api/v1/account/changename
+Content-Type: application/json
+
+{
+    "id": "3fdd16d0-04ff-4915-ad7e-b32b83beee75",
+    "name": "Kaj"
+}

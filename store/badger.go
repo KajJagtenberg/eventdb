@@ -32,7 +32,7 @@ var (
 
 func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err error) {
 	res = &api.EventResponse{
-		Events: make([]*api.EventResponse_Event, 0),
+		Events: make([]*api.Event, 0),
 	}
 
 	stream, err := uuid.Parse(req.Stream)
@@ -143,7 +143,7 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 			return nil, err
 		}
 
-		res.Events = append(res.Events, &api.EventResponse_Event{
+		res.Events = append(res.Events, &api.Event{
 			Id:            id.String(),
 			Stream:        stream.String(),
 			Version:       req.Version + uint32(i),
@@ -174,11 +174,7 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 
 func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err error) {
 	res = &api.EventResponse{
-		Events: make([]*api.EventResponse_Event, 0),
-	}
-
-	if req.Limit == 0 {
-		req.Limit = 10
+		Events: make([]*api.Event, 0),
 	}
 
 	stream, err := uuid.Parse(req.Stream)
@@ -190,8 +186,6 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 	defer txn.Discard()
 
 	item, err := txn.Get(getStreamKey(stream))
-	log.Println(stream)
-	log.Println(item, err)
 
 	if err != nil {
 		if err == badger.ErrKeyNotFound {
@@ -217,7 +211,7 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 			continue
 		}
 
-		if len(res.Events) >= int(req.Limit) {
+		if len(res.Events) >= int(req.Limit) && req.Limit != 0 {
 			break
 		}
 
@@ -256,7 +250,7 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 			return nil, err
 		}
 
-		res.Events = append(res.Events, &api.EventResponse_Event{
+		res.Events = append(res.Events, &api.Event{
 			Id:            id.String(),
 			Stream:        stream.String(),
 			Version:       event.Version,
@@ -274,7 +268,7 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 
 func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse, err error) {
 	res = &api.EventResponse{
-		Events: make([]*api.EventResponse_Event, 0),
+		Events: make([]*api.Event, 0),
 	}
 
 	if req.Limit == 0 {
@@ -337,7 +331,7 @@ func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventRespons
 			return nil, err
 		}
 
-		res.Events = append(res.Events, &api.EventResponse_Event{
+		res.Events = append(res.Events, &api.Event{
 			Id:            id.String(),
 			Stream:        stream.String(),
 			Version:       event.Version,
