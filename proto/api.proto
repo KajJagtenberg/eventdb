@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package api;
+
+option go_package="./api";
+
+message Event {
+    string id = 1;
+    string stream = 2;
+    uint32 version = 3;
+    string type = 4;
+    bytes data = 5;
+    bytes metadata = 6;
+    string causation_id = 7;
+    string correlation_id = 8;
+    int64 added_at = 9;
+}
+
+message EventData {
+    string type = 1;
+    bytes data = 2;
+    bytes metadata = 3;
+    string causation_id = 4;
+    string correlation_id = 5;
+}
+
+message EventResponse {
+    repeated Event events = 1;
+}
+message AddRequest { 
+    string stream = 1;
+    uint32 version = 2;
+    repeated EventData events = 3;
+}
+
+message GetRequest {
+    string stream = 1;
+    uint32 version = 2;
+    uint32 limit = 3;
+}
+
+message GetAllRequest {
+    string offset = 1;
+    uint32 limit = 2;
+}
+
+message EventCountRequest {}
+
+message EventCountEstimateRequest {}
+
+message EventCountResponse {
+    int64 count = 1;
+}
+
+message StreamCountRequest {}
+
+message StreamCountEstimateRequest {}
+
+message StreamCountResponse {
+    int64 count = 1;
+}
+
+message ListStreamsRequest {
+    uint32 skip = 1;
+    uint32 limit = 2;
+} 
+
+message ListStreamsReponse {
+    message Stream {
+        string id = 1;
+        repeated string events = 2;
+        int64 added_at = 3;
+    }
+    repeated Stream streams = 1;
+}
+
+message SizeRequest {}
+
+message SizeResponse {
+    int64 size = 1;
+    string size_human = 2;
+}
+
+message UptimeRequest {}
+
+message UptimeResponse {
+    int64 uptime = 1;
+    string uptime_human = 2;
+}
+
+message VersionRequest {}
+
+message VersionResponse {
+    string version = 1;
+}
+
+service EventStore {
+    rpc Add(AddRequest) returns(EventResponse) {}
+    rpc Get(GetRequest) returns(EventResponse) {}
+    rpc GetAll(GetAllRequest) returns(EventResponse) {}
+    rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
+    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
+    rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
+    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
+    rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
+    rpc Size(SizeRequest) returns (SizeResponse) {}
+    rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
+    rpc Version(VersionRequest) returns (VersionResponse) {}
+}

@@ -3,21 +3,23 @@ module github.com/kajjagtenberg/eventflowdb
 go 1.16
 
 require (
-	github.com/dgraph-io/badger/v3 v3.2011.1
-	github.com/go-redis/redis v6.15.9+incompatible
-	github.com/gofiber/fiber/v2 v2.10.0
+	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
+	github.com/dgraph-io/badger/v3 v3.2103.0
+	github.com/gofiber/fiber/v2 v2.13.0
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/uuid v1.2.0
-	github.com/kajjagtenberg/go-commando v0.0.0-20210515151102-23079595e6df
-	github.com/kr/pretty v0.2.0 // indirect
+	github.com/joho/godotenv v1.3.0
+	github.com/kr/text v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
-	github.com/onsi/gomega v1.12.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
-	github.com/tidwall/btree v0.5.0 // indirect
-	github.com/tidwall/redcon v1.4.1
-	github.com/valyala/fasthttp v1.25.0 // indirect
-	golang.org/x/net v0.0.0-20210521195947-fe42d452be8f // indirect
-	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1 // indirect
+	github.com/urfave/cli/v2 v2.3.0
+	go.etcd.io/bbolt v1.3.6
+	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
+	google.golang.org/genproto v0.0.0-20210614182748-5b3b54cad159 // indirect
+	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.0
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )

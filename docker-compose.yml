@@ -1,0 +1,21 @@
+version: "3"
+
+services:
+  etcd:
+    image: bitnami/etcd:latest
+    ports:
+      - 2379:2379
+      - 2380:2380
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+
+  node1:
+    build: .
+
+  node2:
+    build: .
+    # ports:
+    #   - 6543:6543
+
+  node3:
+    build: .
