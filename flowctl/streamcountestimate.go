@@ -30,7 +30,7 @@ var StreamCountEstimateCommand = &cli.Command{
 		}
 		defer conn.Close()
 
-		store := api.NewEventStoreServiceClient(conn)
+		store := api.NewEventStoreClient(conn)
 		res, err := store.StreamCountEstimate(context.Background(), &api.StreamCountEstimateRequest{})
 		if err != nil {
 			return err

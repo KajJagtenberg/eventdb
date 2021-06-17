@@ -97,7 +97,7 @@ func server() {
 
 	grpcServer := grpc.NewServer()
 
-	api.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
+	api.RegisterEventStoreServer(grpcServer, transport.NewEventStore(eventstore))
 
 	go func() {
 		log.Printf("gRPC server listening on %s", grpcPort)

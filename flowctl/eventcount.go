@@ -30,7 +30,7 @@ var EventCountCommand = &cli.Command{
 		}
 		defer conn.Close()
 
-		store := api.NewEventStoreServiceClient(conn)
+		store := api.NewEventStoreClient(conn)
 		res, err := store.EventCount(context.Background(), &api.EventCountRequest{})
 		if err != nil {
 			return err

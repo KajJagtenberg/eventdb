@@ -94,7 +94,7 @@ message VersionResponse {
     string version = 1;
 }
 
-service EventStoreService {
+service EventStore {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
     rpc GetAll(GetAllRequest) returns(EventResponse) {}

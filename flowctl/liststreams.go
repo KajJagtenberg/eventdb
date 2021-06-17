@@ -44,7 +44,7 @@ var ListStreamsCommand = &cli.Command{
 		}
 		defer conn.Close()
 
-		store := api.NewEventStoreServiceClient(conn)
+		store := api.NewEventStoreClient(conn)
 		res, err := store.ListStreams(context.Background(), &api.ListStreamsRequest{
 			Skip:  uint32(skip),
 			Limit: uint32(limit),

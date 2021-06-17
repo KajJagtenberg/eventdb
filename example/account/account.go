@@ -15,7 +15,7 @@ type Account struct {
 	Name string
 }
 
-func (acc *Account) LoadFromHistory(eventstore api.EventStoreServiceClient) error {
+func (acc *Account) LoadFromHistory(eventstore api.EventStoreClient) error {
 	res, err := eventstore.Get(context.Background(), &api.GetRequest{
 		Stream:  acc.ID.String(),
 		Version: 0,
@@ -57,7 +57,7 @@ func (acc *Account) Apply(event *api.Event) error {
 	return nil
 }
 
-func Handle(eventstore api.EventStoreServiceClient, id uuid.UUID, cmd AccountCommand) error {
+func Handle(eventstore api.EventStoreClient, id uuid.UUID, cmd AccountCommand) error {
 	acc := &Account{
 		ID: id,
 	}

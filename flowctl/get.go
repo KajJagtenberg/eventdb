@@ -49,7 +49,7 @@ var GetCommand = &cli.Command{
 		}
 		defer conn.Close()
 
-		store := api.NewEventStoreServiceClient(conn)
+		store := api.NewEventStoreClient(conn)
 		res, err := store.Get(context.Background(), &api.GetRequest{
 			Stream:  stream,
 			Version: uint32(version),

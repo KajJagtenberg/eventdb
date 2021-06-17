@@ -44,7 +44,7 @@ var GetAllCommand = &cli.Command{
 		}
 		defer conn.Close()
 
-		store := api.NewEventStoreServiceClient(conn)
+		store := api.NewEventStoreClient(conn)
 		res, err := store.GetAll(context.Background(), &api.GetAllRequest{
 			Offset: offset,
 			Limit:  uint32(limit),

@@ -22,7 +22,7 @@ func main() {
 	}
 	defer conn.Close()
 
-	eventstore := api.NewEventStoreServiceClient(conn)
+	eventstore := api.NewEventStoreClient(conn)
 
 	app := fiber.New()
 	app.Post("/api/v1/account/register", func(c *fiber.Ctx) error {

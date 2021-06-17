@@ -35,7 +35,7 @@ var SizeCommand = &cli.Command{
 		}
 		defer conn.Close()
 
-		store := api.NewEventStoreServiceClient(conn)
+		store := api.NewEventStoreClient(conn)
 		res, err := store.Size(context.Background(), &api.SizeRequest{})
 		if err != nil {
 			return err
