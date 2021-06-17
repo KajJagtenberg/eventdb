@@ -511,17 +511,15 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 		}()
 	}
 
-	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
-		defer ticker.Stop()
-		for range ticker.C {
-		again:
-			err := db.RunValueLogGC(0.7)
-			if err == nil {
-				goto again
+	if !db.Opts().InMemory {
+		go func() {
+			if err := db.RunValueLogGC(0.7); err != nil && err != badger.ErrNoRewrite {
+				log.Fatal(err)
 			}
-		}
-	}()
+
+			time.Sleep(ESTIMATE_SLEEP_TIME)
+		}()
+	}
 
 	return store, nil
 }

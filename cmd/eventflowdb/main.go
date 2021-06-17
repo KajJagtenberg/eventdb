@@ -57,26 +57,25 @@ func server() {
 
 	var db *badger.DB
 	var err error
+	var options badger.Options
 
 	if memory {
 		log.Println("running in memory mode")
 
-		db, err = badger.Open(badger.DefaultOptions("").WithLogger(log).WithInMemory(true))
-		if err != nil {
-			log.Fatal(err)
-		}
+		options = badger.DefaultOptions("").WithLogger(nil).WithInMemory(true)
 	} else {
-		db, err = badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(log))
-		if err != nil {
-			log.Fatal(err)
-		}
+		options = badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(nil).WithInMemory(false)
 	}
 
+	db, err = badger.Open(options)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
 
 	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
 		DB:             db,
-		EstimateCounts: true,
+		EstimateCounts: false,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -94,25 +93,26 @@ func server() {
 			log.Fatal(err)
 		}
 	}
+	defer lis.Close()
 
 	grpcServer := grpc.NewServer()
-	defer grpcServer.Stop()
 
 	api.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
 
 	go func() {
 		log.Printf("gRPC server listening on %s", grpcPort)
 
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatal(err)
-		}
+		grpcServer.Serve(lis)
 	}()
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
 
 	log.Println("eventflowDB is shutting down...")
+
+	db.Close()
+	grpcServer.GracefulStop()
 }
 
 func main() {
