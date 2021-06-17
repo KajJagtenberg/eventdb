@@ -10,6 +10,7 @@ The current version is subject to change and the API may break at any time. Be a
     - [Installing](#installing)
   - [Configuration](#configuration)
   - [Usage](#usage)
+  - [Example](#example)
   - [Versioning](#versioning)
   - [Roadmap](#roadmap)
   - [Contributions](#contributions)
@@ -54,6 +55,10 @@ The following environment variables can be used to alter the configuration:
 ## Usage
 
 EventflowDB is using gRPC with Protobuf as its method of transport and encoding. The [api.proto](proto/api.proto) file is the source of truth for the API.
+
+## Example
+
+An example for Golang can be found in the [example](example) folder.
 
 ## Versioning
 
