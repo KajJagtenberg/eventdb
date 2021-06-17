@@ -42,13 +42,6 @@ message GetAllRequest {
     uint32 limit = 2;
 }
 
-// message ChecksumRequest {}
-
-// message ChecksumResponse {
-//     string id = 1;
-//     string checksum = 2;
-// }
-
 message EventCountRequest {}
 
 message EventCountEstimateRequest {}
