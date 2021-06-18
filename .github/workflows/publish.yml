@@ -3,6 +3,8 @@ name: Build & Push
 on:
   push:
     tags: "*.*.*"
+    
+  workflow_dispatch:
 
 jobs:
   push:
