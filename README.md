@@ -38,7 +38,7 @@ Once you've installed Docker, you can execute the following commands to start an
 ```shell
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -p 6543:6543 kajjagtenberg/eventflowdb:0.8.0
+docker run -d -v eventflowdb:/data -p 6543:6543 kajjagtenberg/eventflowdb:v0.8.1
 ```
 
 ## Configuration
