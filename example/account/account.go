@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
 )
 
 type Account struct {

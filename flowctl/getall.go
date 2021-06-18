@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
 )

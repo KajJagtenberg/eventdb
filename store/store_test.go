@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/bbolt"
 )

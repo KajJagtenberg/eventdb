@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/api"
 )
 
 type AccountCommand interface {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/constants"
-	"github.com/kajjagtenberg/eventflowdb/store"
+	"github.com/eventflowdb/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/constants"
+	"github.com/eventflowdb/eventflowdb/store"
 )
 
 type EventStore struct {

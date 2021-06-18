@@ -4,7 +4,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/kajjagtenberg/eventflowdb/flowctl"
+	"github.com/eventflowdb/eventflowdb/flowctl"
 	cli "github.com/urfave/cli/v2"
 )
 
