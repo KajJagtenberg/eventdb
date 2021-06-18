@@ -15,25 +15,6 @@ type Account struct {
 	Name string
 }
 
-func (acc *Account) LoadFromHistory(eventstore api.EventStoreClient) error {
-	res, err := eventstore.Get(context.Background(), &api.GetRequest{
-		Stream:  acc.ID.String(),
-		Version: 0,
-		Limit:   0,
-	})
-	if err != nil {
-		return err
-	}
-
-	for _, event := range res.Events {
-		if err := acc.Apply(event); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 func (acc *Account) Apply(event *api.Event) error {
 	var e AccountEvent
 
@@ -62,8 +43,20 @@ func Handle(eventstore api.EventStoreClient, id uuid.UUID, cmd AccountCommand) e
 		ID: id,
 	}
 
-	if err := acc.LoadFromHistory(eventstore); err != nil {
+	res, err := eventstore.Get(context.Background(), &api.GetRequest{
+		Stream:  acc.ID.String(),
+		Version: 0,
+		Limit:   0,
+	})
+
+	if err != nil {
 		return err
+	}
+
+	for _, event := range res.Events {
+		if err := acc.Apply(event); err != nil {
+			return err
+		}
 	}
 
 	events, err := cmd.Execute(acc)
