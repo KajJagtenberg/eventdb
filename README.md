@@ -2,10 +2,8 @@
 
 EventflowDB is a database designed with Event Sourcing in mind.
 
-The current version is subject to change and the API may break at any time. Be advised.
-
 - [EventflowDB](#eventflowdb)
-  - [Getting Started](#getting-started)
+    - [Features](#features)
     - [Prerequisites](#prerequisites)
     - [Installing](#installing)
   - [Configuration](#configuration)
@@ -17,9 +15,11 @@ The current version is subject to change and the API may break at any time. Be a
   - [Authors](#authors)
   - [License](#license)
 
-## Getting Started
+### Features
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+- Stream / Aggregate based event storage and retrieval.
+- Global, checkpoint based event retrieval.
+- Flowctl, a simple command line interface.
 
 ### Prerequisites
 
@@ -38,7 +38,7 @@ Once you've installed Docker, you can execute the following commands to start an
 ```shell
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -p 6543:6543 kajjagtenberg/eventflowdb:v0.8.1
+docker run -d -v eventflowdb:/data -p 6543:6543 ghcr.io/eventflowdb:latest
 ```
 
 ## Configuration
@@ -47,18 +47,36 @@ The following environment variables can be used to alter the configuration:
 
 - `GRPC_PORT`: The port on which the gRPC server listens: Defaults: **6543**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
-- `TLS_ENABLED`: true/false. Enable TLS for RESP and HTTP API. Defaults: **false**
+- `TLS_ENABLED`: true/false. Enable TLS for gRPC. Defaults: **false**
 - `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
 - `TLS_KEY_FILE`: Location of the key. Defaults: **certs/key.pem**
-- `IN_MEMORY`: Whether the data should resize in memory only. Defaults: **false**
+- `IN_MEMORY`: Whether the data should reside in memory only. Defaults: **false**
 
 ## Usage
 
 EventflowDB is using gRPC with Protobuf as its method of transport and encoding. The [api.proto](proto/api.proto) file is the source of truth for the API.
 
+API Specification:
+
+```protobuf
+service EventStore {
+    rpc Add(AddRequest) returns(EventResponse) {}
+    rpc Get(GetRequest) returns(EventResponse) {}
+    rpc GetAll(GetAllRequest) returns(EventResponse) {}
+    rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
+    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
+    rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
+    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
+    rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
+    rpc Size(SizeRequest) returns (SizeResponse) {}
+    rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
+    rpc Version(VersionRequest) returns (VersionResponse) {}
+}
+```
+
 ## Example
 
-An example for Golang can be found in the [example](example) folder.
+An simple example project for Golang can be found in the [example](example) folder.
 
 ## Versioning
 
@@ -75,8 +93,9 @@ The features on the roadmap in no particular order:
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
 - Web UI
 - Client libraries for other languages
-- CLI
 - Prometheus metrics
+
+These may change at any point in the future.
 
 ## Contributions
 
