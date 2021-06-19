@@ -45,7 +45,7 @@ The following environment variables can be used to alter the configuration:
 
 - `GRPC_PORT`: The port on which the gRPC server listens: Defaults: **6543**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
-- `TLS_ENABLED`: true/false. Enable TLS for RESP and HTTP API. Defaults: **false**
+- `TLS_ENABLED`: true/false. Enable TLS for gRPC. Defaults: **false**
 - `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
 - `TLS_KEY_FILE`: Location of the key. Defaults: **certs/key.pem**
 - `IN_MEMORY`: Whether the data should resize in memory only. Defaults: **false**
