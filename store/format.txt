@@ -1,0 +1,5 @@
+[0][id] = event
+[1][stream][version] = [id]
+[2][sequence] = [id]
+[3][metadata] = value
+[4][stream] = nil

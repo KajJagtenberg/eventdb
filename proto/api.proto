@@ -5,16 +5,15 @@ package api;
 option go_package="./api";
 
 message Event {
-    uint64 sequence = 1;
-    string id = 2;
-    string stream = 3;
-    uint32 version = 4;
-    string type = 5;
-    bytes data = 6;
-    bytes metadata = 7;
-    string causation_id = 8;
-    string correlation_id = 9;
-    int64 added_at = 10;
+    string id = 1;
+    string stream = 2;
+    uint32 version = 3;
+    string type = 4;
+    bytes data = 5;
+    bytes metadata = 6;
+    string causation_id = 7;
+    string correlation_id = 8;
+    int64 added_at = 9;
 }
 
 message EventData {
