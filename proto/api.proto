@@ -67,12 +67,7 @@ message ListStreamsRequest {
 } 
 
 message ListStreamsReponse {
-    message Stream {
-        string id = 1;
-        repeated string events = 2;
-        int64 added_at = 3;
-    }
-    repeated Stream streams = 1;
+    repeated string streams = 1;
 }
 
 message SizeRequest {}

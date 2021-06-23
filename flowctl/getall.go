@@ -21,11 +21,11 @@ var GetAllCommand = &cli.Command{
 			EnvVars: []string{"ADDRESS"},
 			Value:   "127.0.0.1:6543",
 		},
-		&cli.StringFlag{
+		&cli.Uint64Flag{
 			Name:    "offset",
 			Aliases: []string{"s"},
 			Usage:   "The offset in the global stream",
-			Value:   "00000000000000000000000000",
+			Value:   0,
 		},
 		&cli.IntFlag{
 			Name:    "limit",
@@ -35,7 +35,7 @@ var GetAllCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 		address := c.String("address")
-		offset := c.String("offset")
+		offset := c.Uint64("offset")
 		limit := c.Int("limit")
 
 		conn, err := grpc.Dial(address, grpc.WithInsecure())

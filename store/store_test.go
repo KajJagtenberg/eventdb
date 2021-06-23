@@ -408,7 +408,7 @@ func TestListStreams(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(1, len(res.Streams))
-	assert.Equal(stream, res.Streams[0].Id)
+	assert.Equal(stream, res.Streams[0])
 }
 
 func TestListStreamsWithSkip(t *testing.T) {
