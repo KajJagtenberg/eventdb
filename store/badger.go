@@ -28,11 +28,6 @@ type BadgerEventStore struct {
 }
 
 var (
-<<<<<<< HEAD
-	BUCKET_EVENTS   = []byte{0, 0}
-	BUCKET_STREAMS  = []byte{0, 1}
-	BUCKET_METADATA = []byte{0, 2}
-=======
 	BUCKET_EVENTS      = []byte{0}
 	BUCKET_STREAMS     = []byte{1}
 	BUCKET_SEQUENCE    = []byte{2}
@@ -40,7 +35,6 @@ var (
 	BUCKET_STREAM_LIST = []byte{4}
 
 	KEY_CURRENT_SEQUENCE = []byte{3, 0}
->>>>>>> develop
 )
 
 var (
