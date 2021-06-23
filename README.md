@@ -38,7 +38,7 @@ Once you've installed Docker, you can execute the following commands to start an
 ```shell
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -p 6543:6543 ghcr.io/eventflowdb/eventflowdb:latest
+docker run -d -v eventflowdb:/data -p 6543:6543 -p 16543:16543 ghcr.io/eventflowdb/eventflowdb:0.9.0
 ```
 
 ## Configuration
@@ -46,7 +46,7 @@ docker run -d -v eventflowdb:/data -p 6543:6543 ghcr.io/eventflowdb/eventflowdb:
 The following environment variables can be used to alter the configuration:
 
 - `GRPC_PORT`: The port on which the gRPC server listens: Defaults: **6543**
-- `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **6543**
+- `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **16543**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
 - `TLS_ENABLED`: true/false. Enable TLS for gRPC. Defaults: **false**
 - `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
