@@ -66,6 +66,8 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 		return nil, err
 	}
 
+	// TODO: Check if the gap does not exist
+
 	for i, event := range req.Events {
 		var id ulid.ULID
 
@@ -162,82 +164,61 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 	txn := s.db.NewTransaction(false)
 	defer txn.Discard()
 
-	item, err := txn.Get(getStreamKey(stream))
-
-	if err != nil {
-		if err == badger.ErrKeyNotFound {
-			return res, nil
-		} else {
-			return nil, err
-		}
-	}
-
-	data, err := item.ValueCopy(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var persistedStream PersistedStream
-	if err := proto.Unmarshal(data, &persistedStream); err != nil {
-		return nil, err
-	}
-
-	for _, key := range persistedStream.Events {
-		if req.Version > 0 {
-			req.Version--
-			continue
-		}
-
+	cursor := txn.NewIterator(badger.DefaultIteratorOptions)
+	for cursor.Seek(getStreamKey(stream, req.Version)); cursor.ValidForPrefix(BUCKET_STREAMS); cursor.Next() {
 		if len(res.Events) >= int(req.Limit) && req.Limit != 0 {
 			break
 		}
 
-		var id ulid.ULID
-		if err := id.UnmarshalBinary(key); err != nil {
+		if err := cursor.Item().Value(func(val []byte) error {
+			var id ulid.ULID
+			if err := id.UnmarshalBinary(val); err != nil {
+				return err
+			}
+
+			item, err := txn.Get(getEventKey(id))
+			if err != nil {
+				return err
+			}
+
+			return item.Value(func(val []byte) error {
+				var event PersistedEvent
+				if err := proto.Unmarshal(val, &event); err != nil {
+					return err
+				}
+
+				var id ulid.ULID
+				if err := id.UnmarshalBinary(event.Id); err != nil {
+					return err
+				}
+
+				var causationId ulid.ULID
+				if err := causationId.UnmarshalBinary(event.CausationId); err != nil {
+					return err
+				}
+
+				var correlationId ulid.ULID
+				if err := correlationId.UnmarshalBinary(event.CorrelationId); err != nil {
+					return err
+				}
+
+				res.Events = append(res.Events, &api.Event{
+					Id:            id.String(),
+					Stream:        stream.String(),
+					Version:       event.Version,
+					Type:          event.Type,
+					Data:          event.Data,
+					Metadata:      event.Metadata,
+					CausationId:   causationId.String(),
+					CorrelationId: correlationId.String(),
+				})
+
+				return nil
+			})
+
+		}); err != nil {
 			return nil, err
 		}
-
-		item, err := txn.Get(getEventKey(id))
-		if err != nil {
-			return nil, err
-		}
-
-		data, err := item.ValueCopy(nil)
-		if err != nil {
-			return nil, err
-		}
-
-		var event PersistedEvent
-		if err := proto.Unmarshal(data, &event); err != nil {
-			return nil, err
-		}
-
-		var stream uuid.UUID
-		if err := stream.UnmarshalBinary(event.Stream); err != nil {
-			return nil, err
-		}
-
-		var causationId ulid.ULID
-		if err := causationId.UnmarshalBinary(event.CausationId); err != nil {
-			return nil, err
-		}
-
-		var correlationId ulid.ULID
-		if err := correlationId.UnmarshalBinary(event.CorrelationId); err != nil {
-			return nil, err
-		}
-
-		res.Events = append(res.Events, &api.Event{
-			Id:            id.String(),
-			Stream:        stream.String(),
-			Version:       event.Version,
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId.String(),
-			CorrelationId: correlationId.String(),
-			AddedAt:       event.AddedAt,
-		})
 	}
 
 	return res, nil
