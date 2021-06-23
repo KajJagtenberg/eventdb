@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0
+
+- Changed the data structure. This makes using old version of the database incompatible with this version.
+- Events now get assigned an incrementing integer along with their ID.
+- Add requests for events which specify an ID which is already in use, are ignored. This makes idempotent addition possible.
+
 ## 0.8.0
 
 ### **New**
