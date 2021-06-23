@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/bbolt"
 )
@@ -49,7 +49,7 @@ func TestAdd(t *testing.T) {
 	req := &api.AddRequest{
 		Stream:  uuid.New().String(),
 		Version: 0,
-		Events: []*api.AddRequest_EventData{
+		Events: []*api.EventData{
 			{
 				Type:     "TestEvent",
 				Data:     []byte("data"),
@@ -76,6 +76,30 @@ func TestAdd(t *testing.T) {
 	assert.Equal(events[0].Id, events[0].CorrelationId)
 }
 
+func TestAddWithGap(t *testing.T) {
+	store, err := TempStore(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+
+	req := &api.AddRequest{
+		Stream:  uuid.New().String(),
+		Version: 1,
+		Events: []*api.EventData{
+			{
+				Type:     "TestEvent",
+				Data:     []byte("data"),
+				Metadata: []byte("metadata"),
+			},
+		},
+	}
+
+	_, err = store.Add(req)
+	if err != ErrGappedStream {
+		t.Fatal("Should return an error")
+	}
+}
 func TestGet(t *testing.T) {
 	store, err := TempStore(true)
 	if err != nil {
@@ -89,7 +113,7 @@ func TestGet(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -141,7 +165,7 @@ func TestGetWithVersion(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -198,7 +222,7 @@ func TestGetWithLimit(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -258,7 +282,7 @@ func TestGetAll(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -306,7 +330,7 @@ func TestEventCount(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -345,7 +369,7 @@ func TestStreamCount(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -384,7 +408,7 @@ func TestListStreams(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -408,7 +432,7 @@ func TestListStreams(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(1, len(res.Streams))
-	assert.Equal(stream, res.Streams[0].Id)
+	assert.Equal(stream, res.Streams[0])
 }
 
 func TestListStreamsWithSkip(t *testing.T) {
@@ -424,7 +448,7 @@ func TestListStreamsWithSkip(t *testing.T) {
 		req := &api.AddRequest{
 			Stream:  stream,
 			Version: 0,
-			Events: []*api.AddRequest_EventData{
+			Events: []*api.EventData{
 				{
 					Type:     "TestEvent",
 					Data:     []byte("data"),
@@ -460,10 +484,10 @@ func BenchmarkAdd(t *testing.B) {
 	defer store.Close()
 
 	for i := 0; i < t.N; i++ {
-		var data []*api.AddRequest_EventData
+		var data []*api.EventData
 
 		for j := 0; j < 1; j++ {
-			data = append(data, &api.AddRequest_EventData{
+			data = append(data, &api.EventData{
 				Type:     "TestEvent",
 				Data:     []byte("data"),
 				Metadata: []byte("metadata"),

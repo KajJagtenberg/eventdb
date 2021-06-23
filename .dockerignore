@@ -4,13 +4,17 @@
 .dockerignore
 Dockerfile
 Makefile
-docker-compose.yml
-webui
 data
 *.rest
 *.env
-proto
+*.proto
 *.md
 *.pem
+<<<<<<< HEAD
 tmp
 prometheus.yml
+=======
+*.yml
+CNAME
+example
+>>>>>>> develop

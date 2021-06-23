@@ -1,27 +1,28 @@
 package main
 
 import (
-	"context"
 	"crypto/tls"
 	"net"
 	"os"
 	"os/signal"
 	"path"
 	"syscall"
-	"time"
 
 	"github.com/dgraph-io/badger/v3"
+<<<<<<< HEAD
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	concurrency "go.etcd.io/etcd/client/v3/concurrency"
+=======
+>>>>>>> develop
 
+	"github.com/eventflowdb/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/env"
+	"github.com/eventflowdb/eventflowdb/store"
+	"github.com/eventflowdb/eventflowdb/transport"
 	"github.com/joho/godotenv"
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/env"
-	"github.com/kajjagtenberg/eventflowdb/store"
-	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
@@ -65,21 +66,20 @@ func server() {
 
 	var db *badger.DB
 	var err error
+	var options badger.Options
 
 	if memory {
 		log.Println("running in memory mode")
 
-		db, err = badger.Open(badger.DefaultOptions("").WithLogger(log).WithInMemory(true))
-		if err != nil {
-			log.Fatal(err)
-		}
+		options = badger.DefaultOptions("").WithLogger(nil).WithInMemory(true)
 	} else {
-		db, err = badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(log))
-		if err != nil {
-			log.Fatal(err)
-		}
+		options = badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(nil).WithInMemory(false)
 	}
 
+	db, err = badger.Open(options)
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
 
 	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
@@ -102,18 +102,16 @@ func server() {
 			log.Fatal(err)
 		}
 	}
+	defer lis.Close()
 
 	grpcServer := grpc.NewServer()
-	defer grpcServer.Stop()
 
-	api.RegisterEventStoreServiceServer(grpcServer, transport.NewEventStoreService(eventstore))
+	api.RegisterEventStoreServer(grpcServer, transport.NewEventStore(eventstore))
 
 	go func() {
 		log.Printf("gRPC server listening on %s", grpcPort)
 
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatal(err)
-		}
+		grpcServer.Serve(lis)
 	}()
 
 	app := fiber.New(fiber.Config{
@@ -131,63 +129,15 @@ func server() {
 	}()
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
 
 	log.Println("eventflowDB is shutting down...")
-}
 
-func etcd() {
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	id := env.GetEnv("NODE_ID", hostname)
-
-	log.Println("node id:", id)
-
-	cli, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"localhost:2379"},
-		DialTimeout: 5 * time.Second,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer cli.Close()
-
-	log.Println("connected to etcd")
-
-	session, err := concurrency.NewSession(cli)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer session.Close()
-
-	ctx := context.Background()
-
-	election := concurrency.NewElection(session, "/leader-election/")
-
-	leader, err := election.Leader(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println(leader.Kvs)
-
-	log.Println("trying to elect")
-
-	if err := election.Campaign(ctx, id); err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("elected as leader")
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT)
-	<-c
+	db.Close()
+	grpcServer.GracefulStop()
 }
 
 func main() {
 	server()
-	// etcd()
 }

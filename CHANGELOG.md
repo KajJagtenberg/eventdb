@@ -1,10 +1,19 @@
 # Changelog
 
+## 0.9.0
+
+- Changed the data structure. This makes using old version of the database incompatible with this version.
+- Events now get assigned an incrementing integer along with their ID.
+- Add requests for events which specify an ID which is already in use, are ignored. This makes idempotent addition possible.
+
 ## 0.8.0
 
 ### **New**
 
 - Added gRPC server instead of HTTP and RESP server, because it's faster, allows for easier client generation, allows easier routing and has a self documenting API. The HTTP server will be replaced with grpcweb to allow browsers to access the database, for dashboards.
+- Added flowctl command line interface to easily communicate with a cluster from the terminal.
+- Lots of refactoring
+- Bugfixes
 
 ### **Removed**
 

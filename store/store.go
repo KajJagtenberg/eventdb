@@ -3,7 +3,7 @@ package store
 import (
 	"io"
 
-	"github.com/kajjagtenberg/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/api"
 )
 
 type EventStore interface {

@@ -1,26 +1,18 @@
-module github.com/kajjagtenberg/eventflowdb
+module github.com/eventflowdb/eventflowdb
 
 go 1.16
 
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.0
-	github.com/gofiber/adaptor/v2 v2.1.6
-	github.com/gofiber/fiber/v2 v2.12.0
-	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/gofiber/fiber/v2 v2.13.0
 	github.com/google/uuid v1.2.0
-	github.com/joho/godotenv v1.3.0
-	github.com/kr/text v0.2.0 // indirect
+	github.com/kajjagtenberg/eventflowdb v0.8.1
 	github.com/oklog/ulid v1.3.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
+	github.com/urfave/cli/v2 v2.3.0
 	go.etcd.io/bbolt v1.3.6
-	go.etcd.io/etcd/client/v3 v3.5.0-rc.1
-	golang.org/x/net v0.0.0-20210610132358-84b48f89b13b // indirect
-	golang.org/x/sys v0.0.0-20210611083646-a4fc73990273 // indirect
-	google.golang.org/genproto v0.0.0-20210611144927-798beca9d670 // indirect
 	google.golang.org/grpc v1.38.0
 	google.golang.org/protobuf v1.26.0
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

@@ -4,33 +4,31 @@ package api;
 
 option go_package="./api";
 
-message Command {
-    string op = 1;
-    bytes payload = 2;
+message Event {
+    string id = 1;
+    string stream = 2;
+    uint32 version = 3;
+    string type = 4;
+    bytes data = 5;
+    bytes metadata = 6;
+    string causation_id = 7;
+    string correlation_id = 8;
+    int64 added_at = 9;
+}
+
+message EventData {
+    string id = 1;
+    string type = 2;
+    bytes data = 3;
+    bytes metadata = 4;
+    string causation_id = 5;
+    string correlation_id = 6;
 }
 
 message EventResponse {
-    message Event {
-        string id = 1;
-        string stream = 2;
-        uint32 version = 3;
-        string type = 4;
-        bytes data = 5;
-        bytes metadata = 6;
-        string causation_id = 7;
-        string correlation_id = 8;
-        int64 added_at = 9;
-    }
     repeated Event events = 1;
 }
-message AddRequest {
-    message EventData {
-        string type = 1;
-        bytes data = 2;
-        bytes metadata = 3;
-        string causation_id = 4;
-        string correlation_id = 5;
-    }
+message AddRequest { 
     string stream = 1;
     uint32 version = 2;
     repeated EventData events = 3;
@@ -43,16 +41,9 @@ message GetRequest {
 }
 
 message GetAllRequest {
-    string offset = 1;
+    uint64 offset = 1;
     uint32 limit = 2;
 }
-
-// message ChecksumRequest {}
-
-// message ChecksumResponse {
-//     string id = 1;
-//     string checksum = 2;
-// }
 
 message EventCountRequest {}
 
@@ -76,12 +67,7 @@ message ListStreamsRequest {
 } 
 
 message ListStreamsReponse {
-    message Stream {
-        string id = 1;
-        repeated string events = 2;
-        int64 added_at = 3;
-    }
-    repeated Stream streams = 1;
+    repeated string streams = 1;
 }
 
 message SizeRequest {}
@@ -104,7 +90,7 @@ message VersionResponse {
     string version = 1;
 }
 
-service EventStoreService {
+service EventStore {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
     rpc GetAll(GetAllRequest) returns(EventResponse) {}

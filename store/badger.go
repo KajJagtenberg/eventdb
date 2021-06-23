@@ -3,15 +3,17 @@ package store
 import (
 	"bytes"
 	"crypto/rand"
+	"encoding/binary"
 	"errors"
 	"io"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/eventflowdb/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/conv"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/conv"
 	"github.com/oklog/ulid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -22,12 +24,23 @@ type BadgerEventStore struct {
 	db                  *badger.DB
 	estimateStreamCount int64
 	estimateEventCount  int64
+	lock                sync.Mutex
 }
 
 var (
+<<<<<<< HEAD
 	BUCKET_EVENTS   = []byte{0, 0}
 	BUCKET_STREAMS  = []byte{0, 1}
 	BUCKET_METADATA = []byte{0, 2}
+=======
+	BUCKET_EVENTS      = []byte{0}
+	BUCKET_STREAMS     = []byte{1}
+	BUCKET_SEQUENCE    = []byte{2}
+	BUCKET_METADATA    = []byte{3}
+	BUCKET_STREAM_LIST = []byte{4}
+
+	KEY_CURRENT_SEQUENCE = []byte{3, 0}
+>>>>>>> develop
 )
 
 var (
@@ -41,7 +54,7 @@ var (
 
 func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err error) {
 	res = &api.EventResponse{
-		Events: make([]*api.EventResponse_Event, 0),
+		Events: make([]*api.Event, 0),
 	}
 
 	stream, err := uuid.Parse(req.Stream)
@@ -57,122 +70,123 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 		return nil, errors.New("list of events is empty")
 	}
 
-	if bytes.Equal(stream[:], make([]byte, 16)) {
-		return nil, errors.New("stream cannot be all zeroes")
-	}
-
 	txn := s.db.NewTransaction(true)
 	defer txn.Discard()
 
-	var persistedStream PersistedStream
-
-	item, err := txn.Get(getStreamKey(stream))
-	if err == nil {
-		data, err := item.ValueCopy(nil)
-		if err != nil {
-			return nil, err
-		}
-
-		err = proto.Unmarshal(data, &persistedStream)
-		if err != nil {
-			return nil, err
-		}
-	} else if err == badger.ErrKeyNotFound {
-		persistedStream.Id = stream[:]
-		persistedStream.AddedAt = time.Now().Unix()
-	} else {
+	if err := txn.Set(getStreamListKey(stream), nil); err != nil {
 		return nil, err
 	}
 
-	if int(req.Version) < len(persistedStream.Events) {
-		return nil, ErrConcurrentStreamModification
-	}
-
-	if int(req.Version) > len(persistedStream.Events) {
-		return nil, ErrGappedStream
-	}
-
-	now := time.Now()
-
-	for i, event := range req.Events {
-		if len(event.Type) == 0 {
-			return nil, ErrEmptyEventType
-		}
-
-		id, err := ulid.New(ulid.Now(), rand.Reader)
-		if err != nil {
-			return nil, err
-		}
-
-		var causationId ulid.ULID
-		var correlationId ulid.ULID
-
-		if len(event.CausationId) > 0 {
-			causationId, err = ulid.Parse(event.CausationId)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if len(event.CorrelationId) > 0 {
-			correlationId, err = ulid.Parse(event.CorrelationId)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		if causationId.String() == "00000000000000000000000000" {
-			causationId = id
-		}
-
-		if correlationId.String() == "00000000000000000000000000" {
-			correlationId = id
-		}
-
-		record := PersistedEvent{
-			Id:            id[:],
-			Stream:        stream[:],
-			Version:       req.Version + uint32(i),
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId[:],
-			CorrelationId: correlationId[:],
-			AddedAt:       now.Unix(),
-		}
-
-		data, err := proto.Marshal(&record)
-		if err != nil {
-			return nil, err
-		}
-
-		if err := txn.Set(getEventKey(id), data); err != nil {
-			return nil, err
-		}
-
-		res.Events = append(res.Events, &api.EventResponse_Event{
-			Id:            id.String(),
-			Stream:        stream.String(),
-			Version:       req.Version + uint32(i),
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId.String(),
-			CorrelationId: correlationId.String(),
-			AddedAt:       now.Unix(),
-		})
-
-		persistedStream.Events = append(persistedStream.Events, id[:])
-	}
-
-	data, err := proto.Marshal(&persistedStream)
+	// Retrieve the current global event sequence
+	sequence, err := getCurrentSequence(txn)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := txn.Set(getStreamKey(stream), data); err != nil {
-		return nil, err
+	// Check if the gap does not exist
+	if req.Version > 0 {
+		_, err := txn.Get(getStreamVersionKey(stream, req.Version-1))
+		if err == badger.ErrKeyNotFound {
+			return nil, ErrGappedStream
+		}
 	}
+
+	for i, event := range req.Events {
+		var id ulid.ULID
+
+		// Check if the given event id already exists, otherwise generate it
+		if len(event.Id) > 0 {
+			id, err = ulid.Parse(event.Id)
+			if err != nil {
+				return nil, err
+			}
+
+			_, err := txn.Get(getEventKey(id))
+			if err == badger.ErrKeyNotFound {
+				continue
+			}
+		} else {
+			id, err = ulid.New(ulid.Now(), rand.Reader)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		version := req.Version + uint32(i)
+
+		// Check if [stream][version] is empty
+		_, err := txn.Get(getStreamVersionKey(stream, version))
+		if err != badger.ErrKeyNotFound {
+			return nil, ErrConcurrentStreamModification
+		}
+
+		// Get causation id from the given event, otherwise assign the event id to it
+		var causationID ulid.ULID
+		if len(event.CausationId) > 0 {
+			causationID, err = ulid.Parse(event.CausationId)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			causationID = id
+		}
+
+		// Get correlation id from the given event, otherwise assign the event id to it
+		var correlationID ulid.ULID
+		if len(event.CorrelationId) > 0 {
+			correlationID, err = ulid.Parse(event.CorrelationId)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			correlationID = id
+		}
+
+		// Marshal the event
+		data, err := proto.Marshal(&PersistedEvent{
+			Id:            id[:],
+			Stream:        stream[:],
+			Version:       version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   causationID[:],
+			CorrelationId: correlationID[:],
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		//Persist the event
+		if err := txn.Set(getEventKey(id), data); err != nil {
+			return nil, err
+		}
+
+		// Persist the event id to the [stream][version]
+		if err := txn.Set(getStreamVersionKey(stream, version), id[:]); err != nil {
+			return nil, err
+		}
+
+		// Persist the event id to the [sequence]
+		if err := txn.Set(getSequenceKey(sequence), id[:]); err != nil {
+			return nil, err
+		}
+
+		sequence++
+
+		res.Events = append(res.Events, &api.Event{
+			Id:            id.String(),
+			Stream:        stream.String(),
+			Version:       version,
+			Type:          event.Type,
+			Data:          event.Data,
+			Metadata:      event.Metadata,
+			CausationId:   causationID.String(),
+			CorrelationId: correlationID.String(),
+		})
+	}
+
+	setCurrentSequence(txn, sequence)
 
 	eventCounter.Add(float64(len(req.Events)))
 
@@ -181,11 +195,7 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 
 func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err error) {
 	res = &api.EventResponse{
-		Events: make([]*api.EventResponse_Event, 0),
-	}
-
-	if req.Limit == 0 {
-		req.Limit = 10
+		Events: make([]*api.Event, 0),
 	}
 
 	stream, err := uuid.Parse(req.Stream)
@@ -196,84 +206,62 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 	txn := s.db.NewTransaction(false)
 	defer txn.Discard()
 
-	item, err := txn.Get(getStreamKey(stream))
-	log.Println(stream)
-	log.Println(item, err)
+	cursor := txn.NewIterator(badger.DefaultIteratorOptions)
+	defer cursor.Close()
 
-	if err != nil {
-		if err == badger.ErrKeyNotFound {
-			return res, nil
-		} else {
-			return nil, err
-		}
-	}
-
-	data, err := item.ValueCopy(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	var persistedStream PersistedStream
-	if err := proto.Unmarshal(data, &persistedStream); err != nil {
-		return nil, err
-	}
-
-	for _, key := range persistedStream.Events {
-		if req.Version > 0 {
-			req.Version--
-			continue
-		}
-
-		if len(res.Events) >= int(req.Limit) {
+	for cursor.Seek(getStreamVersionKey(stream, req.Version)); cursor.ValidForPrefix(getStreamKey(stream)); cursor.Next() {
+		if len(res.Events) >= int(req.Limit) && req.Limit != 0 {
 			break
 		}
 
-		var id ulid.ULID
-		if err := id.UnmarshalBinary(key); err != nil {
+		if err := cursor.Item().Value(func(val []byte) error {
+			var id ulid.ULID
+			if err := id.UnmarshalBinary(val); err != nil {
+				return err
+			}
+
+			item, err := txn.Get(getEventKey(id))
+			if err != nil {
+				return err
+			}
+
+			return item.Value(func(val []byte) error {
+				var event PersistedEvent
+				if err := proto.Unmarshal(val, &event); err != nil {
+					return err
+				}
+
+				var id ulid.ULID
+				if err := id.UnmarshalBinary(event.Id); err != nil {
+					return err
+				}
+
+				var causationID ulid.ULID
+				if err := causationID.UnmarshalBinary(event.CausationId); err != nil {
+					return err
+				}
+
+				var correlationID ulid.ULID
+				if err := correlationID.UnmarshalBinary(event.CorrelationId); err != nil {
+					return err
+				}
+
+				res.Events = append(res.Events, &api.Event{
+					Id:            id.String(),
+					Stream:        stream.String(),
+					Version:       event.Version,
+					Type:          event.Type,
+					Data:          event.Data,
+					Metadata:      event.Metadata,
+					CausationId:   causationID.String(),
+					CorrelationId: correlationID.String(),
+				})
+
+				return nil
+			})
+		}); err != nil {
 			return nil, err
 		}
-
-		item, err := txn.Get(getEventKey(id))
-		if err != nil {
-			return nil, err
-		}
-
-		data, err := item.ValueCopy(nil)
-		if err != nil {
-			return nil, err
-		}
-
-		var event PersistedEvent
-		if err := proto.Unmarshal(data, &event); err != nil {
-			return nil, err
-		}
-
-		var stream uuid.UUID
-		if err := stream.UnmarshalBinary(event.Stream); err != nil {
-			return nil, err
-		}
-
-		var causationId ulid.ULID
-		if err := causationId.UnmarshalBinary(event.CausationId); err != nil {
-			return nil, err
-		}
-
-		var correlationId ulid.ULID
-		if err := correlationId.UnmarshalBinary(event.CorrelationId); err != nil {
-			return nil, err
-		}
-
-		res.Events = append(res.Events, &api.EventResponse_Event{
-			Id:            id.String(),
-			Stream:        stream.String(),
-			Version:       event.Version,
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId.String(),
-			CorrelationId: correlationId.String(),
-			AddedAt:       event.AddedAt,
-		})
 	}
 
 	return res, nil
@@ -281,20 +269,11 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 
 func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventResponse, err error) {
 	res = &api.EventResponse{
-		Events: make([]*api.EventResponse_Event, 0),
+		Events: make([]*api.Event, 0),
 	}
 
 	if req.Limit == 0 {
 		req.Limit = 10
-	}
-
-	var offset ulid.ULID
-
-	if len(req.Offset) > 0 {
-		offset, err = ulid.Parse(req.Offset)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	txn := s.db.NewTransaction(false)
@@ -303,58 +282,64 @@ func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventRespons
 	cursor := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer cursor.Close()
 
-	for cursor.Seek(getEventKey(offset)); cursor.ValidForPrefix(BUCKET_EVENTS); cursor.Next() {
-		item := cursor.Item()
-
-		if bytes.Equal(item.Key(), offset[:]) {
-			continue
-		}
-
+	for cursor.Seek(getSequenceKey(req.Offset)); cursor.ValidForPrefix(BUCKET_SEQUENCE); cursor.Next() {
 		if len(res.Events) >= int(req.Limit) {
 			break
 		}
 
-		value, err := item.ValueCopy(nil)
-		if err != nil {
+		if err := cursor.Item().Value(func(val []byte) error {
+			var id ulid.ULID
+			if err := id.UnmarshalBinary(val); err != nil {
+				return err
+			}
+
+			item, err := txn.Get(getEventKey(id))
+			if err != nil {
+				return err
+			}
+
+			return item.Value(func(val []byte) error {
+				var event PersistedEvent
+				if err := proto.Unmarshal(val, &event); err != nil {
+					return err
+				}
+
+				var stream uuid.UUID
+				if err := stream.UnmarshalBinary(event.Stream); err != nil {
+					return err
+				}
+
+				var id ulid.ULID
+				if err := id.UnmarshalBinary(event.Id); err != nil {
+					return err
+				}
+
+				var causationID ulid.ULID
+				if err := causationID.UnmarshalBinary(event.CausationId); err != nil {
+					return err
+				}
+
+				var correlationID ulid.ULID
+				if err := correlationID.UnmarshalBinary(event.CorrelationId); err != nil {
+					return err
+				}
+
+				res.Events = append(res.Events, &api.Event{
+					Id:            id.String(),
+					Stream:        stream.String(),
+					Version:       event.Version,
+					Type:          event.Type,
+					Data:          event.Data,
+					Metadata:      event.Metadata,
+					CausationId:   causationID.String(),
+					CorrelationId: correlationID.String(),
+				})
+
+				return nil
+			})
+		}); err != nil {
 			return nil, err
 		}
-
-		var event PersistedEvent
-		if err := proto.Unmarshal(value, &event); err != nil {
-			return nil, err
-		}
-
-		var id ulid.ULID
-		if err := id.UnmarshalBinary(item.Key()[2:]); err != nil {
-			return nil, err
-		}
-
-		var stream uuid.UUID
-		if err := stream.UnmarshalBinary(event.Stream); err != nil {
-			return nil, err
-		}
-
-		var causationId ulid.ULID
-		if err := causationId.UnmarshalBinary(event.CausationId); err != nil {
-			return nil, err
-		}
-
-		var correlationId ulid.ULID
-		if err := correlationId.UnmarshalBinary(event.CorrelationId); err != nil {
-			return nil, err
-		}
-
-		res.Events = append(res.Events, &api.EventResponse_Event{
-			Id:            id.String(),
-			Stream:        stream.String(),
-			Version:       event.Version,
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId.String(),
-			CorrelationId: correlationId.String(),
-			AddedAt:       event.AddedAt,
-		})
 	}
 
 	return res, nil
@@ -409,9 +394,9 @@ func (s *BadgerEventStore) StreamCountEstimate(req *api.StreamCountEstimateReque
 func (s *BadgerEventStore) Size(req *api.SizeRequest) (res *api.SizeResponse, err error) {
 	res = &api.SizeResponse{}
 
-	lsm, vlog := s.db.Size()
+	lsm, _ := s.db.Size()
 
-	res.Size = lsm + vlog
+	res.Size = lsm
 	res.SizeHuman = conv.ByteCountSI(res.Size)
 
 	return res, nil
@@ -427,7 +412,7 @@ func (s *BadgerEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.Li
 	txn := s.db.NewTransaction(false)
 	defer txn.Discard()
 
-	prefix := BUCKET_STREAMS
+	prefix := BUCKET_STREAM_LIST
 
 	cursor := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer cursor.Close()
@@ -442,37 +427,12 @@ func (s *BadgerEventStore) ListStreams(req *api.ListStreamsRequest) (res *api.Li
 			return res, nil
 		}
 
-		value, err := cursor.Item().ValueCopy(nil)
-		if err != nil {
+		var stream uuid.UUID
+		if err := stream.UnmarshalBinary(cursor.Item().Key()[1:]); err != nil {
 			return nil, err
 		}
 
-		var persistedStream PersistedStream
-		if err := proto.Unmarshal(value, &persistedStream); err != nil {
-			return nil, err
-		}
-
-		var id uuid.UUID
-		if err := id.UnmarshalBinary(persistedStream.Id); err != nil {
-			return nil, err
-		}
-
-		var events []string
-
-		for _, idByte := range persistedStream.Events {
-			var id ulid.ULID
-			if err := id.UnmarshalBinary(idByte); err != nil {
-				return nil, err
-			}
-
-			events = append(events, id.String())
-		}
-
-		res.Streams = append(res.Streams, &api.ListStreamsReponse_Stream{
-			Id:      id.String(),
-			Events:  events,
-			AddedAt: persistedStream.AddedAt,
-		})
+		res.Streams = append(res.Streams, stream.String())
 	}
 
 	return res, nil
@@ -495,7 +455,7 @@ type BadgerStoreOptions struct {
 func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) {
 	db := options.DB
 
-	store := &BadgerEventStore{db, 0, 0}
+	store := &BadgerEventStore{db, 0, 0, sync.Mutex{}}
 
 	streamCount, err := store.StreamCount(&api.StreamCountRequest{})
 	if err != nil {
@@ -546,23 +506,37 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 		}()
 	}
 
-	go func() {
-		ticker := time.NewTicker(5 * time.Minute)
-		defer ticker.Stop()
-		for range ticker.C {
-		again:
-			err := db.RunValueLogGC(0.7)
-			if err == nil {
-				goto again
+	if !db.Opts().InMemory {
+		go func() {
+			if err := db.RunValueLogGC(0.7); err != nil && err != badger.ErrNoRewrite {
+				log.Fatal(err)
 			}
-		}
-	}()
+
+			time.Sleep(ESTIMATE_SLEEP_TIME)
+		}()
+	}
 
 	return store, nil
 }
 
+func getStreamVersionKey(stream uuid.UUID, version uint32) []byte {
+	data := make([]byte, 8)
+	binary.BigEndian.PutUint32(data, version)
+
+	result := BUCKET_STREAMS
+	result = append(result, stream[:]...)
+	result = append(result, data...)
+	return result
+}
+
 func getStreamKey(stream uuid.UUID) []byte {
 	result := BUCKET_STREAMS
+	result = append(result, stream[:]...)
+	return result
+}
+
+func getStreamListKey(stream uuid.UUID) []byte {
+	result := BUCKET_STREAM_LIST
 	result = append(result, stream[:]...)
 	return result
 }
@@ -573,7 +547,35 @@ func getEventKey(id ulid.ULID) []byte {
 	return result
 }
 
-type Checksum struct {
-	ID  ulid.ULID `json:"ulid"`
-	Sum []byte    `json:"sum"`
+func getCurrentSequence(txn *badger.Txn) (sequence uint64, err error) {
+	item, err := txn.Get(KEY_CURRENT_SEQUENCE)
+	if err == badger.ErrKeyNotFound {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+
+	err = item.Value(func(val []byte) error {
+		sequence = binary.BigEndian.Uint64(val)
+
+		return nil
+	})
+
+	return sequence, err
+}
+
+func setCurrentSequence(txn *badger.Txn, sequence uint64) error {
+	data := make([]byte, 8)
+	binary.BigEndian.PutUint64(data, sequence)
+	return txn.Set(KEY_CURRENT_SEQUENCE, data)
+}
+
+func getSequenceKey(sequence uint64) []byte {
+	data := make([]byte, 8)
+	binary.BigEndian.PutUint64(data, sequence)
+
+	result := BUCKET_SEQUENCE
+	result = append(result, data...)
+	return result
 }
