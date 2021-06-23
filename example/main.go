@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
+	"github.com/eventflowdb/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/example/account"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/example/account"
 	"google.golang.org/grpc"
 )
 

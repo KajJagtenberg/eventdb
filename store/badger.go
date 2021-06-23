@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
+	"github.com/eventflowdb/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/conv"
 	"github.com/google/uuid"
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/conv"
 	"github.com/oklog/ulid"
 	"google.golang.org/protobuf/proto"
 )

@@ -10,11 +10,11 @@ import (
 
 	"github.com/dgraph-io/badger/v3"
 
+	"github.com/eventflowdb/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/env"
+	"github.com/eventflowdb/eventflowdb/store"
+	"github.com/eventflowdb/eventflowdb/transport"
 	"github.com/joho/godotenv"
-	"github.com/kajjagtenberg/eventflowdb/api"
-	"github.com/kajjagtenberg/eventflowdb/env"
-	"github.com/kajjagtenberg/eventflowdb/store"
-	"github.com/kajjagtenberg/eventflowdb/transport"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 )
