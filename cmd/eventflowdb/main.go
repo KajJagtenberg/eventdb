@@ -9,14 +9,9 @@ import (
 	"syscall"
 
 	"github.com/dgraph-io/badger/v3"
-<<<<<<< HEAD
 	"github.com/gofiber/adaptor/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	clientv3 "go.etcd.io/etcd/client/v3"
-	concurrency "go.etcd.io/etcd/client/v3/concurrency"
-=======
->>>>>>> develop
 
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/env"
