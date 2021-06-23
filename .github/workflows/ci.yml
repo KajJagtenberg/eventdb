@@ -15,15 +15,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: "1.16.0"
-      - name: Install dependencies
-        run: |
-          go version
-          go get -u golang.org/x/lint/golint
-      - name: Run build
-        run: go build -o server cmd/eventflowdb/main.go
-      - name: Vet and lint
-        run: |
-          go vet cmd/eventflowdb/main.go
-          golint cmd/eventflowdb/main.go
       - name: Run tests
         run: go test -v ./...
+      - name: Run build
+        run: go build -o server cmd/eventflowdb/main.go
