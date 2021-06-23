@@ -239,58 +239,53 @@ func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventRespons
 	cursor := txn.NewIterator(badger.DefaultIteratorOptions)
 	defer cursor.Close()
 
-	for cursor.Seek(getEventKey(offset)); cursor.ValidForPrefix(BUCKET_EVENTS); cursor.Next() {
-		item := cursor.Item()
-
-		if bytes.Equal(item.Key(), offset[:]) {
-			continue
-		}
-
+	for cursor.Seek(getSequenceKey(req.Offset)); cursor.ValidForPrefix(BUCKET_SEQUENCE); cursor.Next() {
 		if len(res.Events) >= int(req.Limit) {
 			break
 		}
 
-		value, err := item.ValueCopy(nil)
-		if err != nil {
+		if err := cursor.Item().Value(func(val []byte) error {
+			var event PersistedEvent
+			if err := proto.Unmarshal(val, &event); err != nil {
+				return err
+			}
+
+			var id ulid.ULID
+			if err := id.UnmarshalBinary(event.Id); err != nil {
+				return err
+			}
+
+			var stream uuid.UUID
+			if err := stream.UnmarshalBinary(event.Stream); err != nil {
+				return err
+			}
+
+			var causationId ulid.ULID
+			if err := causationId.UnmarshalBinary(event.CausationId); err != nil {
+				return err
+			}
+
+			var correlationId ulid.ULID
+			if err := correlationId.UnmarshalBinary(event.CorrelationId); err != nil {
+				return err
+			}
+
+			res.Events = append(res.Events, &api.Event{
+				Id:            id.String(),
+				Stream:        stream.String(),
+				Version:       event.Version,
+				Type:          event.Type,
+				Data:          event.Data,
+				Metadata:      event.Metadata,
+				CausationId:   causationId.String(),
+				CorrelationId: correlationId.String(),
+				AddedAt:       event.AddedAt,
+			})
+
+			return nil
+		}); err != nil {
 			return nil, err
 		}
-
-		var event PersistedEvent
-		if err := proto.Unmarshal(value, &event); err != nil {
-			return nil, err
-		}
-
-		var id ulid.ULID
-		if err := id.UnmarshalBinary(item.Key()[2:]); err != nil {
-			return nil, err
-		}
-
-		var stream uuid.UUID
-		if err := stream.UnmarshalBinary(event.Stream); err != nil {
-			return nil, err
-		}
-
-		var causationId ulid.ULID
-		if err := causationId.UnmarshalBinary(event.CausationId); err != nil {
-			return nil, err
-		}
-
-		var correlationId ulid.ULID
-		if err := correlationId.UnmarshalBinary(event.CorrelationId); err != nil {
-			return nil, err
-		}
-
-		res.Events = append(res.Events, &api.Event{
-			Id:            id.String(),
-			Stream:        stream.String(),
-			Version:       event.Version,
-			Type:          event.Type,
-			Data:          event.Data,
-			Metadata:      event.Metadata,
-			CausationId:   causationId.String(),
-			CorrelationId: correlationId.String(),
-			AddedAt:       event.AddedAt,
-		})
 	}
 
 	return res, nil
