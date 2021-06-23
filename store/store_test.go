@@ -76,6 +76,30 @@ func TestAdd(t *testing.T) {
 	assert.Equal(events[0].Id, events[0].CorrelationId)
 }
 
+func TestAddWithGap(t *testing.T) {
+	store, err := TempStore(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer store.Close()
+
+	req := &api.AddRequest{
+		Stream:  uuid.New().String(),
+		Version: 1,
+		Events: []*api.EventData{
+			{
+				Type:     "TestEvent",
+				Data:     []byte("data"),
+				Metadata: []byte("metadata"),
+			},
+		},
+	}
+
+	_, err = store.Add(req)
+	if err != ErrGappedStream {
+		t.Fatal("Should return an error")
+	}
+}
 func TestGet(t *testing.T) {
 	store, err := TempStore(true)
 	if err != nil {

@@ -66,7 +66,13 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 		return nil, err
 	}
 
-	// TODO: Check if the gap does not exist
+	// Check if the gap does not exist
+	if req.Version > 0 {
+		_, err := txn.Get(getStreamVersionKey(stream, req.Version-1))
+		if err == badger.ErrKeyNotFound {
+			return nil, ErrGappedStream
+		}
+	}
 
 	for i, event := range req.Events {
 		var id ulid.ULID
@@ -87,6 +93,14 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 			if err != nil {
 				return nil, err
 			}
+		}
+
+		version := req.Version + uint32(i)
+
+		// Check if [stream][version] is empty
+		_, err := txn.Get(getStreamVersionKey(stream, version))
+		if err != badger.ErrKeyNotFound {
+			return nil, ErrConcurrentStreamModification
 		}
 
 		// Get causation id from the given event, otherwise assign the event id to it
@@ -110,8 +124,6 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 		} else {
 			correlationID = id
 		}
-
-		version := req.Version + uint32(i)
 
 		// Marshal the event
 		data, err := proto.Marshal(&PersistedEvent{
