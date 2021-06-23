@@ -88,7 +88,6 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 The features on the roadmap in no particular order:
 
 - TLS Client Authentication
-- ACL or other authorization scheme
 - Projection Engine
 - Asynchronous replication (with etcd for leader election)
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
