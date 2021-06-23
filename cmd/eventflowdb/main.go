@@ -49,7 +49,7 @@ func setupTLS(lis net.Listener, certFile, keyFile string) (net.Listener, error) 
 
 func server() {
 	data := env.GetEnv("DATA", "data")
-	grpcPort := env.GetEnv("PORT", "6543")
+	grpcPort := env.GetEnv("GRPC_PORT", "6543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/cert.pem")
 	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
