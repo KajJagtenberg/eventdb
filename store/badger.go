@@ -15,6 +15,8 @@ import (
 	"github.com/eventflowdb/eventflowdb/conv"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -33,6 +35,15 @@ var (
 	BUCKET_STREAM_LIST = []byte{4}
 
 	KEY_CURRENT_SEQUENCE = []byte{3, 0}
+)
+
+var (
+	eventCounter = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "store_processed_events",
+	})
+	storageGauge = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "store_storage",
+	})
 )
 
 func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err error) {
@@ -170,6 +181,8 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 	}
 
 	setCurrentSequence(txn, sequence)
+
+	eventCounter.Add(float64(len(req.Events)))
 
 	return res, txn.Commit()
 }
@@ -438,6 +451,27 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 
 	store := &BadgerEventStore{db, 0, 0, sync.Mutex{}}
 
+	streamCount, err := store.StreamCount(&api.StreamCountRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	eventCount, err := store.EventCount(&api.EventCountRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	size, err := store.Size(&api.SizeRequest{})
+	if err != nil {
+		return nil, err
+	}
+
+	store.estimateStreamCount = streamCount.Count
+	store.estimateEventCount = eventCount.Count
+
+	eventCounter.Add(float64(eventCount.Count))
+	storageGauge.Set(float64(size.Size))
+
 	if options.EstimateCounts {
 		go func() {
 			for {
@@ -451,8 +485,15 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 					log.Fatalf("failed to get stream count: %v", err)
 				}
 
+				size, err := store.Size(&api.SizeRequest{})
+				if err != nil {
+					log.Fatalf("failed to get size: %v", err)
+				}
+
 				store.estimateStreamCount = streamCount.Count
 				store.estimateEventCount = eventCount.Count
+
+				storageGauge.Set(float64(size.Size))
 
 				time.Sleep(ESTIMATE_SLEEP_TIME)
 			}
