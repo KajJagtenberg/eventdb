@@ -5,7 +5,7 @@
 - Changed the data structure. This makes using old version of the database incompatible with this version.
 - Events now get assigned an incrementing integer along with their ID.
 - Add requests for events which specify an ID which is already in use, are ignored. This makes idempotent addition possible.
-- Add Prometheus endpoint at /metrics which is reachable at port 16543 by default.
+- Added Prometheus endpoint at /metrics which is reachable at port 16543 by default.
 
 ## 0.8.0
 
