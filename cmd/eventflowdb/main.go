@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -110,7 +109,7 @@ func server() {
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	go func() {
-		log.Printf("HTTP server listening on %s", httpPort)
+		logger.Printf("HTTP server listening on %s", httpPort)
 
 		if err := app.Listen(":" + httpPort); err != nil {
 			logger.Fatal(err)
