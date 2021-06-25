@@ -2,12 +2,14 @@ package flowctl
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"log"
 
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/urfave/cli/v2"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 var GetAllCommand = &cli.Command{
@@ -32,13 +34,27 @@ var GetAllCommand = &cli.Command{
 			Aliases: []string{"l"},
 			Usage:   "The maximum amount of events to return",
 		},
+		&cli.BoolFlag{
+			Name:  "insecure",
+			Usage: "Whether or not the connection should not use TLS",
+		},
 	},
 	Action: func(c *cli.Context) error {
 		address := c.String("address")
 		offset := c.Uint64("offset")
 		limit := c.Int("limit")
 
-		conn, err := grpc.Dial(address, grpc.WithInsecure())
+		options := []grpc.DialOption{}
+
+		if c.Bool("insecure") {
+			options = append(options, grpc.WithInsecure())
+		} else {
+			options = append(options, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+				InsecureSkipVerify: false,
+			})))
+		}
+
+		conn, err := grpc.Dial(address, options...)
 		if err != nil {
 			return err
 		}
