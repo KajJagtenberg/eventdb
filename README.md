@@ -56,7 +56,9 @@ The following environment variables can be used to alter the configuration:
 
 ## Usage
 
-EventflowDB is using gRPC with Protobuf as its method of transport and encoding. The [api.proto](proto/api.proto) file is the source of truth for the API.
+EventflowDB is using gRPC with Protobuf as its main method of transport and encoding. The [api.proto](proto/api.proto) file is the source of truth for the API.
+
+The HTTP API is based of the same proto file, but uses the JSON tags for its messages.
 
 API Specification:
 
