@@ -21,7 +21,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 		}
 
 		switch cmd.Operation {
-		case "version":
+		case "version", "v":
 			var req api.VersionRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -30,7 +30,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			return c.JSON(api.VersionResponse{
 				Version: constants.Version,
 			})
-		case "add":
+		case "add", "a":
 			var req api.AddRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -42,7 +42,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "get":
+		case "get", "g":
 			var req api.GetRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -54,7 +54,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "getall":
+		case "getall", "ga":
 			var req api.GetAllRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -66,7 +66,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "eventcount":
+		case "eventcount", "ec":
 			var req api.EventCountRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -78,7 +78,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "eventcountestimate":
+		case "eventcountestimate", "ece":
 			var req api.EventCountEstimateRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -90,7 +90,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "streamcount":
+		case "streamcount", "sc":
 			var req api.StreamCountRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -102,7 +102,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "streamcountestimate":
+		case "streamcountestimate", "sce":
 			var req api.StreamCountEstimateRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -114,7 +114,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "liststreams":
+		case "liststreams", "ls":
 			var req api.ListStreamsRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -126,7 +126,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "size":
+		case "size", "s":
 			var req api.SizeRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
@@ -138,7 +138,7 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			return c.JSON(res)
-		case "uptime":
+		case "uptime", "up":
 			var req api.UptimeRequest
 			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
 				return fiber.ErrUnprocessableEntity
