@@ -22,7 +22,7 @@ test:
 	go test ./...
 
 build:
-	docker build -t kajjagtenberg/eventflowdb:$(VERSION) .
+	docker build -t ghcr.io/eventflowdb/eventflowdb:$(VERSION) .
 
 push: build
-	docker push kajjagtenberg/eventflowdb:$(VERSION)
+	docker push ghcr.io/eventflowdb/eventflowdb:$(VERSION)
