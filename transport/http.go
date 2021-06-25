@@ -23,10 +23,10 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 
 		switch cmd.Operation {
 		case "version", "v":
-			var req api.VersionRequest
-			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
-				return fiber.ErrUnprocessableEntity
-			}
+			// var req api.VersionRequest
+			// if err := json.Unmarshal(cmd.Payload, &req); err != nil {
+			// 	return fiber.ErrUnprocessableEntity
+			// }
 
 			return c.JSON(api.VersionResponse{
 				Version: constants.Version,
@@ -83,9 +83,9 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			return c.JSON(res)
 		case "eventcount", "ec":
 			var req api.EventCountRequest
-			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
-				return fiber.ErrUnprocessableEntity
-			}
+			// if err := json.Unmarshal(cmd.Payload, &req); err != nil {
+			// 	return fiber.ErrUnprocessableEntity
+			// }
 
 			res, err := eventstore.EventCount(&req)
 			switch err {
@@ -99,9 +99,9 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			return c.JSON(res)
 		case "eventcountestimate", "ece":
 			var req api.EventCountEstimateRequest
-			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
-				return fiber.ErrUnprocessableEntity
-			}
+			// if err := json.Unmarshal(cmd.Payload, &req); err != nil {
+			// 	return fiber.ErrUnprocessableEntity
+			// }
 
 			res, err := eventstore.EventCountEstimate(&req)
 			switch err {
@@ -115,9 +115,9 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			return c.JSON(res)
 		case "streamcount", "sc":
 			var req api.StreamCountRequest
-			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
-				return fiber.ErrUnprocessableEntity
-			}
+			// if err := json.Unmarshal(cmd.Payload, &req); err != nil {
+			// 	return fiber.ErrUnprocessableEntity
+			// }
 
 			res, err := eventstore.StreamCount(&req)
 			switch err {
@@ -131,9 +131,9 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			return c.JSON(res)
 		case "streamcountestimate", "sce":
 			var req api.StreamCountEstimateRequest
-			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
-				return fiber.ErrUnprocessableEntity
-			}
+			// if err := json.Unmarshal(cmd.Payload, &req); err != nil {
+			// 	return fiber.ErrUnprocessableEntity
+			// }
 
 			res, err := eventstore.StreamCountEstimate(&req)
 			switch err {
@@ -163,9 +163,9 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			return c.JSON(res)
 		case "size", "s":
 			var req api.SizeRequest
-			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
-				return fiber.ErrUnprocessableEntity
-			}
+			// if err := json.Unmarshal(cmd.Payload, &req); err != nil {
+			// 	return fiber.ErrUnprocessableEntity
+			// }
 
 			res, err := eventstore.Size(&req)
 			switch err {
@@ -178,10 +178,10 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 
 			return c.JSON(res)
 		case "uptime", "up":
-			var req api.UptimeRequest
-			if err := json.Unmarshal(cmd.Payload, &req); err != nil {
-				return fiber.ErrUnprocessableEntity
-			}
+			// var req api.UptimeRequest
+			// if err := json.Unmarshal(cmd.Payload, &req); err != nil {
+			// 	return fiber.ErrUnprocessableEntity
+			// }
 
 			uptime := time.Since(start)
 
