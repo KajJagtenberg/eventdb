@@ -28,21 +28,10 @@ func init() {
 func server() {
 	data := env.GetEnv("DATA", "data")
 
-	memory := env.GetEnv("IN_MEMORY", "false") == "true"
-
 	var db *badger.DB
 	var err error
-	var options badger.Options
 
-	if memory {
-		logger.Println("running in memory mode")
-
-		options = badger.DefaultOptions("").WithLogger(nil).WithInMemory(true)
-	} else {
-		options = badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(nil).WithInMemory(false)
-	}
-
-	db, err = badger.Open(options)
+	db, err = badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(nil).WithInMemory(false))
 	if err != nil {
 		logger.Fatal(err)
 	}
