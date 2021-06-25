@@ -86,6 +86,11 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 	}
 
 	for i, event := range req.Events {
+		// Validate event
+		if len(event.Type) == 0 {
+			return nil, ErrEmptyEventType
+		}
+
 		var id ulid.ULID
 
 		// Check if the given event id already exists, otherwise generate it

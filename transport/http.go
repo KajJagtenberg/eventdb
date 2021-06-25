@@ -8,9 +8,10 @@ import (
 	"github.com/eventflowdb/eventflowdb/constants"
 	"github.com/eventflowdb/eventflowdb/store"
 	"github.com/gofiber/fiber/v2"
+	"github.com/sirupsen/logrus"
 )
 
-func HTTPHandler(eventstore store.EventStore) fiber.Handler {
+func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var cmd struct {
 			Operation string          `json:"op"`
@@ -37,8 +38,14 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.Add(&req)
-			if err != nil {
-				return err
+			switch err {
+			case store.ErrConcurrentStreamModification, store.ErrEmptyEventType, store.ErrGappedStream:
+				return fiber.NewError(fiber.StatusBadRequest, err.Error())
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -49,8 +56,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.Get(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -61,8 +72,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.GetAll(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -73,8 +88,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.EventCount(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -85,8 +104,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.EventCountEstimate(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -97,8 +120,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.StreamCount(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -109,8 +136,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.StreamCountEstimate(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -121,8 +152,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.ListStreams(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)
@@ -133,8 +168,12 @@ func HTTPHandler(eventstore store.EventStore) fiber.Handler {
 			}
 
 			res, err := eventstore.Size(&req)
-			if err != nil {
-				return err
+			switch err {
+			default:
+				logger.Println(err)
+				if err != nil {
+					return err
+				}
 			}
 
 			return c.JSON(res)

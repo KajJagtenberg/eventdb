@@ -105,7 +105,7 @@ func server() {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
-	app.Post("/api/v1", transport.HTTPHandler(eventstore))
+	app.Post("/api/v1", transport.HTTPHandler(eventstore, logger))
 	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 
 	go func() {

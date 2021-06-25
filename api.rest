@@ -2,6 +2,12 @@ POST http://127.0.0.1:16543/api/v1
 Content-Type: application/json
 
 {
-    "op": "streamcount",
-    "payload": {}
+    "op": "add",
+    "payload": {
+        "stream": "b67bcc0f-c577-4231-804d-b2a8a17ef86e",
+        "version":3,
+        "events": [{
+            "type": "TestEvent"
+        }]
+    }
 }
