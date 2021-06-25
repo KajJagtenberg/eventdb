@@ -31,7 +31,7 @@ var (
 	BUCKET_EVENTS      = []byte{0}
 	BUCKET_STREAMS     = []byte{1}
 	BUCKET_SEQUENCE    = []byte{2}
-	BUCKET_METADATA    = []byte{3}
+	BUCKET_SYSTEM      = []byte{3}
 	BUCKET_STREAM_LIST = []byte{4}
 
 	KEY_CURRENT_SEQUENCE = []byte{3, 0}
