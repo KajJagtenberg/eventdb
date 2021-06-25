@@ -42,8 +42,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			case store.ErrConcurrentStreamModification, store.ErrEmptyEventType, store.ErrGappedStream:
 				return fiber.NewError(fiber.StatusBadRequest, err.Error())
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -58,8 +58,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.Get(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -74,8 +74,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.GetAll(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -90,8 +90,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.EventCount(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -106,8 +106,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.EventCountEstimate(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -122,8 +122,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.StreamCount(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -138,8 +138,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.StreamCountEstimate(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -154,8 +154,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.ListStreams(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
@@ -170,8 +170,8 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 			res, err := eventstore.Size(&req)
 			switch err {
 			default:
-				logger.Println(err)
 				if err != nil {
+					logger.Println(err)
 					return err
 				}
 			}
