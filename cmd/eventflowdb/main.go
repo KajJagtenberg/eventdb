@@ -37,6 +37,7 @@ func server() {
 	data := env.GetEnv("DATA", "data")
 	grpcPort := env.GetEnv("GRPC_PORT", "6543")
 	httpPort := env.GetEnv("HTTP_PORT", "16543")
+	promPort := env.GetEnv("PROM_PORT", "17654")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
 	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
@@ -102,16 +103,28 @@ func server() {
 		grpcServer.Serve(lis)
 	}()
 
-	app := fiber.New(fiber.Config{
+	httpServer := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
-	app.Post("/api/v1", transport.HTTPHandler(eventstore, logger))
-	app.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+	httpServer.Post("/api/v1", transport.HTTPHandler(eventstore, logger))
 
 	go func() {
 		logger.Printf("HTTP server listening on %s", httpPort)
 
-		if err := app.Listen(":" + httpPort); err != nil {
+		if err := httpServer.Listen(":" + httpPort); err != nil {
+			logger.Fatal(err)
+		}
+	}()
+
+	promServer := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
+	promServer.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
+
+	go func() {
+		logger.Printf("Prometheus server listening on %s", promPort)
+
+		if err := httpServer.Listen(":" + promPort); err != nil {
 			logger.Fatal(err)
 		}
 	}()
