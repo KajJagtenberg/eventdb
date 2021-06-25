@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
-	"net"
 	"os"
 	"os/signal"
 	"path"
@@ -13,14 +11,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/env"
 	"github.com/eventflowdb/eventflowdb/store"
 	"github.com/eventflowdb/eventflowdb/transport"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 )
 
 var (
@@ -35,8 +30,6 @@ func init() {
 
 func server() {
 	data := env.GetEnv("DATA", "data")
-	grpcPort := env.GetEnv("GRPC_PORT", "6543")
-
 	promPort := env.GetEnv("PROM_PORT", "17654")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
@@ -70,38 +63,7 @@ func server() {
 	}
 	defer eventstore.Close()
 
-	lis, err := net.Listen("tcp", ":"+grpcPort)
-	if err != nil {
-		logger.Fatal(err)
-	}
-
-	grpcOptions := []grpc.ServerOption{}
-
-	if tlsEnabled {
-		logger.Println("tls is enabled")
-
-		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			logger.Fatal(err)
-		}
-
-		config := &tls.Config{
-			Certificates: []tls.Certificate{cert},
-			ClientAuth:   tls.NoClientCert,
-		}
-
-		grpcOptions = append(grpcOptions, grpc.Creds(credentials.NewTLS(config)))
-	}
-
-	grpcServer := grpc.NewServer(grpcOptions...)
-
-	api.RegisterEventStoreServer(grpcServer, transport.NewEventStore(eventstore))
-
-	go func() {
-		logger.Printf("gRPC server listening on %s", grpcPort)
-
-		grpcServer.Serve(lis)
-	}()
+	grpcServer := transport.RunGRPCServer(eventstore, logger)
 
 	transport.RunHTTPServer(eventstore, logger)
 
