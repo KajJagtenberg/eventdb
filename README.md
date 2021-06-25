@@ -52,7 +52,6 @@ The following environment variables can be used to alter the configuration:
 - `TLS_ENABLED`: true/false. Enable TLS for gRPC. Defaults: **false**
 - `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
 - `TLS_KEY_FILE`: Location of the key. Defaults: **certs/key.pem**
-- `IN_MEMORY`: Whether the data should reside in memory only. Defaults: **false**
 
 ## Usage
 
