@@ -47,6 +47,7 @@ The following environment variables can be used to alter the configuration:
 
 - `GRPC_PORT`: The port on which the gRPC server listens: Defaults: **6543**
 - `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **16543**
+- `PROM_PORT`: The port on which the Prometheus HTTP endpoint server listens: Defaults: **17654**
 - `DATA`: Location of the persisted data (inside the container). Defaults: **/data**
 - `TLS_ENABLED`: true/false. Enable TLS for gRPC. Defaults: **false**
 - `TLS_CERT_FILE`: Location of the certificate. Defaults: **certs/cert.pem**
