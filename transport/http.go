@@ -6,6 +6,7 @@ import (
 
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/constants"
+	"github.com/eventflowdb/eventflowdb/env"
 	"github.com/eventflowdb/eventflowdb/store"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sirupsen/logrus"
@@ -193,4 +194,30 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 
 		return fiber.NewError(fiber.StatusBadRequest, "Unknown command")
 	}
+}
+
+func RunHTTPServer(eventstore store.EventStore, logger *logrus.Logger) {
+	httpPort := env.GetEnv("HTTP_PORT", "16543")
+	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
+	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
+	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
+
+	httpServer := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
+	httpServer.Post("/api/v1", HTTPHandler(eventstore, logger))
+
+	go func() {
+		logger.Printf("HTTP server listening on %s", httpPort)
+
+		if tlsEnabled {
+			if err := httpServer.ListenTLS(":"+httpPort, certFile, keyFile); err != nil {
+				logger.Fatal(err)
+			}
+		} else {
+			if err := httpServer.Listen(":" + httpPort); err != nil {
+				logger.Fatal(err)
+			}
+		}
+	}()
 }

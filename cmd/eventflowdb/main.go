@@ -36,7 +36,7 @@ func init() {
 func server() {
 	data := env.GetEnv("DATA", "data")
 	grpcPort := env.GetEnv("GRPC_PORT", "6543")
-	httpPort := env.GetEnv("HTTP_PORT", "16543")
+
 	promPort := env.GetEnv("PROM_PORT", "17654")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
@@ -103,24 +103,7 @@ func server() {
 		grpcServer.Serve(lis)
 	}()
 
-	httpServer := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	httpServer.Post("/api/v1", transport.HTTPHandler(eventstore, logger))
-
-	go func() {
-		logger.Printf("HTTP server listening on %s", httpPort)
-
-		if tlsEnabled {
-			if err := httpServer.ListenTLS(":"+httpPort, certFile, keyFile); err != nil {
-				logger.Fatal(err)
-			}
-		} else {
-			if err := httpServer.Listen(":" + httpPort); err != nil {
-				logger.Fatal(err)
-			}
-		}
-	}()
+	transport.RunHTTPServer(eventstore, logger)
 
 	promServer := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
