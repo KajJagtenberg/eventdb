@@ -7,6 +7,7 @@
 - Add requests for events which specify an ID which is already in use, are ignored. This makes idempotent addition possible.
 - Added Prometheus endpoint at /metrics which is reachable at port 17654 by default.
 - Reintroduced a simplified HTTP API which takes json commands, according to the proto file.
+- Removed memory mode
 
 ## 0.8.0
 
