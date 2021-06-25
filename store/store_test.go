@@ -2,7 +2,6 @@ package store
 
 import (
 	"encoding/binary"
-	"io/ioutil"
 	"math/rand"
 	"testing"
 
@@ -13,25 +12,10 @@ import (
 	"go.etcd.io/bbolt"
 )
 
-func TempStore(memory bool) (EventStore, error) {
-	var db *badger.DB
-	var err error
-
-	if memory {
-		db, err = badger.Open(badger.DefaultOptions("").WithLogger(nil).WithInMemory(memory))
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		path, err := ioutil.TempDir("/tmp", "*")
-		if err != nil {
-			return nil, err
-		}
-
-		db, err = badger.Open(badger.DefaultOptions(path).WithLogger(nil))
-		if err != nil {
-			return nil, err
-		}
+func TempStore() (EventStore, error) {
+	db, err := badger.Open(badger.DefaultOptions("").WithLogger(nil).WithInMemory(true))
+	if err != nil {
+		return nil, err
 	}
 
 	return NewBadgerEventStore(BadgerStoreOptions{
@@ -40,7 +24,7 @@ func TempStore(memory bool) (EventStore, error) {
 }
 
 func TestAdd(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +61,7 @@ func TestAdd(t *testing.T) {
 }
 
 func TestAddWithGap(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,7 +85,7 @@ func TestAddWithGap(t *testing.T) {
 	}
 }
 func TestGet(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -153,7 +137,7 @@ func TestGet(t *testing.T) {
 }
 
 func TestGetWithVersion(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +194,7 @@ func TestGetWithVersion(t *testing.T) {
 }
 
 func TestGetWithLimit(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,7 +254,7 @@ func TestGetWithLimit(t *testing.T) {
 }
 
 func TestGetAll(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -318,7 +302,7 @@ func TestGetAll(t *testing.T) {
 }
 
 func TestEventCount(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -357,7 +341,7 @@ func TestEventCount(t *testing.T) {
 }
 
 func TestStreamCount(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -396,7 +380,7 @@ func TestStreamCount(t *testing.T) {
 }
 
 func TestListStreams(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -436,7 +420,7 @@ func TestListStreams(t *testing.T) {
 }
 
 func TestListStreamsWithSkip(t *testing.T) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -477,7 +461,7 @@ func TestListStreamsWithSkip(t *testing.T) {
 }
 
 func BenchmarkAdd(t *testing.B) {
-	store, err := TempStore(true)
+	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
 	}
