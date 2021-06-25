@@ -111,8 +111,14 @@ func server() {
 	go func() {
 		logger.Printf("HTTP server listening on %s", httpPort)
 
-		if err := httpServer.Listen(":" + httpPort); err != nil {
-			logger.Fatal(err)
+		if tlsEnabled {
+			if err := httpServer.ListenTLS(":"+httpPort, certFile, keyFile); err != nil {
+				logger.Fatal(err)
+			}
+		} else {
+			if err := httpServer.Listen(":" + httpPort); err != nil {
+				logger.Fatal(err)
+			}
 		}
 	}()
 
@@ -124,8 +130,14 @@ func server() {
 	go func() {
 		logger.Printf("Prometheus server listening on %s", promPort)
 
-		if err := promServer.Listen(":" + promPort); err != nil {
-			logger.Fatal(err)
+		if tlsEnabled {
+			if err := promServer.ListenTLS(":"+promPort, certFile, keyFile); err != nil {
+				logger.Fatal(err)
+			}
+		} else {
+			if err := promServer.Listen(":" + promPort); err != nil {
+				logger.Fatal(err)
+			}
 		}
 	}()
 
