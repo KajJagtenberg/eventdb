@@ -7,9 +7,6 @@ import (
 	"syscall"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/gofiber/adaptor/v2"
-	"github.com/gofiber/fiber/v2"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/eventflowdb/eventflowdb/env"
 	"github.com/eventflowdb/eventflowdb/store"
@@ -30,10 +27,7 @@ func init() {
 
 func server() {
 	data := env.GetEnv("DATA", "data")
-	promPort := env.GetEnv("PROM_PORT", "17654")
-	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
-	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
-	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
+
 	memory := env.GetEnv("IN_MEMORY", "false") == "true"
 
 	var db *badger.DB
@@ -64,27 +58,8 @@ func server() {
 	defer eventstore.Close()
 
 	grpcServer := transport.RunGRPCServer(eventstore, logger)
-
-	transport.RunHTTPServer(eventstore, logger)
-
-	promServer := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	promServer.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
-
-	go func() {
-		logger.Printf("Prometheus server listening on %s", promPort)
-
-		if tlsEnabled {
-			if err := promServer.ListenTLS(":"+promPort, certFile, keyFile); err != nil {
-				logger.Fatal(err)
-			}
-		} else {
-			if err := promServer.Listen(":" + promPort); err != nil {
-				logger.Fatal(err)
-			}
-		}
-	}()
+	httpServer := transport.RunHTTPServer(eventstore, logger)
+	promServer := transport.RunPromServer(logger)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
@@ -94,6 +69,8 @@ func server() {
 
 	db.Close()
 	grpcServer.GracefulStop()
+	httpServer.Shutdown()
+	promServer.Shutdown()
 }
 
 func main() {

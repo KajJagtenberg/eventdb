@@ -196,28 +196,30 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 	}
 }
 
-func RunHTTPServer(eventstore store.EventStore, logger *logrus.Logger) {
+func RunHTTPServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.App {
 	httpPort := env.GetEnv("HTTP_PORT", "16543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
 	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
 
-	httpServer := fiber.New(fiber.Config{
+	server := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
-	httpServer.Post("/api/v1", HTTPHandler(eventstore, logger))
+	server.Post("/api/v1", HTTPHandler(eventstore, logger))
 
 	go func() {
 		logger.Printf("HTTP server listening on %s", httpPort)
 
 		if tlsEnabled {
-			if err := httpServer.ListenTLS(":"+httpPort, certFile, keyFile); err != nil {
+			if err := server.ListenTLS(":"+httpPort, certFile, keyFile); err != nil {
 				logger.Fatal(err)
 			}
 		} else {
-			if err := httpServer.Listen(":" + httpPort); err != nil {
+			if err := server.Listen(":" + httpPort); err != nil {
 				logger.Fatal(err)
 			}
 		}
 	}()
+
+	return server
 }
