@@ -10,11 +10,7 @@ data
 *.proto
 *.md
 *.pem
-<<<<<<< HEAD
-tmp
-prometheus.yml
-=======
 *.yml
 CNAME
 example
->>>>>>> develop
+*.rest
