@@ -124,7 +124,7 @@ func server() {
 	go func() {
 		logger.Printf("Prometheus server listening on %s", promPort)
 
-		if err := httpServer.Listen(":" + promPort); err != nil {
+		if err := promServer.Listen(":" + promPort); err != nil {
 			logger.Fatal(err)
 		}
 	}()
