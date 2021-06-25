@@ -19,7 +19,7 @@ EventflowDB is a database designed with Event Sourcing in mind.
 
 - Stream / Aggregate based event storage and retrieval.
 - Global, checkpoint based event retrieval.
-- Flowctl, a simple command line interface.
+- Flowctl (WIP), a simple command line interface.
 
 ### Prerequisites
 
