@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"time"
@@ -206,33 +207,38 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 				return err
 			}
 
-			item, err := txn.Get(getEventKey(id))
-			if err != nil {
-				return err
-			}
+			item, err := s.cache.Fetch(fmt.Sprintf("EVENT:%s", id), time.Hour, func() (interface{}, error) {
+				item, err := txn.Get(getEventKey(id))
+				if err != nil {
+					return nil, err
+				}
 
-			return item.Value(func(val []byte) error {
+				val, err := item.ValueCopy(nil)
+				if err != nil {
+					return nil, err
+				}
+
 				var event PersistedEvent
 				if err := proto.Unmarshal(val, &event); err != nil {
-					return err
+					return nil, err
 				}
 
 				var id ulid.ULID
 				if err := id.UnmarshalBinary(event.Id); err != nil {
-					return err
+					return nil, err
 				}
 
 				var causationID ulid.ULID
 				if err := causationID.UnmarshalBinary(event.CausationId); err != nil {
-					return err
+					return nil, err
 				}
 
 				var correlationID ulid.ULID
 				if err := correlationID.UnmarshalBinary(event.CorrelationId); err != nil {
-					return err
+					return nil, err
 				}
 
-				res.Events = append(res.Events, &api.Event{
+				return &api.Event{
 					Id:            id.String(),
 					Stream:        stream.String(),
 					Version:       event.Version,
@@ -241,10 +247,15 @@ func (s *BadgerEventStore) Get(req *api.GetRequest) (res *api.EventResponse, err
 					Metadata:      event.Metadata,
 					CausationId:   causationID.String(),
 					CorrelationId: correlationID.String(),
-				})
-
-				return nil
+				}, nil
 			})
+			if err != nil {
+				return err
+			}
+
+			res.Events = append(res.Events, item.Value().(*api.Event))
+
+			return nil
 		}); err != nil {
 			return nil, err
 		}
@@ -279,38 +290,43 @@ func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventRespons
 				return err
 			}
 
-			item, err := txn.Get(getEventKey(id))
-			if err != nil {
-				return err
-			}
-
-			return item.Value(func(val []byte) error {
-				var event PersistedEvent
-				if err := proto.Unmarshal(val, &event); err != nil {
-					return err
+			item, err := s.cache.Fetch(fmt.Sprintf("EVENT:%s", id), time.Hour, func() (interface{}, error) {
+				item, err := txn.Get(getEventKey(id))
+				if err != nil {
+					return nil, err
 				}
 
-				var stream uuid.UUID
-				if err := stream.UnmarshalBinary(event.Stream); err != nil {
-					return err
+				val, err := item.ValueCopy(nil)
+				if err != nil {
+					return nil, err
+				}
+
+				var event PersistedEvent
+				if err := proto.Unmarshal(val, &event); err != nil {
+					return nil, err
 				}
 
 				var id ulid.ULID
 				if err := id.UnmarshalBinary(event.Id); err != nil {
-					return err
+					return nil, err
+				}
+
+				var stream uuid.UUID
+				if err := stream.UnmarshalBinary(event.Stream); err != nil {
+					return nil, err
 				}
 
 				var causationID ulid.ULID
 				if err := causationID.UnmarshalBinary(event.CausationId); err != nil {
-					return err
+					return nil, err
 				}
 
 				var correlationID ulid.ULID
 				if err := correlationID.UnmarshalBinary(event.CorrelationId); err != nil {
-					return err
+					return nil, err
 				}
 
-				res.Events = append(res.Events, &api.Event{
+				return &api.Event{
 					Id:            id.String(),
 					Stream:        stream.String(),
 					Version:       event.Version,
@@ -319,10 +335,15 @@ func (s *BadgerEventStore) GetAll(req *api.GetAllRequest) (res *api.EventRespons
 					Metadata:      event.Metadata,
 					CausationId:   causationID.String(),
 					CorrelationId: correlationID.String(),
-				})
-
-				return nil
+				}, nil
 			})
+			if err != nil {
+				return err
+			}
+
+			res.Events = append(res.Events, item.Value().(*api.Event))
+
+			return nil
 		}); err != nil {
 			return nil, err
 		}
