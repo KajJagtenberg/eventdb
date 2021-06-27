@@ -387,7 +387,7 @@ func (s *BadgerEventStore) StreamCount(req *api.StreamCountRequest) (res *api.St
 }
 
 func (s *BadgerEventStore) EventCountEstimate(req *api.EventCountEstimateRequest) (res *api.EventCountResponse, err error) {
-	item, err := s.cache.Fetch("user:4", ESTIMATE_TTL, func() (interface{}, error) {
+	item, err := s.cache.Fetch("EVENT_COUNT", ESTIMATE_TTL, func() (interface{}, error) {
 		res, err := s.EventCount(&api.EventCountRequest{})
 		if err != nil {
 			return nil, err
@@ -404,7 +404,7 @@ func (s *BadgerEventStore) EventCountEstimate(req *api.EventCountEstimateRequest
 }
 
 func (s *BadgerEventStore) StreamCountEstimate(req *api.StreamCountEstimateRequest) (res *api.StreamCountResponse, err error) {
-	item, err := s.cache.Fetch("user:4", ESTIMATE_TTL, func() (interface{}, error) {
+	item, err := s.cache.Fetch("STREAM_COUNT", ESTIMATE_TTL, func() (interface{}, error) {
 		res, err := s.StreamCount(&api.StreamCountRequest{})
 		if err != nil {
 			return nil, err
@@ -485,6 +485,18 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 	db := options.DB
 
 	cache := ccache.New(ccache.Configure())
+
+	go func() {
+		for {
+			cache.ForEachFunc(func(key string, item *ccache.Item) bool {
+				log.Println(key)
+
+				return true
+			})
+
+			time.Sleep(time.Second)
+		}
+	}()
 
 	store := &BadgerEventStore{db, cache}
 
