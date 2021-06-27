@@ -15,16 +15,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/karlseguin/ccache/v2"
 	"github.com/oklog/ulid"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"google.golang.org/protobuf/proto"
 )
 
 type BadgerEventStore struct {
-	db                  *badger.DB
-	estimateStreamCount int64
-	estimateEventCount  int64
-	cache               *ccache.Cache
+	db *badger.DB
+	// estimateStreamCount int64
+	// estimateEventCount  int64
+	cache *ccache.Cache
 }
 
 var (
@@ -35,15 +33,6 @@ var (
 	BUCKET_STREAM_LIST = []byte{4}
 
 	KEY_CURRENT_SEQUENCE = []byte{3, 0}
-)
-
-var (
-	eventCounter = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "store_processed_events",
-	})
-	storageGauge = promauto.NewGauge(prometheus.GaugeOpts{
-		Name: "store_storage",
-	})
 )
 
 func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err error) {
@@ -186,8 +175,6 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 	}
 
 	setCurrentSequence(txn, sequence)
-
-	eventCounter.Add(float64(len(req.Events)))
 
 	return res, txn.Commit()
 }
@@ -379,14 +366,36 @@ func (s *BadgerEventStore) StreamCount(req *api.StreamCountRequest) (res *api.St
 }
 
 func (s *BadgerEventStore) EventCountEstimate(req *api.EventCountEstimateRequest) (res *api.EventCountResponse, err error) {
+	item, err := s.cache.Fetch("user:4", ESTIMATE_TTL, func() (interface{}, error) {
+		res, err := s.EventCount(&api.EventCountRequest{})
+		if err != nil {
+			return nil, err
+		}
+		return res.Count, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &api.EventCountResponse{
-		Count: s.estimateEventCount,
+		Count: item.Value().(int64),
 	}, err
 }
 
 func (s *BadgerEventStore) StreamCountEstimate(req *api.StreamCountEstimateRequest) (res *api.StreamCountResponse, err error) {
+	item, err := s.cache.Fetch("user:4", ESTIMATE_TTL, func() (interface{}, error) {
+		res, err := s.StreamCount(&api.StreamCountRequest{})
+		if err != nil {
+			return nil, err
+		}
+		return res.Count, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &api.StreamCountResponse{
-		Count: s.estimateStreamCount,
+		Count: item.Value().(int64),
 	}, err
 }
 
@@ -456,56 +465,7 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 
 	cache := ccache.New(ccache.Configure())
 
-	store := &BadgerEventStore{db, 0, 0, cache}
-
-	streamCount, err := store.StreamCount(&api.StreamCountRequest{})
-	if err != nil {
-		return nil, err
-	}
-
-	eventCount, err := store.EventCount(&api.EventCountRequest{})
-	if err != nil {
-		return nil, err
-	}
-
-	size, err := store.Size(&api.SizeRequest{})
-	if err != nil {
-		return nil, err
-	}
-
-	store.estimateStreamCount = streamCount.Count
-	store.estimateEventCount = eventCount.Count
-
-	eventCounter.Add(float64(eventCount.Count))
-	storageGauge.Set(float64(size.Size))
-
-	if options.EstimateCounts {
-		go func() {
-			for {
-				streamCount, err := store.StreamCount(&api.StreamCountRequest{})
-				if err != nil {
-					log.Fatalf("failed to get stream count: %v", err)
-				}
-
-				eventCount, err := store.EventCount(&api.EventCountRequest{})
-				if err != nil {
-					log.Fatalf("failed to get stream count: %v", err)
-				}
-
-				size, err := store.Size(&api.SizeRequest{})
-				if err != nil {
-					log.Fatalf("failed to get size: %v", err)
-				}
-
-				store.estimateStreamCount = streamCount.Count
-				store.estimateEventCount = eventCount.Count
-
-				storageGauge.Set(float64(size.Size))
-
-				time.Sleep(ESTIMATE_SLEEP_TIME)
-			}
-		}()
-	}
+	store := &BadgerEventStore{db, cache}
 
 	if !db.Opts().InMemory {
 		go func() {
@@ -513,7 +473,7 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 				log.Fatal(err)
 			}
 
-			time.Sleep(ESTIMATE_SLEEP_TIME)
+			time.Sleep(time.Second)
 		}()
 	}
 
