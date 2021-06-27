@@ -31,7 +31,7 @@ func server() {
 	var db *badger.DB
 	var err error
 
-	db, err = badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(nil).WithInMemory(false))
+	db, err = badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(logger))
 	if err != nil {
 		logger.Fatal(err)
 	}
