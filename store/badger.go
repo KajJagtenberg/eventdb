@@ -7,7 +7,6 @@ import (
 	"errors"
 	"io"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -24,7 +23,6 @@ type BadgerEventStore struct {
 	db                  *badger.DB
 	estimateStreamCount int64
 	estimateEventCount  int64
-	lock                sync.Mutex
 }
 
 var (
@@ -454,7 +452,7 @@ type BadgerStoreOptions struct {
 func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) {
 	db := options.DB
 
-	store := &BadgerEventStore{db, 0, 0, sync.Mutex{}}
+	store := &BadgerEventStore{db, 0, 0}
 
 	streamCount, err := store.StreamCount(&api.StreamCountRequest{})
 	if err != nil {
