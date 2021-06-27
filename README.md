@@ -89,10 +89,10 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 The features on the roadmap in no particular order:
 
-- TLS Client Authentication
 - Projection Engine
 - Asynchronous replication (with etcd for leader election)
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
+- Source connector for outbox pattern
 - Web UI
 - Client libraries for other languages
 - Prometheus metrics
