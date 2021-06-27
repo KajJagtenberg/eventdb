@@ -10,6 +10,7 @@
 - Removed memory mode.
 - A more future proof disk layout.
 - Added caching for events for additional performance since they are immutable.
+- Added caching for system stats such as event count and stream count.
 
 ## 0.8.0
 
