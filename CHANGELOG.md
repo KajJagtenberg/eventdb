@@ -9,6 +9,7 @@
 - Reintroduced a simplified HTTP API which takes json commands, according to the proto file.
 - Removed memory mode.
 - A more future proof disk layout.
+- Added caching for events for additional performance since they are immutable.
 
 ## 0.8.0
 
