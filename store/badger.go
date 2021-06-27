@@ -13,6 +13,7 @@ import (
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/conv"
 	"github.com/google/uuid"
+	"github.com/karlseguin/ccache/v2"
 	"github.com/oklog/ulid"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -23,6 +24,7 @@ type BadgerEventStore struct {
 	db                  *badger.DB
 	estimateStreamCount int64
 	estimateEventCount  int64
+	cache               *ccache.Cache
 }
 
 var (
@@ -452,7 +454,9 @@ type BadgerStoreOptions struct {
 func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) {
 	db := options.DB
 
-	store := &BadgerEventStore{db, 0, 0}
+	cache := ccache.New(ccache.Configure())
+
+	store := &BadgerEventStore{db, 0, 0, cache}
 
 	streamCount, err := store.StreamCount(&api.StreamCountRequest{})
 	if err != nil {
