@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/rand"
 	"encoding/binary"
-	"errors"
 	"io"
 	"log"
 	"time"
@@ -45,11 +44,11 @@ func (s *BadgerEventStore) Add(req *api.AddRequest) (res *api.EventResponse, err
 	}
 
 	if bytes.Equal(stream[:], make([]byte, 16)) {
-		return nil, errors.New("stream cannot be all zeroes")
+		return nil, ErrZeroStream
 	}
 
 	if len(req.Events) == 0 {
-		return nil, errors.New("list of events is empty")
+		return nil, ErrEmptyEvents
 	}
 
 	txn := s.db.NewTransaction(true)
