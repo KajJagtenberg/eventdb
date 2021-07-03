@@ -6,11 +6,11 @@
 - Events now get assigned an incrementing integer along with their ID.
 - Add requests for events which specify an ID which is already in use, are ignored. This makes idempotent addition possible.
 - Added Prometheus endpoint at /metrics which is reachable at port 17654 by default.
-- Reintroduced a simplified HTTP API which takes json commands, according to the proto file.
 - Removed memory mode.
 - A more future proof disk layout.
 - Added caching for events for additional performance since they are immutable.
 - Added caching for system stats such as event count and stream count.
+- Reintroduced REST API for simple access with standard HTTP libraries
 
 ## 0.8.0
 
