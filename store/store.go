@@ -65,4 +65,12 @@ type EventStore interface {
 	// Checksum(*api.ChecksumRequest) (*api.ChecksumResponse, error)
 
 	Close() error
+
+	GetStream(*api.GetStreamRequest) (*api.GetStreamResponse, error)
+
+	GetGlobalStream(*api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error)
+
+	AppendStream(*api.AppendStreamRequest) (*api.AppendStreamResponse, error)
+
+	GetEvent(*api.GetEventRequest) (*api.Event, error)
 }
