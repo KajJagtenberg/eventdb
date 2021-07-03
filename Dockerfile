@@ -11,7 +11,7 @@ COPY . .
 
 RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 
-FROM debian
+FROM debian:10
 
 ENV DATA /data
 ENV TLS_CERT_FILE /certs/cert.pem
