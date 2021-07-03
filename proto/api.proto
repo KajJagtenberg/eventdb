@@ -90,6 +90,39 @@ message VersionResponse {
     string version = 1;
 }
 
+message GetStreamRequest {
+    string stream = 1;
+    uint32 version = 2;
+    uint32 limit = 3;
+}
+
+message GetStreamResponse {
+    repeated string events = 1;
+}
+
+message GetGlobalStreamRequest {
+    uint64 offset = 1;
+    uint32 limit = 2;
+}
+
+message GetGlobalStreamResponse {
+    repeated string events = 1;
+}
+
+message AppendStreamRequest {
+    string stream = 1;
+    uint32 version = 2;
+    repeated EventData events = 3;
+}
+
+message AppendStreamResponse {
+    repeated string events = 1;
+}
+
+message GetEventRequest {
+    string id = 1;
+}
+
 service EventStore {
     rpc Add(AddRequest) returns(EventResponse) {}
     rpc Get(GetRequest) returns(EventResponse) {}
@@ -102,4 +135,9 @@ service EventStore {
     rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
     rpc Version(VersionRequest) returns (VersionResponse) {}
+
+    rpc GetStream(GetStreamRequest) returns (GetStreamResponse) {}
+    rpc GetGlobalStream(GetGlobalStreamRequest) returns (GetGlobalStreamResponse) {}
+    rpc AppendStream(AppendStreamRequest) returns (AppendStreamResponse) {}
+    rpc GetEvent(GetEventRequest) returns (Event) {}
 }

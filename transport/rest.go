@@ -1,6 +1,8 @@
 package transport
 
 import (
+	"strconv"
+
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/constants"
 	"github.com/eventflowdb/eventflowdb/env"
@@ -17,8 +19,23 @@ func version() fiber.Handler {
 	}
 }
 
-func stream() fiber.Handler {
+func stream(eventstore store.EventStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		var req api.GetRequest
+		req.Stream = c.Params("id")
+
+		version, err := strconv.ParseUint(c.Query("version", "0"), 10, 32)
+		if err != nil {
+			return err
+		}
+		limit, err := strconv.ParseUint(c.Query("limit", "0"), 10, 32)
+		if err != nil {
+			return err
+		}
+
+		req.Version = uint32(version)
+		req.Limit = uint32(limit)
+
 		return fiber.ErrNotImplemented
 	}
 }
