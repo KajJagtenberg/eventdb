@@ -196,6 +196,56 @@ func HTTPHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 	}
 }
 
+func versionHandler() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		return c.JSON(api.VersionResponse{
+			Version: constants.Version,
+		})
+	}
+}
+
+func getHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var req api.GetRequest
+		if err := c.BodyParser(&req); err != nil {
+			return err
+		}
+
+		res, err := eventstore.Get(&req)
+		switch err {
+		default:
+			if err != nil {
+				logger.Println(err)
+				return err
+			}
+		}
+
+		return c.JSON(res)
+	}
+}
+
+func addHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var req api.AddRequest
+		if err := c.BodyParser(&req); err != nil {
+			return err
+		}
+
+		res, err := eventstore.Add(&req)
+		switch err {
+		case store.ErrConcurrentStreamModification, store.ErrEmptyEventType, store.ErrGappedStream:
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+		default:
+			if err != nil {
+				logger.Println(err)
+				return err
+			}
+		}
+
+		return c.JSON(res)
+	}
+}
+
 func RunHTTPServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.App {
 	httpPort := env.GetEnv("HTTP_PORT", "16543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
@@ -205,7 +255,11 @@ func RunHTTPServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.Ap
 	server := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
 	})
-	server.Post("/api/v1", HTTPHandler(eventstore, logger))
+
+	v1 := server.Group("/api/v1")
+	v1.Get("/version", versionHandler())
+	v1.Post("/add", addHandler(eventstore, logger))
+	v1.Get("/get")
 
 	go func() {
 		logger.Printf("HTTP server listening on %s", httpPort)
