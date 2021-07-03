@@ -20,15 +20,15 @@ type EventStore struct {
 	eventstore store.EventStore
 }
 
-func (s *EventStore) Add(ctx context.Context, req *api.AddRequest) (*api.EventResponse, error) {
-	return s.eventstore.Add(req)
+func (s *EventStore) AppendStream(ctx context.Context, req *api.AppendStreamRequest) (*api.AppendStreamResponse, error) {
+	return s.eventstore.AppendStream(req)
 }
 
-func (s *EventStore) Get(ctx context.Context, req *api.GetRequest) (*api.EventResponse, error) {
-	return s.eventstore.Get(req)
+func (s *EventStore) GetStream(ctx context.Context, req *api.GetStreamRequest) (*api.GetStreamResponse, error) {
+	return s.eventstore.GetStream(req)
 }
-func (s *EventStore) GetAll(ctx context.Context, req *api.GetAllRequest) (*api.EventResponse, error) {
-	return s.eventstore.GetAll(req)
+func (s *EventStore) GetGlobalStream(ctx context.Context, req *api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error) {
+	return s.eventstore.GetGlobalStream(req)
 }
 
 func (s *EventStore) EventCount(ctx context.Context, req *api.EventCountRequest) (*api.EventCountResponse, error) {

@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-var GetCommand = &cli.Command{
+var GetStreamCommand = &cli.Command{
 	Name:    "get",
 	Aliases: []string{"g"},
 	Usage:   "Returns events for given stream",
@@ -50,7 +50,7 @@ var GetCommand = &cli.Command{
 		defer conn.Close()
 
 		store := api.NewEventStoreClient(conn)
-		res, err := store.Get(context.Background(), &api.GetRequest{
+		res, err := store.GetStream(context.Background(), &api.GetStreamRequest{
 			Stream:  stream,
 			Version: uint32(version),
 			Limit:   uint32(limit),

@@ -7,24 +7,13 @@ import (
 )
 
 type EventStore interface {
-	/*
-		Adds event to specified stream at specfied version offset. Returns the persisted events and
-		an error in case of concurrent stream modification.
-	*/
-	// Add(stream uuid.UUID, version uint32, events []EventData) ([]Event, error)
-	Add(*api.AddRequest) (*api.EventResponse, error)
+	GetStream(*api.GetStreamRequest) (*api.GetStreamResponse, error)
 
-	/*
-		Returns events for specified stream, offset at given version and limits the resulting set by the given limit.
-		If limit is zero, then all events from given version onwards will be returned.
-	*/
-	Get(*api.GetRequest) (*api.EventResponse, error)
+	GetGlobalStream(*api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error)
 
-	/*
-		Returns amount of events that have been recorded since the given offset. The maximum amount of returned events is specified by the given limit.
-		If the limit is 0, then it will return a maximum of 100 events.
-	*/
-	GetAll(*api.GetAllRequest) (*api.EventResponse, error)
+	AppendStream(*api.AppendStreamRequest) (*api.AppendStreamResponse, error)
+
+	GetEvent(*api.GetEventRequest) (*api.Event, error)
 
 	/*
 		Size of the database in bytes on disk
@@ -65,12 +54,4 @@ type EventStore interface {
 	// Checksum(*api.ChecksumRequest) (*api.ChecksumResponse, error)
 
 	Close() error
-
-	GetStream(*api.GetStreamRequest) (*api.GetStreamResponse, error)
-
-	GetGlobalStream(*api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error)
-
-	AppendStream(*api.AppendStreamRequest) (*api.AppendStreamResponse, error)
-
-	GetEvent(*api.GetEventRequest) (*api.Event, error)
 }

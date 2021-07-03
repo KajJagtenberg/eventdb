@@ -25,26 +25,6 @@ message EventData {
     string correlation_id = 6;
 }
 
-message EventResponse {
-    repeated Event events = 1;
-}
-message AddRequest { 
-    string stream = 1;
-    uint32 version = 2;
-    repeated EventData events = 3;
-}
-
-message GetRequest {
-    string stream = 1;
-    uint32 version = 2;
-    uint32 limit = 3;
-}
-
-message GetAllRequest {
-    uint64 offset = 1;
-    uint32 limit = 2;
-}
-
 message EventCountRequest {}
 
 message EventCountEstimateRequest {}
@@ -124,9 +104,6 @@ message GetEventRequest {
 }
 
 service EventStore {
-    rpc Add(AddRequest) returns(EventResponse) {}
-    rpc Get(GetRequest) returns(EventResponse) {}
-    rpc GetAll(GetAllRequest) returns(EventResponse) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}

@@ -18,9 +18,6 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EventStoreClient interface {
-	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*EventResponse, error)
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*EventResponse, error)
-	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error)
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
@@ -41,33 +38,6 @@ type eventStoreClient struct {
 
 func NewEventStoreClient(cc grpc.ClientConnInterface) EventStoreClient {
 	return &eventStoreClient{cc}
-}
-
-func (c *eventStoreClient) Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*EventResponse, error) {
-	out := new(EventResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/Add", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *eventStoreClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*EventResponse, error) {
-	out := new(EventResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/Get", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *eventStoreClient) GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error) {
-	out := new(EventResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/GetAll", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *eventStoreClient) EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error) {
@@ -182,9 +152,6 @@ func (c *eventStoreClient) GetEvent(ctx context.Context, in *GetEventRequest, op
 // All implementations must embed UnimplementedEventStoreServer
 // for forward compatibility
 type EventStoreServer interface {
-	Add(context.Context, *AddRequest) (*EventResponse, error)
-	Get(context.Context, *GetRequest) (*EventResponse, error)
-	GetAll(context.Context, *GetAllRequest) (*EventResponse, error)
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
 	EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountResponse, error)
 	StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error)
@@ -204,15 +171,6 @@ type EventStoreServer interface {
 type UnimplementedEventStoreServer struct {
 }
 
-func (UnimplementedEventStoreServer) Add(context.Context, *AddRequest) (*EventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
-}
-func (UnimplementedEventStoreServer) Get(context.Context, *GetRequest) (*EventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
-}
-func (UnimplementedEventStoreServer) GetAll(context.Context, *GetAllRequest) (*EventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
-}
 func (UnimplementedEventStoreServer) EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventCount not implemented")
 }
@@ -260,60 +218,6 @@ type UnsafeEventStoreServer interface {
 
 func RegisterEventStoreServer(s grpc.ServiceRegistrar, srv EventStoreServer) {
 	s.RegisterService(&EventStore_ServiceDesc, srv)
-}
-
-func _EventStore_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).Add(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/Add",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).Add(ctx, req.(*AddRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EventStore_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).Get(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/Get",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).Get(ctx, req.(*GetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EventStore_GetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).GetAll(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/GetAll",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).GetAll(ctx, req.(*GetAllRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _EventStore_EventCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -539,18 +443,6 @@ var EventStore_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "api.EventStore",
 	HandlerType: (*EventStoreServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "Add",
-			Handler:    _EventStore_Add_Handler,
-		},
-		{
-			MethodName: "Get",
-			Handler:    _EventStore_Get_Handler,
-		},
-		{
-			MethodName: "GetAll",
-			Handler:    _EventStore_GetAll_Handler,
-		},
 		{
 			MethodName: "EventCount",
 			Handler:    _EventStore_EventCount_Handler,
