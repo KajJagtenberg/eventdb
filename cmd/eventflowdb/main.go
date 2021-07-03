@@ -47,7 +47,8 @@ func server() {
 	defer eventstore.Close()
 
 	// grpcServer := transport.RunGRPCServer(eventstore, logger)
-	httpServer := transport.RunHTTPServer(eventstore, logger)
+	// httpServer := transport.RunHTTPServer(eventstore, logger)
+	restServer := transport.RunRestServer(eventstore, logger)
 	promServer := transport.RunPromServer(logger)
 
 	c := make(chan os.Signal, 1)
@@ -58,7 +59,8 @@ func server() {
 
 	db.Close()
 	// grpcServer.GracefulStop()
-	httpServer.Shutdown()
+	// httpServer.Shutdown()
+	restServer.Shutdown()
 	promServer.Shutdown()
 }
 

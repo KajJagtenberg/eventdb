@@ -1,6 +1,8 @@
 package transport
 
 import (
+	"github.com/eventflowdb/eventflowdb/api"
+	"github.com/eventflowdb/eventflowdb/constants"
 	"github.com/eventflowdb/eventflowdb/env"
 	"github.com/eventflowdb/eventflowdb/store"
 	"github.com/gofiber/fiber/v2"
@@ -9,7 +11,9 @@ import (
 
 func version() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		return fiber.ErrNotImplemented
+		return c.JSON(api.VersionResponse{
+			Version: constants.Version,
+		})
 	}
 }
 
@@ -61,7 +65,7 @@ func streams() fiber.Handler {
 	}
 }
 
-func SetupRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.App {
+func RunRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.App {
 	httpPort := env.GetEnv("HTTP_PORT", "16543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
