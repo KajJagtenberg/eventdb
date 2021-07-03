@@ -1,1 +1,13 @@
 GET http://127.0.0.1:16543/api/v1/version
+
+###
+
+GET http://127.0.0.1:16543/api/v1/uptime
+
+###
+
+GET http://127.0.0.1:16543/api/v1/stream/all
+
+###
+
+GET http://127.0.0.1:16543/api/v1/event/01F9187PS9X4FQ83C93JQW2R1B
