@@ -19,7 +19,7 @@ func version() fiber.Handler {
 	}
 }
 
-func stream(eventstore store.EventStore) fiber.Handler {
+func stream(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetStreamRequest
 		req.Stream = c.Params("id")
@@ -36,9 +36,14 @@ func stream(eventstore store.EventStore) fiber.Handler {
 		req.Version = uint32(version)
 		req.Limit = uint32(limit)
 
-		eventstore.GetStream(req)
+		res, err := eventstore.GetStream(&req)
+		switch err {
+		default:
+			logger.Println(err)
+			return fiber.ErrInternalServerError
+		}
 
-		return fiber.ErrNotImplemented
+		return c.JSON(res)
 	}
 }
 
@@ -98,7 +103,7 @@ func RunRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.Ap
 	v1.Get("/version", version())
 	v1.Get("/stream/all", all())
 	v1.Get("/stream/count", streamCount())
-	v1.Get("/stream/:id", stream(eventstore))
+	v1.Get("/stream/:id", stream(eventstore, logger))
 	v1.Post("/stream/:id", add())
 	v1.Get("/event/count", eventCount())
 	v1.Get("/event/:id", event())
