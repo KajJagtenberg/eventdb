@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/dgraph-io/badger/v3"
@@ -10,6 +11,7 @@ import (
 	"github.com/eventflowdb/eventflowdb/env"
 	"github.com/eventflowdb/eventflowdb/store"
 	"github.com/eventflowdb/eventflowdb/transport"
+	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
 )
@@ -64,5 +66,31 @@ func server() {
 }
 
 func main() {
-	server()
+	// server()
+
+	cluster := gocql.NewCluster(strings.Split(env.GetEnv("CASSANDRA_NODES", "127.0.0.1"), ",")...) // TODO: Add to README
+	cluster.Authenticator = gocql.PasswordAuthenticator{
+		Username: env.GetEnv("CASSANDRA_USERNAME", "cassandra"), // TODO: Add to README
+		Password: env.GetEnv("CASSANDRA_PASSWORD", "cassandra"), // TODO: Add to README
+	}
+
+	session, err := cluster.CreateSession()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer session.Close()
+
+	log.Println("Connected to Cassandra cluster")
+
+	session.SetConsistency(gocql.Quorum)
+
+	queries := []*gocql.Query{
+		session.Query("CREATE KEYSPACE IF NOT EXISTS ks1 WITH REPLICATION = {'class':'SimpleStrategy','replication_factor':3}"),
+	}
+
+	for _, qry := range queries {
+		if err := qry.Exec(); err != nil {
+			log.Fatal(err)
+		}
+	}
 }
