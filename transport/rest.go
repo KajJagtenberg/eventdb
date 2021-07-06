@@ -205,9 +205,6 @@ func streams(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 
 func RunRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.App {
 	httpPort := env.GetEnv("HTTP_PORT", "16543")
-	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
-	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")
-	keyFile := env.GetEnv("TLS_KEY_FILE", "certs/key.pem")
 
 	server := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -228,14 +225,8 @@ func RunRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.Ap
 	go func() {
 		logger.Printf("REST server listening on %s", httpPort)
 
-		if tlsEnabled {
-			if err := server.ListenTLS(":"+httpPort, certFile, keyFile); err != nil {
-				logger.Fatal(err)
-			}
-		} else {
-			if err := server.Listen(":" + httpPort); err != nil {
-				logger.Fatal(err)
-			}
+		if err := server.Listen(":" + httpPort); err != nil {
+			logger.Fatal(err)
 		}
 	}()
 
