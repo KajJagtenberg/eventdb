@@ -10,7 +10,8 @@
 - A more future proof disk layout.
 - Added caching for events for additional performance since they are immutable.
 - Added caching for system stats such as event count and stream count.
-- Reintroduced REST API for simple access with standard HTTP libraries
+- Reintroduced REST API for simple access with standard HTTP libraries.
+- Removed TLS support in favor of placing that responsibility in a sidecar or proxy.
 
 ## 0.8.0
 
