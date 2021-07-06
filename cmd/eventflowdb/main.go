@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"os/signal"
-	"path"
 	"syscall"
 
 	"github.com/dgraph-io/badger/v3"
@@ -16,24 +15,26 @@ import (
 )
 
 var (
-	logger = logrus.New()
+	log = logrus.New()
 )
 
 func init() {
-	logger.SetFormatter(&logrus.JSONFormatter{})
+	log.SetFormatter(&logrus.JSONFormatter{})
 
 	godotenv.Load()
 }
 
 func server() {
+	log.Println("Starting EventflowDB")
+
 	data := env.GetEnv("DATA", "data")
 
 	var db *badger.DB
 	var err error
 
-	db, err = badger.Open(badger.DefaultOptions(path.Join(data, "fsm")).WithLogger(logger))
+	db, err = badger.Open(badger.DefaultOptions(data).WithLogger(log))
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
@@ -42,20 +43,20 @@ func server() {
 		EstimateCounts: true,
 	})
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	defer eventstore.Close()
 
 	// grpcServer := transport.RunGRPCServer(eventstore, logger)
 	// httpServer := transport.RunHTTPServer(eventstore, logger)
-	restServer := transport.RunRestServer(eventstore, logger)
-	promServer := transport.RunPromServer(logger)
+	restServer := transport.RunRestServer(eventstore, log)
+	promServer := transport.RunPromServer(log)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
 
-	logger.Println("eventflowDB is shutting down...")
+	log.Println("EventflowDB is shutting down...")
 
 	db.Close()
 	// grpcServer.GracefulStop()

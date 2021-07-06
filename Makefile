@@ -26,3 +26,9 @@ build:
 
 push: build
 	docker push ghcr.io/eventflowdb/eventflowdb:$(VERSION)
+
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down
