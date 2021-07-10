@@ -40,7 +40,7 @@ message GetEventRequest {
 message Event {
     string id = 1;
     string stream = 2;
-    uint32 version = 3;
+    int32 version = 3;
     string type = 4;
     bytes data = 5;
     bytes metadata = 6;
@@ -60,15 +60,12 @@ message EventData {
 
 message EventCountRequest {}
 
-message EventCountEstimateRequest {}
 
 message EventCountResponse {
     int64 count = 1;
 }
 
 message StreamCountRequest {}
-
-message StreamCountEstimateRequest {}
 
 message StreamCountResponse {
     int64 count = 1;
@@ -109,9 +106,7 @@ service EventStore {
     rpc AppendToStream(AppendToStreamRequest) returns (AppendToStreamResponse) {}
     rpc GetEvent(GetEventRequest) returns (Event) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
-    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
-    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
     rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Version(VersionRequest) returns (VersionResponse) {}

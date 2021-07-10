@@ -23,9 +23,7 @@ type EventStoreClient interface {
 	AppendToStream(ctx context.Context, in *AppendToStreamRequest, opts ...grpc.CallOption) (*AppendToStreamResponse, error)
 	GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*Event, error)
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
-	EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
-	StreamCountEstimate(ctx context.Context, in *StreamCountEstimateRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
 	ListStreams(ctx context.Context, in *ListStreamsRequest, opts ...grpc.CallOption) (*ListStreamsReponse, error)
 	Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error)
 	Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
@@ -84,27 +82,9 @@ func (c *eventStoreClient) EventCount(ctx context.Context, in *EventCountRequest
 	return out, nil
 }
 
-func (c *eventStoreClient) EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountResponse, error) {
-	out := new(EventCountResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/EventCountEstimate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *eventStoreClient) StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error) {
 	out := new(StreamCountResponse)
 	err := c.cc.Invoke(ctx, "/api.EventStore/StreamCount", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *eventStoreClient) StreamCountEstimate(ctx context.Context, in *StreamCountEstimateRequest, opts ...grpc.CallOption) (*StreamCountResponse, error) {
-	out := new(StreamCountResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/StreamCountEstimate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -147,9 +127,7 @@ type EventStoreServer interface {
 	AppendToStream(context.Context, *AppendToStreamRequest) (*AppendToStreamResponse, error)
 	GetEvent(context.Context, *GetEventRequest) (*Event, error)
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
-	EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountResponse, error)
 	StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error)
-	StreamCountEstimate(context.Context, *StreamCountEstimateRequest) (*StreamCountResponse, error)
 	ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error)
 	Size(context.Context, *SizeRequest) (*SizeResponse, error)
 	Version(context.Context, *VersionRequest) (*VersionResponse, error)
@@ -175,14 +153,8 @@ func (UnimplementedEventStoreServer) GetEvent(context.Context, *GetEventRequest)
 func (UnimplementedEventStoreServer) EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventCount not implemented")
 }
-func (UnimplementedEventStoreServer) EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EventCountEstimate not implemented")
-}
 func (UnimplementedEventStoreServer) StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StreamCount not implemented")
-}
-func (UnimplementedEventStoreServer) StreamCountEstimate(context.Context, *StreamCountEstimateRequest) (*StreamCountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StreamCountEstimate not implemented")
 }
 func (UnimplementedEventStoreServer) ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStreams not implemented")
@@ -296,24 +268,6 @@ func _EventStore_EventCount_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventStore_EventCountEstimate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EventCountEstimateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).EventCountEstimate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/EventCountEstimate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).EventCountEstimate(ctx, req.(*EventCountEstimateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _EventStore_StreamCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StreamCountRequest)
 	if err := dec(in); err != nil {
@@ -328,24 +282,6 @@ func _EventStore_StreamCount_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventStoreServer).StreamCount(ctx, req.(*StreamCountRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EventStore_StreamCountEstimate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StreamCountEstimateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).StreamCountEstimate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/StreamCountEstimate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).StreamCountEstimate(ctx, req.(*StreamCountEstimateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -432,16 +368,8 @@ var EventStore_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _EventStore_EventCount_Handler,
 		},
 		{
-			MethodName: "EventCountEstimate",
-			Handler:    _EventStore_EventCountEstimate_Handler,
-		},
-		{
 			MethodName: "StreamCount",
 			Handler:    _EventStore_StreamCount_Handler,
-		},
-		{
-			MethodName: "StreamCountEstimate",
-			Handler:    _EventStore_StreamCountEstimate_Handler,
 		},
 		{
 			MethodName: "ListStreams",

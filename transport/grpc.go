@@ -35,16 +35,8 @@ func (s *EventStore) EventCount(ctx context.Context, req *api.EventCountRequest)
 	return s.eventstore.EventCount(req)
 }
 
-func (s *EventStore) EventCountEstimate(ctx context.Context, req *api.EventCountEstimateRequest) (*api.EventCountResponse, error) {
-	return s.eventstore.EventCountEstimate(req)
-}
-
 func (s *EventStore) StreamCount(ctx context.Context, req *api.StreamCountRequest) (*api.StreamCountResponse, error) {
 	return s.eventstore.StreamCount(req)
-}
-
-func (s *EventStore) StreamCountEstimate(ctx context.Context, req *api.StreamCountEstimateRequest) (*api.StreamCountResponse, error) {
-	return s.eventstore.StreamCountEstimate(req)
 }
 
 func (s *EventStore) ListStreams(ctx context.Context, req *api.ListStreamsRequest) (*api.ListStreamsReponse, error) {

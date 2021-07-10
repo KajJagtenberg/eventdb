@@ -20,7 +20,7 @@ func init() {
 }
 
 func main() {
-	db, err := badger.Open(badger.DefaultOptions("data").WithLogger(log))
+	db, err := badger.Open(badger.DefaultOptions("data").WithLogger(nil))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,28 +29,28 @@ func main() {
 	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
 		DB: db,
 	})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	eventstore.AppendToStream(&api.AppendToStreamRequest{
+	events := []*api.EventData{}
+
+	for i := 0; i < 25; i++ {
+		events = append(events, &api.EventData{
+			Id:   uuid.NewString(),
+			Type: "TestEvent",
+			Data: []byte("data"),
+		})
+	}
+
+	res, err := eventstore.AppendToStream(&api.AppendToStreamRequest{
 		Stream:  uuid.NewString(),
 		Version: 0,
-		Events: []*api.EventData{
-			{
-				Id:   uuid.NewString(),
-				Type: "TestEvent",
-				Data: []byte("data"),
-			},
-		},
+		Events:  events,
 	})
-
-	txn := db.NewTransaction(false)
-	defer txn.Discard()
-
-	iter := txn.NewIterator(badger.DefaultIteratorOptions)
-	defer iter.Close()
-
-	for iter.Rewind(); iter.Valid(); iter.Next() {
-		item := iter.Item()
-
-		log.Println(item.Key())
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	log.Println(res.Events)
 }

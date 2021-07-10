@@ -101,14 +101,7 @@ func AppendToStreamHandler(eventstore store.EventStore, logger *logrus.Logger) f
 
 func GetStreamCountHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var res interface{}
-		var err error
-
-		if c.Query("estimate", "false") == "true" {
-			res, err = eventstore.StreamCountEstimate(&api.StreamCountEstimateRequest{})
-		} else {
-			res, err = eventstore.StreamCount(&api.StreamCountRequest{})
-		}
+		res, err := eventstore.StreamCount(&api.StreamCountRequest{})
 
 		if err != nil {
 			switch err {
@@ -142,14 +135,7 @@ func GetEventHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.H
 
 func GetEventCountHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var res interface{}
-		var err error
-
-		if c.Query("estimate", "false") == "true" {
-			res, err = eventstore.EventCountEstimate(&api.EventCountEstimateRequest{})
-		} else {
-			res, err = eventstore.EventCount(&api.EventCountRequest{})
-		}
+		res, err := eventstore.EventCount(&api.EventCountRequest{})
 
 		if err != nil {
 			switch err {
