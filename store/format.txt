@@ -1,7 +1,0 @@
-<0><id> = event // Primary index
-<1><stream><version> = <id> // Secondary index
-<2><stream> = nil // Secondary index
-
-event:22d24a3a-a2da-431d-9d99-434a559a9fb7=event
-event:58913b99-3ca8-4880-87e3-eba58d4f98ac=event
-stream:

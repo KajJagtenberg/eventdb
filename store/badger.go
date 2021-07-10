@@ -12,13 +12,10 @@ import (
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/conv"
 	"github.com/google/uuid"
-	"github.com/karlseguin/ccache/v2"
 )
 
 type BadgerEventStore struct {
-	db          *badger.DB
-	systemCache *ccache.Cache
-	eventCache  *ccache.Cache
+	db *badger.DB
 }
 
 var (
@@ -45,34 +42,16 @@ func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *
 		return nil, ErrWrongVersion
 	}
 
+	events, err := convertToEvents(req)
+	if err != nil {
+		return nil, err
+	}
+
 	txn := s.db.NewTransaction(true)
 	defer txn.Discard()
 
-	for i, event := range req.Events {
-		if len(event.Type) == 0 {
-			return nil, ErrEmptyEventType
-		}
-
-		id := uuid.New()
-
-		if len(event.CausationId) == 0 {
-			event.CausationId = id.String()
-		}
-		if len(event.CorrelationId) == 0 {
-			event.CorrelationId = id.String()
-		}
-
-		data, err := json.Marshal(&api.Event{
-			Id:            id.String(),
-			Stream:        stream.String(),
-			Version:       req.Version + int32(i),
-			Type:          event.Type,
-			Metadata:      event.Metadata,
-			CausationId:   event.CausationId,
-			CorrelationId: event.CorrelationId,
-			Data:          event.Data,
-			AddedAt:       time.Now().Unix(),
-		})
+	for i, event := range events {
+		data, err := json.Marshal(event)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +65,7 @@ func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *
 			return nil, err
 		}
 
-		if err := txn.Set(getEventKey(id), value); err != nil {
+		if err := txn.Set(getEventKey(event.Id), value); err != nil {
 			return nil, err
 		}
 
@@ -94,7 +73,7 @@ func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *
 			return nil, err
 		}
 
-		res.Events = append(res.Events, id.String())
+		res.Events = append(res.Events, event.Id)
 	}
 	if err := txn.Commit(); err != nil {
 		return nil, err
@@ -155,13 +134,8 @@ type BadgerStoreOptions struct {
 func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) {
 	db := options.DB
 
-	systemCache := ccache.New(ccache.Configure())
-	eventCache := ccache.New(ccache.Configure())
-
 	store := &BadgerEventStore{
-		db:          db,
-		systemCache: systemCache,
-		eventCache:  eventCache,
+		db: db,
 	}
 
 	if !db.Opts().InMemory {
@@ -189,11 +163,11 @@ func getStreamKey(stream uuid.UUID, version int) []byte {
 	return buf.Bytes()
 }
 
-func getEventKey(id uuid.UUID) []byte {
+func getEventKey(id string) []byte {
 	buf := new(bytes.Buffer)
 	buf.Write(PREFIX_EVENT)
 	buf.Write(SEPERATOR)
-	buf.WriteString(id.String())
+	buf.WriteString(id)
 	buf.Write(SEPERATOR)
 
 	return buf.Bytes()
