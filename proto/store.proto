@@ -23,3 +23,10 @@ message PersistedStream {
     repeated bytes events = 2;
     int64 added_at = 3;
 }
+
+message Value {
+    uint32 encoding = 1;
+    uint32 version = 2;
+    bytes data = 3;
+    bytes keyspace = 4;
+}

@@ -3,3 +3,5 @@
 <2><sequence> = <id>
 <3><metadata> = value
 <4><stream> = nil
+
+event:<namespace>:<id> = event

@@ -194,6 +194,77 @@ func (x *PersistedStream) GetAddedAt() int64 {
 	return 0
 }
 
+type Value struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Encoding uint32 `protobuf:"varint,1,opt,name=encoding,proto3" json:"encoding,omitempty"`
+	Version  uint32 `protobuf:"varint,2,opt,name=version,proto3" json:"version,omitempty"`
+	Data     []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	Keyspace []byte `protobuf:"bytes,4,opt,name=keyspace,proto3" json:"keyspace,omitempty"`
+}
+
+func (x *Value) Reset() {
+	*x = Value{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_store_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Value) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Value) ProtoMessage() {}
+
+func (x *Value) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_store_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Value.ProtoReflect.Descriptor instead.
+func (*Value) Descriptor() ([]byte, []int) {
+	return file_proto_store_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *Value) GetEncoding() uint32 {
+	if x != nil {
+		return x.Encoding
+	}
+	return 0
+}
+
+func (x *Value) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *Value) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *Value) GetKeyspace() []byte {
+	if x != nil {
+		return x.Keyspace
+	}
+	return nil
+}
+
 var File_proto_store_proto protoreflect.FileDescriptor
 
 var file_proto_store_proto_rawDesc = []byte{
@@ -219,9 +290,15 @@ var file_proto_store_proto_rawDesc = []byte{
 	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x02, 0x69, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x65,
 	0x76, 0x65, 0x6e, 0x74, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0c, 0x52, 0x06, 0x65, 0x76, 0x65,
 	0x6e, 0x74, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x61, 0x64, 0x64, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x61, 0x64, 0x64, 0x65, 0x64, 0x41, 0x74, 0x42, 0x09,
-	0x5a, 0x07, 0x2e, 0x2f, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x61, 0x64, 0x64, 0x65, 0x64, 0x41, 0x74, 0x22, 0x6d,
+	0x0a, 0x05, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x65, 0x6e, 0x63, 0x6f, 0x64,
+	0x69, 0x6e, 0x67, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x08, 0x65, 0x6e, 0x63, 0x6f, 0x64,
+	0x69, 0x6e, 0x67, 0x12, 0x18, 0x0a, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0d, 0x52, 0x07, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x12, 0x0a,
+	0x04, 0x64, 0x61, 0x74, 0x61, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x64, 0x61, 0x74,
+	0x61, 0x12, 0x1a, 0x0a, 0x08, 0x6b, 0x65, 0x79, 0x73, 0x70, 0x61, 0x63, 0x65, 0x18, 0x04, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x08, 0x6b, 0x65, 0x79, 0x73, 0x70, 0x61, 0x63, 0x65, 0x42, 0x09, 0x5a,
+	0x07, 0x2e, 0x2f, 0x73, 0x74, 0x6f, 0x72, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -236,10 +313,11 @@ func file_proto_store_proto_rawDescGZIP() []byte {
 	return file_proto_store_proto_rawDescData
 }
 
-var file_proto_store_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_store_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_store_proto_goTypes = []interface{}{
 	(*PersistedEvent)(nil),  // 0: store.PersistedEvent
 	(*PersistedStream)(nil), // 1: store.PersistedStream
+	(*Value)(nil),           // 2: store.Value
 }
 var file_proto_store_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -279,6 +357,18 @@ func file_proto_store_proto_init() {
 				return nil
 			}
 		}
+		file_proto_store_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*Value); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -286,7 +376,7 @@ func file_proto_store_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_store_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

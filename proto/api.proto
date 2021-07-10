@@ -104,17 +104,16 @@ message GetEventRequest {
 }
 
 service EventStore {
+    // Returns the ids of the events in the stream
+    rpc GetStream(GetStreamRequest) returns (GetStreamResponse) {}
+    rpc GetGlobalStream(GetGlobalStreamRequest) returns (GetGlobalStreamResponse) {}
+    rpc AppendStream(AppendStreamRequest) returns (AppendStreamResponse) {}
+    rpc GetEvent(GetEventRequest) returns (Event) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
     rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
     rpc Size(SizeRequest) returns (SizeResponse) {}
-    rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
     rpc Version(VersionRequest) returns (VersionResponse) {}
-
-    rpc GetStream(GetStreamRequest) returns (GetStreamResponse) {}
-    rpc GetGlobalStream(GetGlobalStreamRequest) returns (GetGlobalStreamResponse) {}
-    rpc AppendStream(AppendStreamRequest) returns (AppendStreamResponse) {}
-    rpc GetEvent(GetEventRequest) returns (Event) {}
 }
