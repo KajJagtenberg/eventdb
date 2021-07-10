@@ -1,7 +1,7 @@
-<0><id> = event
-<1><stream><version> = <id>
-<2><sequence> = <id>
-<3><metadata> = value
-<4><stream> = nil
+<0><id> = event // Primary index
+<1><stream><version> = <id> // Secondary index
+<2><stream> = nil // Secondary index
 
-event:<namespace>:<id> = event
+event:22d24a3a-a2da-431d-9d99-434a559a9fb7=event
+event:58913b99-3ca8-4880-87e3-eba58d4f98ac=event
+stream:

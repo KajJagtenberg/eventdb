@@ -38,10 +38,7 @@ func server() {
 
 	data := env.GetEnv("DATA", "data")
 
-	var db *badger.DB
-	var err error
-
-	db, err = badger.Open(badger.DefaultOptions(data).WithLogger(log))
+	db, err := badger.Open(badger.DefaultOptions(data).WithLogger(log))
 	if err != nil {
 		log.Fatal(err)
 	}

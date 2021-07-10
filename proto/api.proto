@@ -25,7 +25,7 @@ message GetGlobalStreamResponse {
 
 message AppendToStreamRequest {
     string stream = 1;
-    uint32 version = 2;
+    int32 version = 2;
     repeated EventData events = 3;
 }
 

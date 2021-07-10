@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/joho/godotenv v1.3.0
 	github.com/karlseguin/ccache/v2 v2.0.8
+	github.com/kr/pretty v0.2.0 // indirect
 	github.com/oklog/ulid v1.3.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/sirupsen/logrus v1.8.1
