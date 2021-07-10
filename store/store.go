@@ -11,7 +11,7 @@ type EventStore interface {
 
 	GetGlobalStream(*api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error)
 
-	AppendStream(*api.AppendStreamRequest) (*api.AppendStreamResponse, error)
+	AppendToStream(*api.AppendToStreamRequest) (*api.AppendToStreamResponse, error)
 
 	GetEvent(*api.GetEventRequest) (*api.Event, error)
 

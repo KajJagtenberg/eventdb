@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func version() fiber.Handler {
+func GetVersionHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		return c.JSON(api.VersionResponse{
 			Version: constants.Version,
@@ -21,7 +21,7 @@ func version() fiber.Handler {
 	}
 }
 
-func stream(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetStreamRequest
 		req.Stream = c.Params("id")
@@ -51,7 +51,7 @@ func stream(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	}
 }
 
-func all(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetGlobalStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetGlobalStreamRequest
 		offset, err := strconv.ParseUint(c.Query("offset", "0"), 10, 64)
@@ -79,14 +79,14 @@ func all(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	}
 }
 
-func appendStream(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func AppendToStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var req api.AppendStreamRequest
+		var req api.AppendToStreamRequest
 		if err := c.BodyParser(&req); err != nil {
 			return fiber.ErrBadRequest
 		}
 
-		res, err := eventstore.AppendStream(&req)
+		res, err := eventstore.AppendToStream(&req)
 		if err != nil {
 			switch err {
 			default:
@@ -99,7 +99,7 @@ func appendStream(eventstore store.EventStore, logger *logrus.Logger) fiber.Hand
 	}
 }
 
-func streamCount(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetStreamCountHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var res interface{}
 		var err error
@@ -122,7 +122,7 @@ func streamCount(eventstore store.EventStore, logger *logrus.Logger) fiber.Handl
 	}
 }
 
-func event(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetEventHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetEventRequest
 		req.Id = c.Params("id")
@@ -140,7 +140,7 @@ func event(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	}
 }
 
-func eventCount(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetEventCountHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var res interface{}
 		var err error
@@ -163,7 +163,7 @@ func eventCount(eventstore store.EventStore, logger *logrus.Logger) fiber.Handle
 	}
 }
 
-func uptime() fiber.Handler {
+func GetUptimeHandler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		uptime := time.Since(start)
 
@@ -174,7 +174,7 @@ func uptime() fiber.Handler {
 	}
 }
 
-func streams(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetStreamListHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.ListStreamsRequest
 
@@ -212,15 +212,15 @@ func RunRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.Ap
 
 	v1 := server.Group("/api/v1")
 	v1.Use(compress.New())
-	v1.Get("/version", version())
-	v1.Get("/stream/all", all(eventstore, logger))
-	v1.Get("/stream/count", streamCount(eventstore, logger))
-	v1.Get("/stream/:id", stream(eventstore, logger))
-	v1.Post("/stream/:id", appendStream(eventstore, logger))
-	v1.Get("/event/count", eventCount(eventstore, logger))
-	v1.Get("/event/:id", event(eventstore, logger))
-	v1.Get("/uptime", uptime())
-	v1.Get("/streams", streams(eventstore, logger))
+	v1.Get("/version", GetVersionHandler())
+	v1.Get("/stream/all", GetGlobalStreamHandler(eventstore, logger))
+	v1.Get("/stream/count", GetStreamCountHandler(eventstore, logger))
+	v1.Get("/stream/:id", GetStreamHandler(eventstore, logger))
+	v1.Post("/stream/:id", AppendToStreamHandler(eventstore, logger))
+	v1.Get("/event/count", GetEventCountHandler(eventstore, logger))
+	v1.Get("/event/:id", GetEventHandler(eventstore, logger))
+	v1.Get("/uptime", GetUptimeHandler())
+	v1.Get("/streams", GetStreamListHandler(eventstore, logger))
 
 	go func() {
 		logger.Printf("REST server listening on %s", httpPort)

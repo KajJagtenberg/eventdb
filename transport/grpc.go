@@ -20,8 +20,8 @@ type EventStore struct {
 	eventstore store.EventStore
 }
 
-func (s *EventStore) AppendStream(ctx context.Context, req *api.AppendStreamRequest) (*api.AppendStreamResponse, error) {
-	return s.eventstore.AppendStream(req)
+func (s *EventStore) AppendStream(ctx context.Context, req *api.AppendToStreamRequest) (*api.AppendToStreamResponse, error) {
+	return s.eventstore.AppendToStream(req)
 }
 
 func (s *EventStore) GetStream(ctx context.Context, req *api.GetStreamRequest) (*api.GetStreamResponse, error) {

@@ -184,8 +184,8 @@ func (s *BadgerEventStore) GetStream(req *api.GetStreamRequest) (res *api.GetStr
 	return
 }
 
-func (s *BadgerEventStore) AppendStream(req *api.AppendStreamRequest) (res *api.AppendStreamResponse, err error) {
-	res = &api.AppendStreamResponse{
+func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *api.AppendToStreamResponse, err error) {
+	res = &api.AppendToStreamResponse{
 		Events: make([]string, 0),
 	}
 

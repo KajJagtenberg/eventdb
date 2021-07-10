@@ -30,7 +30,7 @@ func TestAdd(t *testing.T) {
 	}
 	defer store.Close()
 
-	req := &api.AppendStreamRequest{
+	req := &api.AppendToStreamRequest{
 		Stream:  uuid.New().String(),
 		Version: 0,
 		Events: []*api.EventData{
@@ -42,7 +42,7 @@ func TestAdd(t *testing.T) {
 		},
 	}
 
-	res, err := store.AppendStream(req)
+	res, err := store.AppendToStream(req)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +67,7 @@ func TestAddWithGap(t *testing.T) {
 	}
 	defer store.Close()
 
-	req := &api.AppendStreamRequest{
+	req := &api.AppendToStreamRequest{
 		Stream:  uuid.New().String(),
 		Version: 1,
 		Events: []*api.EventData{
@@ -79,7 +79,7 @@ func TestAddWithGap(t *testing.T) {
 		},
 	}
 
-	_, err = store.AppendStream(req)
+	_, err = store.AppendToStream(req)
 	if err != ErrGappedStream {
 		t.Fatal("Should return an error")
 	}
@@ -94,7 +94,7 @@ func TestGet(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -106,7 +106,7 @@ func TestGet(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -146,7 +146,7 @@ func TestGetWithVersion(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -163,7 +163,7 @@ func TestGetWithVersion(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -203,7 +203,7 @@ func TestGetWithLimit(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -230,7 +230,7 @@ func TestGetWithLimit(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -263,7 +263,7 @@ func TestGetAll(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -275,7 +275,7 @@ func TestGetAll(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -311,7 +311,7 @@ func TestEventCount(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -323,7 +323,7 @@ func TestEventCount(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -350,7 +350,7 @@ func TestStreamCount(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -362,7 +362,7 @@ func TestStreamCount(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -389,7 +389,7 @@ func TestListStreams(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -401,7 +401,7 @@ func TestListStreams(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -429,7 +429,7 @@ func TestListStreamsWithSkip(t *testing.T) {
 	stream := uuid.New().String()
 
 	func() {
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  stream,
 			Version: 0,
 			Events: []*api.EventData{
@@ -441,7 +441,7 @@ func TestListStreamsWithSkip(t *testing.T) {
 			},
 		}
 
-		_, err := store.AppendStream(req)
+		_, err := store.AppendToStream(req)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -478,13 +478,13 @@ func BenchmarkAdd(t *testing.B) {
 			})
 		}
 
-		req := &api.AppendStreamRequest{
+		req := &api.AppendToStreamRequest{
 			Stream:  uuid.New().String(),
 			Version: 0,
 			Events:  data,
 		}
 
-		if _, err := store.AppendStream(req); err != nil {
+		if _, err := store.AppendToStream(req); err != nil {
 			t.Fatal(err)
 		}
 	}
