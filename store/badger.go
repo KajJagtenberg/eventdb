@@ -16,11 +16,11 @@ type BadgerEventStore struct {
 }
 
 var (
-	PREFIX_EVENT         = []byte{0}
-	PREFIX_STREAM        = []byte{1}
-	PREFIX_STREAM_EVENT  = []byte{2}
-	PREFIX_GLOBAL_STREAM = []byte{3}
-	SEPERATOR            = []byte{58}
+	PREFIX_EVENT           = []byte{0}
+	PREFIX_STREAM_METADATA = []byte{1}
+	PREFIX_STREAM_EVENT    = []byte{2}
+	PREFIX_GLOBAL_STREAM   = []byte{3}
+	SEPERATOR              = []byte{58}
 )
 
 func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *api.AppendToStreamResponse, err error) {

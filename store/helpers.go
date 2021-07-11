@@ -17,9 +17,14 @@ func getStream(txn *badger.Txn, stream uuid.UUID) (*PersistedStream, error) {
 	item, err := txn.Get(getStreamKey(stream))
 	switch err {
 	case nil:
+		var value Value
 		if err := item.Value(func(val []byte) error {
-			return proto.Unmarshal(val, &persistedStream)
+			return proto.Unmarshal(val, &value)
 		}); err != nil {
+			return nil, err
+		}
+
+		if err := proto.Unmarshal(value.Data, &persistedStream); err != nil {
 			return nil, err
 		}
 	case badger.ErrKeyNotFound:
@@ -63,7 +68,7 @@ func getStreamEventKey(stream uuid.UUID, version uint32) []byte {
 
 func getStreamKey(stream uuid.UUID) []byte {
 	buf := new(bytes.Buffer)
-	buf.Write(PREFIX_STREAM)
+	buf.Write(PREFIX_STREAM_METADATA)
 	buf.Write(SEPERATOR)
 	buf.WriteString(stream.String())
 
@@ -124,4 +129,32 @@ func setStreamEvent(txn *badger.Txn, stream uuid.UUID, version uint32, event uui
 	}
 
 	return txn.Set(getStreamEventKey(stream, version), value)
+}
+
+func getStreamEvent(txn *badger.Txn, stream uuid.UUID, version uint32) (string, error) {
+	item, err := txn.Get(getStreamEventKey(stream, version))
+	if err != nil {
+		return "", err
+	}
+
+	var id string
+
+	if err := item.Value(func(val []byte) error {
+		var value Value
+		if err := proto.Unmarshal(val, &value); err != nil {
+			return err
+		}
+		var event StreamEvent
+		if err := proto.Unmarshal(value.Data, &event); err != nil {
+			return err
+		}
+
+		id = event.Id
+
+		return nil
+	}); err != nil {
+		return "", nil
+	}
+
+	return id, nil
 }

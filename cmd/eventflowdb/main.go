@@ -1,22 +1,18 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/google/uuid"
 
 	"github.com/eventflowdb/eventflowdb/constants"
 	"github.com/eventflowdb/eventflowdb/env"
+	"github.com/eventflowdb/eventflowdb/store"
 	"github.com/eventflowdb/eventflowdb/transport"
 	"github.com/gocql/gocql"
 	"github.com/joho/godotenv"
@@ -44,56 +40,18 @@ func server() {
 	}
 	defer db.Close()
 
-	// eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
-	// 	DB:             db,
-	// 	EstimateCounts: true,
-	// })
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer eventstore.Close()
+	eventstore, err := store.NewBadgerEventStore(store.BadgerStoreOptions{
+		DB:             db,
+		EstimateCounts: true,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer eventstore.Close()
 
 	// grpcServer := transport.RunGRPCServer(eventstore, logger)
-	// restServer := transport.RunRestServer(eventstore, log)
+	restServer := transport.RunRestServer(eventstore, log)
 	promServer := transport.RunPromServer(log)
-
-	app := fiber.New()
-	app.Use(compress.New())
-	app.Get("/stream/:stream", func(c *fiber.Ctx) error {
-		stream, err := uuid.Parse(c.Params("stream"))
-		if err != nil {
-			return err
-		}
-
-		offset, err := strconv.ParseInt(c.Query("offset", "0"), 10, 32)
-		if err != nil {
-			return err
-		}
-
-		txn := db.NewTransaction(false)
-		defer txn.Discard()
-
-		key := new(bytes.Buffer)
-		key.WriteByte(0)
-		key.WriteString(stream.String())
-
-		binary.Write(key, binary.BigEndian, offset)
-
-		item, err := txn.Get(key.Bytes())
-		if err != nil {
-			return err
-		}
-
-		return item.Value(func(val []byte) error {
-			return c.Send(val)
-		})
-	})
-
-	go func() {
-		if err := app.Listen(":8080"); err != nil {
-			log.Fatal(err)
-		}
-	}()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
@@ -103,7 +61,7 @@ func server() {
 
 	db.Close()
 	// grpcServer.GracefulStop()
-	// restServer.Shutdown()
+	restServer.Shutdown()
 	promServer.Shutdown()
 }
 

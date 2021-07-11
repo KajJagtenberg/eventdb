@@ -21,7 +21,7 @@ func GetVersionHandler() fiber.Handler {
 	}
 }
 
-func GetStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetStreamHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetStreamRequest
 		req.Stream = c.Params("id")
@@ -42,7 +42,7 @@ func GetStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.
 		if err != nil {
 			switch err {
 			default:
-				logger.Println(err)
+				log.Println(err)
 				return fiber.ErrInternalServerError
 			}
 		}
@@ -51,7 +51,7 @@ func GetStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.
 	}
 }
 
-func GetGlobalStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetGlobalStreamHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetGlobalStreamRequest
 		offset, err := strconv.ParseUint(c.Query("offset", "0"), 10, 64)
@@ -70,7 +70,7 @@ func GetGlobalStreamHandler(eventstore store.EventStore, logger *logrus.Logger) 
 		if err != nil {
 			switch err {
 			default:
-				logger.Println(err)
+				log.Println(err)
 				return fiber.ErrInternalServerError
 			}
 		}
@@ -79,18 +79,27 @@ func GetGlobalStreamHandler(eventstore store.EventStore, logger *logrus.Logger) 
 	}
 }
 
-func AppendToStreamHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func AppendToStreamHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		var req api.AppendToStreamRequest
+		var req struct {
+			Version int32            `json:"version"`
+			Events  []*api.EventData `json:"events"`
+		}
 		if err := c.BodyParser(&req); err != nil {
 			return fiber.ErrBadRequest
 		}
 
-		res, err := eventstore.AppendToStream(&req)
+		res, err := eventstore.AppendToStream(&api.AppendToStreamRequest{
+			Stream:  c.Params("id"),
+			Version: req.Version,
+			Events:  req.Events,
+		})
 		if err != nil {
 			switch err {
+			case store.ErrEmptyEvents, store.ErrEmptyEventType, store.ErrConcurrentStreamModification, store.ErrWrongVersion, store.ErrZeroStream:
+				return fiber.NewError(fiber.StatusBadRequest, err.Error())
 			default:
-				logger.Println(err)
+				log.Println(err)
 				return fiber.ErrInternalServerError
 			}
 		}
@@ -99,14 +108,14 @@ func AppendToStreamHandler(eventstore store.EventStore, logger *logrus.Logger) f
 	}
 }
 
-func GetStreamCountHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetStreamCountHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		res, err := eventstore.StreamCount(&api.StreamCountRequest{})
 
 		if err != nil {
 			switch err {
 			default:
-				logger.Println(err)
+				log.Println(err)
 				return fiber.ErrInternalServerError
 			}
 		}
@@ -115,7 +124,7 @@ func GetStreamCountHandler(eventstore store.EventStore, logger *logrus.Logger) f
 	}
 }
 
-func GetEventHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetEventHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetEventRequest
 		req.Id = c.Params("id")
@@ -124,7 +133,7 @@ func GetEventHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.H
 		if err != nil {
 			switch err {
 			default:
-				logger.Println(err)
+				log.Println(err)
 				return fiber.ErrInternalServerError
 			}
 		}
@@ -133,14 +142,14 @@ func GetEventHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.H
 	}
 }
 
-func GetEventCountHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetEventCountHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		res, err := eventstore.EventCount(&api.EventCountRequest{})
 
 		if err != nil {
 			switch err {
 			default:
-				logger.Println(err)
+				log.Println(err)
 				return fiber.ErrInternalServerError
 			}
 		}
@@ -160,7 +169,7 @@ func GetUptimeHandler() fiber.Handler {
 	}
 }
 
-func GetStreamListHandler(eventstore store.EventStore, logger *logrus.Logger) fiber.Handler {
+func GetStreamListHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.ListStreamsRequest
 
@@ -180,7 +189,7 @@ func GetStreamListHandler(eventstore store.EventStore, logger *logrus.Logger) fi
 		if err != nil {
 			switch err {
 			default:
-				logger.Println(err)
+				log.Println(err)
 				return fiber.ErrInternalServerError
 			}
 		}
@@ -189,7 +198,7 @@ func GetStreamListHandler(eventstore store.EventStore, logger *logrus.Logger) fi
 	}
 }
 
-func RunRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.App {
+func RunRestServer(eventstore store.EventStore, log *logrus.Logger) *fiber.App {
 	httpPort := env.GetEnv("HTTP_PORT", "16543")
 
 	server := fiber.New(fiber.Config{
@@ -199,20 +208,20 @@ func RunRestServer(eventstore store.EventStore, logger *logrus.Logger) *fiber.Ap
 	v1 := server.Group("/api/v1")
 	v1.Use(compress.New())
 	v1.Get("/version", GetVersionHandler())
-	v1.Get("/stream/all", GetGlobalStreamHandler(eventstore, logger))
-	v1.Get("/stream/count", GetStreamCountHandler(eventstore, logger))
-	v1.Get("/stream/:id", GetStreamHandler(eventstore, logger))
-	v1.Post("/stream/:id", AppendToStreamHandler(eventstore, logger))
-	v1.Get("/event/count", GetEventCountHandler(eventstore, logger))
-	v1.Get("/event/:id", GetEventHandler(eventstore, logger))
+	v1.Get("/stream/all", GetGlobalStreamHandler(eventstore, log))
+	v1.Get("/stream/count", GetStreamCountHandler(eventstore, log))
+	v1.Get("/stream/:id", GetStreamHandler(eventstore, log))
+	v1.Post("/stream/:id", AppendToStreamHandler(eventstore, log))
+	v1.Get("/event/count", GetEventCountHandler(eventstore, log))
+	v1.Get("/event/:id", GetEventHandler(eventstore, log))
 	v1.Get("/uptime", GetUptimeHandler())
-	v1.Get("/streams", GetStreamListHandler(eventstore, logger))
+	v1.Get("/streams", GetStreamListHandler(eventstore, log))
 
 	go func() {
-		logger.Printf("REST server listening on %s", httpPort)
+		log.Printf("REST server listening on %s", httpPort)
 
 		if err := server.Listen(":" + httpPort); err != nil {
-			logger.Fatal(err)
+			log.Fatal(err)
 		}
 	}()
 
