@@ -24,6 +24,10 @@ message PersistedStream {
     int64 created_at = 3;
 }
 
+message StreamEvent {
+    string id = 1;
+}
+
 message Value {
     uint32 encoding = 1;
     uint32 version = 2;

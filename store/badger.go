@@ -67,7 +67,13 @@ func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *
 			event.CorrelationId = id.String()
 		}
 
-		if err := setEvent(txn, id, stream, event, persistedStream.Version+uint32(i)); err != nil {
+		version := persistedStream.Version + uint32(i)
+
+		if err := setEvent(txn, id, stream, event, version); err != nil {
+			return nil, err
+		}
+
+		if err := setStreamEvent(txn, stream, version, id); err != nil {
 			return nil, err
 		}
 
@@ -75,6 +81,10 @@ func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *
 	}
 
 	persistedStream.Version += uint32(len(req.Events))
+
+	if err := setStream(txn, stream, persistedStream); err != nil {
+		return nil, err
+	}
 
 	if err := txn.Commit(); err != nil {
 		return nil, err

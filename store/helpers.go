@@ -3,7 +3,6 @@ package store
 import (
 	"bytes"
 	"encoding/binary"
-	"encoding/json"
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
@@ -32,6 +31,22 @@ func getStream(txn *badger.Txn, stream uuid.UUID) (*PersistedStream, error) {
 	}
 
 	return &persistedStream, nil
+}
+
+func setStream(txn *badger.Txn, id uuid.UUID, stream *PersistedStream) error {
+	data, err := proto.Marshal(stream)
+	if err != nil {
+		return err
+	}
+	value, err := proto.Marshal(&Value{
+		Version:  0,
+		Encoding: 1,
+		Data:     data,
+	})
+	if err != nil {
+		return err
+	}
+	return txn.Set(getStreamKey(id), value)
 }
 
 func getStreamEventKey(stream uuid.UUID, version uint32) []byte {
@@ -66,7 +81,7 @@ func getEventKey(id uuid.UUID) []byte {
 }
 
 func setEvent(txn *badger.Txn, id uuid.UUID, stream uuid.UUID, event *api.EventData, version uint32) error {
-	data, err := json.Marshal(&api.Event{
+	data, err := proto.Marshal(&api.Event{
 		Id:            id.String(),
 		Stream:        stream.String(),
 		Version:       version,
@@ -81,7 +96,7 @@ func setEvent(txn *badger.Txn, id uuid.UUID, stream uuid.UUID, event *api.EventD
 		return err
 	}
 	value, err := proto.Marshal(&Value{
-		Encoding: 0,
+		Encoding: 1,
 		Version:  0,
 		Data:     data,
 	})
@@ -90,4 +105,23 @@ func setEvent(txn *badger.Txn, id uuid.UUID, stream uuid.UUID, event *api.EventD
 	}
 
 	return txn.Set(getEventKey(id), value)
+}
+
+func setStreamEvent(txn *badger.Txn, stream uuid.UUID, version uint32, event uuid.UUID) error {
+	data, err := proto.Marshal(&StreamEvent{
+		Id: event.String(),
+	})
+	if err != nil {
+		return err
+	}
+	value, err := proto.Marshal(&Value{
+		Version:  0,
+		Encoding: 1,
+		Data:     data,
+	})
+	if err != nil {
+		return err
+	}
+
+	return txn.Set(getStreamEventKey(stream, version), value)
 }
