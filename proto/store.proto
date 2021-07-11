@@ -19,9 +19,9 @@ message PersistedEvent {
 }
 
 message PersistedStream {
-    bytes id = 1;
-    repeated bytes events = 2;
-    int64 added_at = 3;
+    string id = 1;
+    uint32 version = 2;
+    int64 created_at = 3;
 }
 
 message Value {

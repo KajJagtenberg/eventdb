@@ -1,43 +1,93 @@
 package store
 
 import (
-	"log"
+	"bytes"
+	"encoding/binary"
+	"encoding/json"
 	"time"
 
+	"github.com/dgraph-io/badger/v3"
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 )
 
-func convertToEvents(req *api.AppendToStreamRequest) (result []*api.Event, err error) {
-	for i, event := range req.Events {
-		if len(event.Type) == 0 {
-			return nil, ErrEmptyEventType
-		}
+func getStream(txn *badger.Txn, stream uuid.UUID) (*PersistedStream, error) {
+	var persistedStream PersistedStream
 
-		id := uuid.New()
-
-		if len(event.CausationId) == 0 {
-			event.CausationId = id.String()
+	item, err := txn.Get(getStreamKey(stream))
+	switch err {
+	case nil:
+		if err := item.Value(func(val []byte) error {
+			return proto.Unmarshal(val, &persistedStream)
+		}); err != nil {
+			return nil, err
 		}
-		if len(event.CorrelationId) == 0 {
-			event.CorrelationId = id.String()
-		}
-
-		result = append(result, &api.Event{
-			Id:            id.String(),
-			Stream:        req.Stream,
-			Version:       req.Version + int32(i),
-			Type:          event.Type,
-			Metadata:      event.Metadata,
-			CausationId:   event.CausationId,
-			CorrelationId: event.CorrelationId,
-			Data:          event.Data,
-			AddedAt:       time.Now().Unix(),
-		})
+	case badger.ErrKeyNotFound:
+		persistedStream.Id = stream.String()
+		persistedStream.Version = 0
+		persistedStream.CreatedAt = time.Now().Unix()
+	default:
+		return nil, err
 	}
+
+	return &persistedStream, nil
+}
+
+func getStreamEventKey(stream uuid.UUID, version uint32) []byte {
+	buf := new(bytes.Buffer)
+	buf.Write(PREFIX_STREAM_EVENT)
+	buf.Write(SEPERATOR)
+	buf.WriteString(stream.String())
+	buf.Write(SEPERATOR)
+
+	binary.Write(buf, binary.BigEndian, version)
+
+	return buf.Bytes()
+}
+
+func getStreamKey(stream uuid.UUID) []byte {
+	buf := new(bytes.Buffer)
+	buf.Write(PREFIX_STREAM)
+	buf.Write(SEPERATOR)
+	buf.WriteString(stream.String())
+
+	return buf.Bytes()
+}
+
+func getEventKey(id uuid.UUID) []byte {
+	buf := new(bytes.Buffer)
+	buf.Write(PREFIX_EVENT)
+	buf.Write(SEPERATOR)
+	buf.WriteString(id.String())
+	buf.Write(SEPERATOR)
+
+	return buf.Bytes()
+}
+
+func setEvent(txn *badger.Txn, id uuid.UUID, stream uuid.UUID, event *api.EventData, version uint32) error {
+	data, err := json.Marshal(&api.Event{
+		Id:            id.String(),
+		Stream:        stream.String(),
+		Version:       version,
+		Type:          event.Type,
+		Metadata:      event.Metadata,
+		CausationId:   event.CausationId,
+		CorrelationId: event.CorrelationId,
+		Data:          event.Data,
+		AddedAt:       time.Now().Unix(),
+	})
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+	value, err := proto.Marshal(&Value{
+		Encoding: 0,
+		Version:  0,
+		Data:     data,
+	})
+	if err != nil {
+		return err
 	}
 
-	return result, nil
+	return txn.Set(getEventKey(id), value)
 }

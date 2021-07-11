@@ -1,9 +1,6 @@
 package store
 
 import (
-	"bytes"
-	"encoding/binary"
-	"encoding/json"
 	"io"
 	"log"
 	"time"
@@ -19,9 +16,11 @@ type BadgerEventStore struct {
 }
 
 var (
-	PREFIX_EVENT  = []byte{0}
-	PREFIX_STREAM = []byte{1}
-	SEPERATOR     = []byte{58}
+	PREFIX_EVENT         = []byte{0}
+	PREFIX_STREAM        = []byte{1}
+	PREFIX_STREAM_EVENT  = []byte{2}
+	PREFIX_GLOBAL_STREAM = []byte{3}
+	SEPERATOR            = []byte{58}
 )
 
 func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *api.AppendToStreamResponse, err error) {
@@ -42,39 +41,41 @@ func (s *BadgerEventStore) AppendToStream(req *api.AppendToStreamRequest) (res *
 		return nil, ErrWrongVersion
 	}
 
-	events, err := convertToEvents(req)
+	txn := s.db.NewTransaction(true)
+	defer txn.Discard()
+
+	persistedStream, err := getStream(txn, stream)
 	if err != nil {
 		return nil, err
 	}
 
-	txn := s.db.NewTransaction(true)
-	defer txn.Discard()
-
-	for i, event := range events {
-		data, err := json.Marshal(event)
-		if err != nil {
-			return nil, err
-		}
-
-		value, err := json.Marshal(&Value{
-			Encoding: 0,
-			Data:     data,
-			Version:  0,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		if err := txn.Set(getEventKey(event.Id), value); err != nil {
-			return nil, err
-		}
-
-		if err := txn.Set(getStreamKey(stream, int(req.Version)+i), nil); err != nil {
-			return nil, err
-		}
-
-		res.Events = append(res.Events, event.Id)
+	if req.Version != -1 && persistedStream.Version != uint32(req.Version) {
+		return nil, ErrConcurrentStreamModification
 	}
+
+	for i, event := range req.Events {
+		if len(event.Type) == 0 {
+			return nil, ErrEmptyEventType
+		}
+
+		id := uuid.New()
+
+		if len(event.CausationId) == 0 {
+			event.CausationId = id.String()
+		}
+		if len(event.CorrelationId) == 0 {
+			event.CorrelationId = id.String()
+		}
+
+		if err := setEvent(txn, id, stream, event, persistedStream.Version+uint32(i)); err != nil {
+			return nil, err
+		}
+
+		res.Events = append(res.Events, id.String())
+	}
+
+	persistedStream.Version += uint32(len(req.Events))
+
 	if err := txn.Commit(); err != nil {
 		return nil, err
 	}
@@ -149,26 +150,4 @@ func NewBadgerEventStore(options BadgerStoreOptions) (*BadgerEventStore, error) 
 	}
 
 	return store, nil
-}
-
-func getStreamKey(stream uuid.UUID, version int) []byte {
-	buf := new(bytes.Buffer)
-	buf.Write(PREFIX_STREAM)
-	buf.Write(SEPERATOR)
-	buf.WriteString(stream.String())
-	buf.Write(SEPERATOR)
-
-	binary.Write(buf, binary.BigEndian, uint32(version))
-
-	return buf.Bytes()
-}
-
-func getEventKey(id string) []byte {
-	buf := new(bytes.Buffer)
-	buf.Write(PREFIX_EVENT)
-	buf.Write(SEPERATOR)
-	buf.WriteString(id)
-	buf.Write(SEPERATOR)
-
-	return buf.Bytes()
 }
