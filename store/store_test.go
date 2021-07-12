@@ -10,17 +10,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.etcd.io/bbolt"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func TempStore() (EventStore, error) {
-	db, err := badger.Open(badger.DefaultOptions("").WithLogger(nil).WithInMemory(true))
+	db, err := gorm.Open(sqlite.Open(":memory"))
 	if err != nil {
 		return nil, err
 	}
 
-	return NewBadgerEventStore(BadgerStoreOptions{
-		DB: db,
-	})
+	return NewSQLStore(db)
 }
 
 func TestAdd(t *testing.T) {
