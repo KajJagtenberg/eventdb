@@ -15,7 +15,7 @@ import (
 )
 
 func TempStore() (EventStore, error) {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("data.sqlite"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func TestAddWithGap(t *testing.T) {
 	}
 
 	_, err = store.AppendToStream(req)
-	if err != ErrGappedStream {
+	if err != ErrConcurrentStreamModification {
 		t.Fatal("Should return an error")
 	}
 }
@@ -292,84 +292,6 @@ func TestGetGlobalStream(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(1, len(events))
-}
-
-func TestEventCount(t *testing.T) {
-	store, err := TempStore()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer store.Close()
-
-	stream := uuid.New().String()
-
-	func() {
-		req := &api.AppendToStreamRequest{
-			Stream:  stream,
-			Version: 0,
-			Events: []*api.EventData{
-				{
-					Type:     "TestEvent",
-					Data:     []byte("data"),
-					Metadata: []byte("metadata"),
-				},
-			},
-		}
-
-		_, err := store.AppendToStream(req)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
-
-	req := &api.EventCountRequest{}
-
-	res, err := store.EventCount(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert := assert.New(t)
-	assert.Equal(int64(1), res.Count)
-}
-
-func TestStreamCount(t *testing.T) {
-	store, err := TempStore()
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer store.Close()
-
-	stream := uuid.New().String()
-
-	func() {
-		req := &api.AppendToStreamRequest{
-			Stream:  stream,
-			Version: 0,
-			Events: []*api.EventData{
-				{
-					Type:     "TestEvent",
-					Data:     []byte("data"),
-					Metadata: []byte("metadata"),
-				},
-			},
-		}
-
-		_, err := store.AppendToStream(req)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}()
-
-	req := &api.StreamCountRequest{}
-
-	res, err := store.StreamCount(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	assert := assert.New(t)
-	assert.Equal(int64(1), res.Count)
 }
 
 func TestListStreams(t *testing.T) {

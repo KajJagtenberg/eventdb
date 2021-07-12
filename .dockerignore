@@ -15,3 +15,4 @@ CNAME
 example
 *.rest
 *.json
+*.sqlite

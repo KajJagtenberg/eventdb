@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"log"
 	"time"
 
 	"github.com/eventflowdb/eventflowdb/api"
@@ -42,6 +43,8 @@ func (s *SQLEventStore) GetGlobalStream(req *api.GetGlobalStreamRequest) (*api.G
 		return nil, err
 	}
 
+	log.Println(events)
+
 	for _, event := range events {
 		res.Events = append(res.Events, event.ID.String())
 	}
@@ -61,13 +64,13 @@ func (s *SQLEventStore) AppendToStream(req *api.AppendToStreamRequest) (*api.App
 		return nil, err
 	}
 
-	var version uint32
+	var version int
 
 	if err := s.db.Raw("SELECT COALESCE(MAX(version), -1) AS version FROM events WHERE stream = ?;", stream).Scan(&version).Error; err != nil {
 		return nil, err
 	}
 
-	if uint32(req.Version) != version+1 {
+	if int(req.Version) != version+1 {
 		return nil, ErrConcurrentStreamModification
 	}
 
@@ -104,7 +107,7 @@ func (s *SQLEventStore) AppendToStream(req *api.AppendToStreamRequest) (*api.App
 			if err := tx.Create(&Event{
 				ID:            id,
 				Stream:        stream,
-				Version:       version + 1 + uint32(i),
+				Version:       uint32(version) + 1 + uint32(i),
 				Type:          event.Type,
 				Data:          event.Data,
 				Metadata:      event.Metadata,
@@ -152,7 +155,15 @@ func (s *SQLEventStore) Size(*api.SizeRequest) (*api.SizeResponse, error) {
 }
 
 func (s *SQLEventStore) EventCount(*api.EventCountRequest) (*api.EventCountResponse, error) {
-	return nil, nil
+	var count int64
+
+	if err := s.db.Raw("SELECT COUNT(id) FROM events;").First(&count).Error; err != nil {
+		return nil, err
+	}
+
+	return &api.EventCountResponse{
+		Count: count,
+	}, nil
 }
 
 func (s *SQLEventStore) StreamCount(*api.StreamCountRequest) (*api.StreamCountResponse, error) {
