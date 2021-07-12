@@ -13,12 +13,18 @@ GET http://127.0.0.1:16543/api/v1/stream/all
 GET http://127.0.0.1:16543/api/v1/event/01F9187PS9X4FQ83C93JQW2R1B
 
 ###
-POST http://127.0.0.1:16543/api/v1/stream/f4b936b5-83dc-4283-add6-9d3a93f41610
+POST http://127.0.0.1:16543/api/v1/stream/96fb4316-04a0-4aec-9d15-d685acaa197b
 Content-Type: application/json
 
 {
     "version": 0,
     "events": [
+        {
+            "type": "TestEvent"
+        },
+        {
+            "type": "TestEvent"
+        },
         {
             "type": "TestEvent"
         }
