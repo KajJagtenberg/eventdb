@@ -12,12 +12,41 @@ type SQLStore struct {
 	db *gorm.DB
 }
 
-func (s *SQLStore) GetStream(*api.GetStreamRequest) (*api.GetStreamResponse, error) {
-	return nil, nil
+func (s *SQLStore) GetStream(req *api.GetStreamRequest) (*api.GetStreamResponse, error) {
+	res := &api.GetStreamResponse{}
+
+	stream, err := uuid.Parse(req.Stream)
+	if err != nil {
+		return nil, err
+	}
+
+	var events []Event
+
+	if err := s.db.Where("stream = ? AND version >= ?", stream, req.Version).Limit(int(req.Limit)).Select("id").Find(&events).Error; err != nil {
+		return nil, err
+	}
+
+	for _, event := range events {
+		res.Events = append(res.Events, event.ID.String())
+	}
+
+	return res, nil
 }
 
-func (s *SQLStore) GetGlobalStream(*api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error) {
-	return nil, nil
+func (s *SQLStore) GetGlobalStream(req *api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error) {
+	res := &api.GetGlobalStreamResponse{}
+
+	var events []Event
+
+	if err := s.db.Where("timestamp > ?", req.Offset).Limit(int(req.Limit)).Select("id").Find(&events).Error; err != nil {
+		return nil, err
+	}
+
+	for _, event := range events {
+		res.Events = append(res.Events, event.ID.String())
+	}
+
+	return res, nil
 }
 
 func (s *SQLStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendToStreamResponse, error) {
@@ -32,13 +61,13 @@ func (s *SQLStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendTo
 		return nil, err
 	}
 
-	var version int32
+	var version uint32
 
 	if err := s.db.Raw("SELECT COALESCE(MAX(version), -1) AS version FROM events WHERE stream = ?;", stream).Scan(&version).Error; err != nil {
 		return nil, err
 	}
 
-	if req.Version != version+1 {
+	if uint32(req.Version) != version+1 {
 		return nil, ErrConcurrentStreamModification
 	}
 
@@ -75,7 +104,7 @@ func (s *SQLStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendTo
 			if err := tx.Create(&Event{
 				ID:            id,
 				Stream:        stream,
-				Version:       version + 1 + int32(i),
+				Version:       version + 1 + uint32(i),
 				Type:          event.Type,
 				Data:          event.Data,
 				Metadata:      event.Metadata,
@@ -85,6 +114,8 @@ func (s *SQLStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendTo
 			}).Error; err != nil {
 				return err
 			}
+
+			res.Events = append(res.Events, id.String())
 		}
 
 		return nil
@@ -96,8 +127,24 @@ func (s *SQLStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendTo
 	return res, nil
 }
 
-func (s *SQLStore) GetEvent(*api.GetEventRequest) (*api.Event, error) {
-	return nil, nil
+func (s *SQLStore) GetEvent(req *api.GetEventRequest) (*api.Event, error) {
+	var event Event
+
+	if err := s.db.Where("id = ?", req.Id).First(&event).Error; err != nil {
+		return nil, err
+	}
+
+	return &api.Event{
+		Id:            event.ID.String(),
+		Stream:        event.Stream.String(),
+		Version:       event.Version,
+		Type:          event.Type,
+		Data:          event.Data,
+		Metadata:      event.Metadata,
+		CausationId:   event.CausationID.String(),
+		CorrelationId: event.CorrelationID.String(),
+		AddedAt:       event.Timestamp,
+	}, nil
 }
 
 func (s *SQLStore) Size(*api.SizeRequest) (*api.SizeResponse, error) {
@@ -129,13 +176,13 @@ func NewSQLStore(db *gorm.DB) (*SQLStore, error) {
 }
 
 type Event struct {
-	ID            uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Stream        uuid.UUID `gorm:"type:uuid;index:idx_stream,unique"`
-	Version       int32     `gorm:"index:idx_stream,unique"`
-	Type          string
-	Data          []byte
-	Metadata      []byte
-	CausationID   uuid.UUID
-	CorrelationID uuid.UUID
-	Timestamp     int64
+	ID            uuid.UUID `gorm:"type:uuid;primaryKey" json:"id"`
+	Stream        uuid.UUID `gorm:"type:uuid;index:idx_stream,unique" json:"stream"`
+	Version       uint32    `gorm:"index:idx_stream,unique" json:"version"`
+	Type          string    `json:"type"`
+	Data          []byte    `json:"data"`
+	Metadata      []byte    `json:"metadata"`
+	CausationID   uuid.UUID `json:"causation_id"`
+	CorrelationID uuid.UUID `json:"correlation_id"`
+	Timestamp     int64     `json:"timestamp"`
 }

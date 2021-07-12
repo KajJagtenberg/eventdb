@@ -15,7 +15,7 @@ import (
 )
 
 func TempStore() (EventStore, error) {
-	db, err := gorm.Open(sqlite.Open(":memory"))
+	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
@@ -292,13 +292,6 @@ func TestGetAll(t *testing.T) {
 
 	assert := assert.New(t)
 	assert.Equal(1, len(events))
-	// assert.Equal(26, len(events[0].Id))
-	// assert.Equal(26, len(events[0].CausationId))
-	// assert.Equal(26, len(events[0].CorrelationId))
-	// assert.Equal([]byte("data"), events[0].Data)
-	// assert.Equal([]byte("metadata"), events[0].Metadata)
-	// assert.Equal(events[0].Id, events[0].CausationId)
-	// assert.Equal(events[0].Id, events[0].CorrelationId)
 }
 
 func TestEventCount(t *testing.T) {
