@@ -93,12 +93,27 @@ message VersionResponse {
 }
 
 service EventStore {
+    // GET /api/v1/stream/:id
     rpc GetStream(GetStreamRequest) returns (GetStreamResponse) {}
+
+    // GET /api/v1/stream/all
     rpc GetGlobalStream(GetGlobalStreamRequest) returns (GetGlobalStreamResponse) {}
+
+    // POST /api/v1/stream/:id
     rpc AppendToStream(AppendToStreamRequest) returns (AppendToStreamResponse) {}
+
+    // GET // /api/v1/event/:id
     rpc GetEvent(GetEventRequest) returns (Event) {}
+
+    // GET /api/v1/event/count
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
+
+    // GET /api/v1/stream/count
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
+
+    // GET /api/v1/stream
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
+
+    // GET /api/v1/version
     rpc Version(VersionRequest) returns (VersionResponse) {}
 }
