@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.0
+
+- Changed persistence layer from Badger to Postgresql based storage.
+- The application is now stateless and multiple instances can be run horizontally.
+
 ## 0.9.0
 
 - Changed the data structure. This makes using old version of the database incompatible with this version.
