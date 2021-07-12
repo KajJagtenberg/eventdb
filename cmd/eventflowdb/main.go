@@ -41,7 +41,7 @@ func server() {
 	}
 	defer eventstore.Close()
 
-	// grpcServer := transport.RunGRPCServer(eventstore, logger)
+	grpcServer := transport.RunGRPCServer(eventstore, log)
 	restServer := transport.RunRestServer(eventstore, log)
 	promServer := transport.RunPromServer(log)
 
@@ -51,7 +51,7 @@ func server() {
 
 	log.Println("EventflowDB is shutting down...")
 
-	// grpcServer.GracefulStop()
+	grpcServer.GracefulStop()
 	restServer.Shutdown()
 	promServer.Shutdown()
 }
