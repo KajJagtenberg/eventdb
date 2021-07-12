@@ -1,8 +1,6 @@
 package store
 
 import (
-	"io"
-
 	"github.com/eventflowdb/eventflowdb/api"
 )
 
@@ -16,8 +14,6 @@ type EventStore interface {
 	GetEvent(*api.GetEventRequest) (*api.Event, error)
 
 	Size(*api.SizeRequest) (*api.SizeResponse, error)
-
-	Backup(dst io.Writer) error
 
 	EventCount(*api.EventCountRequest) (*api.EventCountResponse, error)
 

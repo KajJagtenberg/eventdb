@@ -1,3 +1,0 @@
-<PREFIX_EVENT>:<event id> = <event>
-<PREFIX_STREAM_METADATA>:<stream id> = <stream metadata>
-<PREFIX_STREAM_EVENT>:<stream id>:<version> = <event id>

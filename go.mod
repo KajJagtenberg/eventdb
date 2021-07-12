@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	github.com/dgraph-io/badger/v3 v3.2103.0
-	github.com/gocql/gocql v0.0.0-20210702075011-769848eae462
 	github.com/gofiber/adaptor/v2 v2.1.7
 	github.com/gofiber/fiber/v2 v2.13.0
 	github.com/google/uuid v1.2.0
