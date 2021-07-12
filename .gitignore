@@ -5,3 +5,4 @@ tmp
 *.rest
 *.json
 *.sqlite
+*.rest
