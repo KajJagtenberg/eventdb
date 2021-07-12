@@ -19,7 +19,7 @@ EventflowDB is a database designed with Event Sourcing in mind.
 
 - Stream / Aggregate based event storage and retrieval.
 - Global, checkpoint based event retrieval.
-- Flowctl (WIP), a simple command line interface.
+<!-- - Flowctl (WIP), a simple command line interface. -->
 
 ### Prerequisites
 
@@ -38,7 +38,7 @@ Once you've installed Docker, you can execute the following commands to start an
 ```shell
 docker volume create eventflowdb
 
-docker run -d -v eventflowdb:/data -p 6543:6543 -p 16543:16543 ghcr.io/eventflowdb/eventflowdb:0.9.0
+docker run -d -v eventflowdb:/data -p 6543:6543 -p 16543:16543 -p 176543 ghcr.io/eventflowdb/eventflowdb:0.10.0
 ```
 
 ## Configuration
@@ -47,7 +47,7 @@ The following environment variables can be used to alter the configuration:
 
 - `GRPC_PORT`: The port on which the gRPC server listens: Defaults: **6543**
 - `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **16543**
-- `PROM_PORT`: The port on which the Prometheus HTTP endpoint server listens: Defaults: **17654**
+- `PROM_PORT`: The port on which the Prometheus HTTP endpoint server listens: Defaults: **26543**
 
 ## Usage
 
@@ -59,16 +59,13 @@ API Specification:
 
 ```protobuf
 service EventStore {
-    rpc Add(AddRequest) returns(EventResponse) {}
-    rpc Get(GetRequest) returns(EventResponse) {}
-    rpc GetAll(GetAllRequest) returns(EventResponse) {}
+    rpc GetStream(GetStreamRequest) returns (GetStreamResponse) {}
+    rpc GetGlobalStream(GetGlobalStreamRequest) returns (GetGlobalStreamResponse) {}
+    rpc AppendToStream(AppendToStreamRequest) returns (AppendToStreamResponse) {}
+    rpc GetEvent(GetEventRequest) returns (Event) {}
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
-    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
-    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
-    rpc Size(SizeRequest) returns (SizeResponse) {}
-    rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
     rpc Version(VersionRequest) returns (VersionResponse) {}
 }
 ```
@@ -85,15 +82,13 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 The features on the roadmap in no particular order:
 
-- Projection Engine
 - Asynchronous replication (with etcd for leader election)
 - Downstream message broker connectors (such as Kafka, RabbitMQ)
 - Source connector for outbox pattern
 - Web UI
 - Client libraries for other languages
-- Prometheus metrics
 
-These may change at any point in the future.
+These may change at any point in the future and will be deleted once they're either implemented or if they won't.
 
 ## Contributions
 

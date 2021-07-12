@@ -4,7 +4,11 @@
 
 - Changed persistence layer from Badger to Postgresql based storage.
 - The application is now stateless and multiple instances can be run horizontally.
-
+- Remove the Size command since storage is handled in Postgresql. Same for EventCountEstimate and StreamCountEstimate.
+- Renamed the following commands:
+  - Get to GetStream
+  - GetAll to GetGlobalStream
+  - Add to AppendToStream
 ## 0.9.0
 
 - Changed the data structure. This makes using old version of the database incompatible with this version.
