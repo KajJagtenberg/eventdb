@@ -8,9 +8,7 @@ compile:
 	go build cmd/eventflowdb/main.go
 
 pb:
-	protoc -I=${PWD} --go_out=. ${PWD}/proto/store.proto
 	protoc -I=${PWD} --go_out=.  --go-grpc_out=. ${PWD}/proto/api.proto
-
 
 tidy:
 	go mod tidy
@@ -22,7 +20,13 @@ test:
 	go test ./...
 
 build:
-	docker build -t kajjagtenberg/eventflowdb:$(VERSION) .
+	docker build -t ghcr.io/eventflowdb/eventflowdb:$(VERSION) .
 
 push: build
-	docker push kajjagtenberg/eventflowdb:$(VERSION)
+	docker push ghcr.io/eventflowdb/eventflowdb:$(VERSION)
+
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down

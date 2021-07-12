@@ -11,14 +11,9 @@ COPY . .
 
 RUN go build -o bin/eventflowdb cmd/eventflowdb/main.go
 
-FROM debian
+FROM debian:10
 
 ENV DATA /data
-ENV TLS_CERT_FILE /certs/cert.pem
-ENV TLS_KEY_FILE /certs/key.pem
-
-RUN mkdir $DATA/{fsm,snapshots} -p
-RUN mkdir /certs
 
 COPY --from=build /src/bin/eventflowdb /usr/bin/eventflowdb
 

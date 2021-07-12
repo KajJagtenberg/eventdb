@@ -13,3 +13,6 @@ data
 *.yml
 CNAME
 example
+*.rest
+*.json
+*.sqlite

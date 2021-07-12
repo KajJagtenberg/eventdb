@@ -4,6 +4,39 @@ package api;
 
 option go_package="./api";
 
+message GetStreamRequest {
+    string stream = 1;
+    uint32 version = 2;
+    uint32 limit = 3;
+}
+
+message GetStreamResponse {
+    repeated string events = 1;
+}
+
+message GetGlobalStreamRequest {
+    uint64 offset = 1;
+    uint32 limit = 2;
+}
+
+message GetGlobalStreamResponse {
+    repeated string events = 1;
+}
+
+message AppendToStreamRequest {
+    string stream = 1;
+    int32 version = 2;
+    repeated EventData events = 3;
+}
+
+message AppendToStreamResponse {
+    repeated string events = 1;
+}
+
+message GetEventRequest {
+    string id = 1;
+}
+
 message Event {
     string id = 1;
     string stream = 2;
@@ -24,37 +57,14 @@ message EventData {
     string correlation_id = 5;
 }
 
-message EventResponse {
-    repeated Event events = 1;
-}
-message AddRequest { 
-    string stream = 1;
-    uint32 version = 2;
-    repeated EventData events = 3;
-}
-
-message GetRequest {
-    string stream = 1;
-    uint32 version = 2;
-    uint32 limit = 3;
-}
-
-message GetAllRequest {
-    string offset = 1;
-    uint32 limit = 2;
-}
-
 message EventCountRequest {}
 
-message EventCountEstimateRequest {}
 
 message EventCountResponse {
     int64 count = 1;
 }
 
 message StreamCountRequest {}
-
-message StreamCountEstimateRequest {}
 
 message StreamCountResponse {
     int64 count = 1;
@@ -66,19 +76,7 @@ message ListStreamsRequest {
 } 
 
 message ListStreamsReponse {
-    message Stream {
-        string id = 1;
-        repeated string events = 2;
-        int64 added_at = 3;
-    }
-    repeated Stream streams = 1;
-}
-
-message SizeRequest {}
-
-message SizeResponse {
-    int64 size = 1;
-    string size_human = 2;
+    repeated string streams = 1;
 }
 
 message UptimeRequest {}
@@ -95,15 +93,27 @@ message VersionResponse {
 }
 
 service EventStore {
-    rpc Add(AddRequest) returns(EventResponse) {}
-    rpc Get(GetRequest) returns(EventResponse) {}
-    rpc GetAll(GetAllRequest) returns(EventResponse) {}
+    // GET /api/v1/stream/:id
+    rpc GetStream(GetStreamRequest) returns (GetStreamResponse) {}
+
+    // GET /api/v1/stream/all
+    rpc GetGlobalStream(GetGlobalStreamRequest) returns (GetGlobalStreamResponse) {}
+
+    // POST /api/v1/stream/:id
+    rpc AppendToStream(AppendToStreamRequest) returns (AppendToStreamResponse) {}
+
+    // GET // /api/v1/event/:id
+    rpc GetEvent(GetEventRequest) returns (Event) {}
+
+    // GET /api/v1/event/count
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
-    rpc EventCountEstimate(EventCountEstimateRequest) returns (EventCountResponse) {}
+
+    // GET /api/v1/stream/count
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
-    rpc StreamCountEstimate(StreamCountEstimateRequest) returns (StreamCountResponse) {}
+
+    // GET /api/v1/stream
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
-    rpc Size(SizeRequest) returns (SizeResponse) {}
-    rpc Uptime(UptimeRequest) returns (UptimeResponse) {}
+
+    // GET /api/v1/version
     rpc Version(VersionRequest) returns (VersionResponse) {}
 }

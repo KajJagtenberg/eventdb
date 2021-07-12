@@ -2,3 +2,7 @@ data
 *.env
 *.pem
 tmp
+*.rest
+*.json
+*.sqlite
+*.rest

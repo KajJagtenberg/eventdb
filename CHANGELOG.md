@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.10.0
+
+- Changed persistence layer from Badger to Postgresql based storage.
+- The application is now stateless and multiple instances can be run horizontally.
+- Remove the Size command since storage is handled in Postgresql. Same for EventCountEstimate and StreamCountEstimate.
+- Renamed the following commands:
+  - Get to GetStream
+  - GetAll to GetGlobalStream
+  - Add to AppendToStream
+## 0.9.0
+
+- Changed the data structure. This makes using old version of the database incompatible with this version.
+- Events now get assigned an incrementing integer along with their ID.
+- Added Prometheus endpoint at /metrics which is reachable at port 17654 by default.
+- Removed memory mode.
+- A more future proof disk layout.
+- Added caching for events for additional performance since they are immutable.
+- Added caching for system stats such as event count and stream count.
+- Reintroduced REST API for simple access with standard HTTP libraries.
+- Removed TLS support in favor of placing that responsibility in a sidecar or proxy.
+
 ## 0.8.0
 
 ### **New**

@@ -18,16 +18,13 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type EventStoreClient interface {
-	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*EventResponse, error)
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*EventResponse, error)
-	GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error)
+	GetStream(ctx context.Context, in *GetStreamRequest, opts ...grpc.CallOption) (*GetStreamResponse, error)
+	GetGlobalStream(ctx context.Context, in *GetGlobalStreamRequest, opts ...grpc.CallOption) (*GetGlobalStreamResponse, error)
+	AppendToStream(ctx context.Context, in *AppendToStreamRequest, opts ...grpc.CallOption) (*AppendToStreamResponse, error)
+	GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*Event, error)
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
-	EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
-	StreamCountEstimate(ctx context.Context, in *StreamCountEstimateRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
 	ListStreams(ctx context.Context, in *ListStreamsRequest, opts ...grpc.CallOption) (*ListStreamsReponse, error)
-	Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error)
-	Uptime(ctx context.Context, in *UptimeRequest, opts ...grpc.CallOption) (*UptimeResponse, error)
 	Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
 }
 
@@ -39,27 +36,36 @@ func NewEventStoreClient(cc grpc.ClientConnInterface) EventStoreClient {
 	return &eventStoreClient{cc}
 }
 
-func (c *eventStoreClient) Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*EventResponse, error) {
-	out := new(EventResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/Add", in, out, opts...)
+func (c *eventStoreClient) GetStream(ctx context.Context, in *GetStreamRequest, opts ...grpc.CallOption) (*GetStreamResponse, error) {
+	out := new(GetStreamResponse)
+	err := c.cc.Invoke(ctx, "/api.EventStore/GetStream", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *eventStoreClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*EventResponse, error) {
-	out := new(EventResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/Get", in, out, opts...)
+func (c *eventStoreClient) GetGlobalStream(ctx context.Context, in *GetGlobalStreamRequest, opts ...grpc.CallOption) (*GetGlobalStreamResponse, error) {
+	out := new(GetGlobalStreamResponse)
+	err := c.cc.Invoke(ctx, "/api.EventStore/GetGlobalStream", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *eventStoreClient) GetAll(ctx context.Context, in *GetAllRequest, opts ...grpc.CallOption) (*EventResponse, error) {
-	out := new(EventResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/GetAll", in, out, opts...)
+func (c *eventStoreClient) AppendToStream(ctx context.Context, in *AppendToStreamRequest, opts ...grpc.CallOption) (*AppendToStreamResponse, error) {
+	out := new(AppendToStreamResponse)
+	err := c.cc.Invoke(ctx, "/api.EventStore/AppendToStream", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *eventStoreClient) GetEvent(ctx context.Context, in *GetEventRequest, opts ...grpc.CallOption) (*Event, error) {
+	out := new(Event)
+	err := c.cc.Invoke(ctx, "/api.EventStore/GetEvent", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,15 +81,6 @@ func (c *eventStoreClient) EventCount(ctx context.Context, in *EventCountRequest
 	return out, nil
 }
 
-func (c *eventStoreClient) EventCountEstimate(ctx context.Context, in *EventCountEstimateRequest, opts ...grpc.CallOption) (*EventCountResponse, error) {
-	out := new(EventCountResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/EventCountEstimate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *eventStoreClient) StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error) {
 	out := new(StreamCountResponse)
 	err := c.cc.Invoke(ctx, "/api.EventStore/StreamCount", in, out, opts...)
@@ -93,36 +90,9 @@ func (c *eventStoreClient) StreamCount(ctx context.Context, in *StreamCountReque
 	return out, nil
 }
 
-func (c *eventStoreClient) StreamCountEstimate(ctx context.Context, in *StreamCountEstimateRequest, opts ...grpc.CallOption) (*StreamCountResponse, error) {
-	out := new(StreamCountResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/StreamCountEstimate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *eventStoreClient) ListStreams(ctx context.Context, in *ListStreamsRequest, opts ...grpc.CallOption) (*ListStreamsReponse, error) {
 	out := new(ListStreamsReponse)
 	err := c.cc.Invoke(ctx, "/api.EventStore/ListStreams", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *eventStoreClient) Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error) {
-	out := new(SizeResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/Size", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *eventStoreClient) Uptime(ctx context.Context, in *UptimeRequest, opts ...grpc.CallOption) (*UptimeResponse, error) {
-	out := new(UptimeResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/Uptime", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -142,16 +112,13 @@ func (c *eventStoreClient) Version(ctx context.Context, in *VersionRequest, opts
 // All implementations must embed UnimplementedEventStoreServer
 // for forward compatibility
 type EventStoreServer interface {
-	Add(context.Context, *AddRequest) (*EventResponse, error)
-	Get(context.Context, *GetRequest) (*EventResponse, error)
-	GetAll(context.Context, *GetAllRequest) (*EventResponse, error)
+	GetStream(context.Context, *GetStreamRequest) (*GetStreamResponse, error)
+	GetGlobalStream(context.Context, *GetGlobalStreamRequest) (*GetGlobalStreamResponse, error)
+	AppendToStream(context.Context, *AppendToStreamRequest) (*AppendToStreamResponse, error)
+	GetEvent(context.Context, *GetEventRequest) (*Event, error)
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
-	EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountResponse, error)
 	StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error)
-	StreamCountEstimate(context.Context, *StreamCountEstimateRequest) (*StreamCountResponse, error)
 	ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error)
-	Size(context.Context, *SizeRequest) (*SizeResponse, error)
-	Uptime(context.Context, *UptimeRequest) (*UptimeResponse, error)
 	Version(context.Context, *VersionRequest) (*VersionResponse, error)
 	mustEmbedUnimplementedEventStoreServer()
 }
@@ -160,35 +127,26 @@ type EventStoreServer interface {
 type UnimplementedEventStoreServer struct {
 }
 
-func (UnimplementedEventStoreServer) Add(context.Context, *AddRequest) (*EventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
+func (UnimplementedEventStoreServer) GetStream(context.Context, *GetStreamRequest) (*GetStreamResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStream not implemented")
 }
-func (UnimplementedEventStoreServer) Get(context.Context, *GetRequest) (*EventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Get not implemented")
+func (UnimplementedEventStoreServer) GetGlobalStream(context.Context, *GetGlobalStreamRequest) (*GetGlobalStreamResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetGlobalStream not implemented")
 }
-func (UnimplementedEventStoreServer) GetAll(context.Context, *GetAllRequest) (*EventResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetAll not implemented")
+func (UnimplementedEventStoreServer) AppendToStream(context.Context, *AppendToStreamRequest) (*AppendToStreamResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AppendToStream not implemented")
+}
+func (UnimplementedEventStoreServer) GetEvent(context.Context, *GetEventRequest) (*Event, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetEvent not implemented")
 }
 func (UnimplementedEventStoreServer) EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EventCount not implemented")
 }
-func (UnimplementedEventStoreServer) EventCountEstimate(context.Context, *EventCountEstimateRequest) (*EventCountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method EventCountEstimate not implemented")
-}
 func (UnimplementedEventStoreServer) StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StreamCount not implemented")
 }
-func (UnimplementedEventStoreServer) StreamCountEstimate(context.Context, *StreamCountEstimateRequest) (*StreamCountResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StreamCountEstimate not implemented")
-}
 func (UnimplementedEventStoreServer) ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStreams not implemented")
-}
-func (UnimplementedEventStoreServer) Size(context.Context, *SizeRequest) (*SizeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Size not implemented")
-}
-func (UnimplementedEventStoreServer) Uptime(context.Context, *UptimeRequest) (*UptimeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Uptime not implemented")
 }
 func (UnimplementedEventStoreServer) Version(context.Context, *VersionRequest) (*VersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
@@ -206,56 +164,74 @@ func RegisterEventStoreServer(s grpc.ServiceRegistrar, srv EventStoreServer) {
 	s.RegisterService(&EventStore_ServiceDesc, srv)
 }
 
-func _EventStore_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddRequest)
+func _EventStore_GetStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetStreamRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EventStoreServer).Add(ctx, in)
+		return srv.(EventStoreServer).GetStream(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.EventStore/Add",
+		FullMethod: "/api.EventStore/GetStream",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).Add(ctx, req.(*AddRequest))
+		return srv.(EventStoreServer).GetStream(ctx, req.(*GetStreamRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventStore_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
+func _EventStore_GetGlobalStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetGlobalStreamRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EventStoreServer).Get(ctx, in)
+		return srv.(EventStoreServer).GetGlobalStream(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.EventStore/Get",
+		FullMethod: "/api.EventStore/GetGlobalStream",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).Get(ctx, req.(*GetRequest))
+		return srv.(EventStoreServer).GetGlobalStream(ctx, req.(*GetGlobalStreamRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventStore_GetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetAllRequest)
+func _EventStore_AppendToStream_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AppendToStreamRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(EventStoreServer).GetAll(ctx, in)
+		return srv.(EventStoreServer).AppendToStream(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/api.EventStore/GetAll",
+		FullMethod: "/api.EventStore/AppendToStream",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).GetAll(ctx, req.(*GetAllRequest))
+		return srv.(EventStoreServer).AppendToStream(ctx, req.(*AppendToStreamRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _EventStore_GetEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EventStoreServer).GetEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/api.EventStore/GetEvent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EventStoreServer).GetEvent(ctx, req.(*GetEventRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -278,24 +254,6 @@ func _EventStore_EventCount_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventStore_EventCountEstimate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(EventCountEstimateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).EventCountEstimate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/EventCountEstimate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).EventCountEstimate(ctx, req.(*EventCountEstimateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _EventStore_StreamCount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StreamCountRequest)
 	if err := dec(in); err != nil {
@@ -314,24 +272,6 @@ func _EventStore_StreamCount_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventStore_StreamCountEstimate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StreamCountEstimateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).StreamCountEstimate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/StreamCountEstimate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).StreamCountEstimate(ctx, req.(*StreamCountEstimateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _EventStore_ListStreams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListStreamsRequest)
 	if err := dec(in); err != nil {
@@ -346,42 +286,6 @@ func _EventStore_ListStreams_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(EventStoreServer).ListStreams(ctx, req.(*ListStreamsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EventStore_Size_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SizeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).Size(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/Size",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).Size(ctx, req.(*SizeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _EventStore_Uptime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UptimeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).Uptime(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/Uptime",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).Uptime(ctx, req.(*UptimeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -412,44 +316,32 @@ var EventStore_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*EventStoreServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Add",
-			Handler:    _EventStore_Add_Handler,
+			MethodName: "GetStream",
+			Handler:    _EventStore_GetStream_Handler,
 		},
 		{
-			MethodName: "Get",
-			Handler:    _EventStore_Get_Handler,
+			MethodName: "GetGlobalStream",
+			Handler:    _EventStore_GetGlobalStream_Handler,
 		},
 		{
-			MethodName: "GetAll",
-			Handler:    _EventStore_GetAll_Handler,
+			MethodName: "AppendToStream",
+			Handler:    _EventStore_AppendToStream_Handler,
+		},
+		{
+			MethodName: "GetEvent",
+			Handler:    _EventStore_GetEvent_Handler,
 		},
 		{
 			MethodName: "EventCount",
 			Handler:    _EventStore_EventCount_Handler,
 		},
 		{
-			MethodName: "EventCountEstimate",
-			Handler:    _EventStore_EventCountEstimate_Handler,
-		},
-		{
 			MethodName: "StreamCount",
 			Handler:    _EventStore_StreamCount_Handler,
 		},
 		{
-			MethodName: "StreamCountEstimate",
-			Handler:    _EventStore_StreamCountEstimate_Handler,
-		},
-		{
 			MethodName: "ListStreams",
 			Handler:    _EventStore_ListStreams_Handler,
-		},
-		{
-			MethodName: "Size",
-			Handler:    _EventStore_Size_Handler,
-		},
-		{
-			MethodName: "Uptime",
-			Handler:    _EventStore_Uptime_Handler,
 		},
 		{
 			MethodName: "Version",
