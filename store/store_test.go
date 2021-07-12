@@ -84,7 +84,7 @@ func TestAddWithGap(t *testing.T) {
 		t.Fatal("Should return an error")
 	}
 }
-func TestGet(t *testing.T) {
+func TestGetStream(t *testing.T) {
 	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +136,7 @@ func TestGet(t *testing.T) {
 	// assert.Equal(events[0].Id, events[0].CorrelationId)
 }
 
-func TestGetWithVersion(t *testing.T) {
+func TestGetStreamWithVersion(t *testing.T) {
 	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
@@ -193,7 +193,7 @@ func TestGetWithVersion(t *testing.T) {
 	// assert.Equal(events[0].Id, events[0].CorrelationId)
 }
 
-func TestGetWithLimit(t *testing.T) {
+func TestGetStreamWithLimit(t *testing.T) {
 	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
@@ -253,7 +253,7 @@ func TestGetWithLimit(t *testing.T) {
 	assert.Equal(2, len(events))
 }
 
-func TestGetAll(t *testing.T) {
+func TestGetGlobalStream(t *testing.T) {
 	store, err := TempStore()
 	if err != nil {
 		t.Fatal(err)
