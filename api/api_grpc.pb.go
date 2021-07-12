@@ -25,7 +25,6 @@ type EventStoreClient interface {
 	EventCount(ctx context.Context, in *EventCountRequest, opts ...grpc.CallOption) (*EventCountResponse, error)
 	StreamCount(ctx context.Context, in *StreamCountRequest, opts ...grpc.CallOption) (*StreamCountResponse, error)
 	ListStreams(ctx context.Context, in *ListStreamsRequest, opts ...grpc.CallOption) (*ListStreamsReponse, error)
-	Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error)
 	Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error)
 }
 
@@ -100,15 +99,6 @@ func (c *eventStoreClient) ListStreams(ctx context.Context, in *ListStreamsReque
 	return out, nil
 }
 
-func (c *eventStoreClient) Size(ctx context.Context, in *SizeRequest, opts ...grpc.CallOption) (*SizeResponse, error) {
-	out := new(SizeResponse)
-	err := c.cc.Invoke(ctx, "/api.EventStore/Size", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *eventStoreClient) Version(ctx context.Context, in *VersionRequest, opts ...grpc.CallOption) (*VersionResponse, error) {
 	out := new(VersionResponse)
 	err := c.cc.Invoke(ctx, "/api.EventStore/Version", in, out, opts...)
@@ -129,7 +119,6 @@ type EventStoreServer interface {
 	EventCount(context.Context, *EventCountRequest) (*EventCountResponse, error)
 	StreamCount(context.Context, *StreamCountRequest) (*StreamCountResponse, error)
 	ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error)
-	Size(context.Context, *SizeRequest) (*SizeResponse, error)
 	Version(context.Context, *VersionRequest) (*VersionResponse, error)
 	mustEmbedUnimplementedEventStoreServer()
 }
@@ -158,9 +147,6 @@ func (UnimplementedEventStoreServer) StreamCount(context.Context, *StreamCountRe
 }
 func (UnimplementedEventStoreServer) ListStreams(context.Context, *ListStreamsRequest) (*ListStreamsReponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStreams not implemented")
-}
-func (UnimplementedEventStoreServer) Size(context.Context, *SizeRequest) (*SizeResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Size not implemented")
 }
 func (UnimplementedEventStoreServer) Version(context.Context, *VersionRequest) (*VersionResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Version not implemented")
@@ -304,24 +290,6 @@ func _EventStore_ListStreams_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _EventStore_Size_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SizeRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(EventStoreServer).Size(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/api.EventStore/Size",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(EventStoreServer).Size(ctx, req.(*SizeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _EventStore_Version_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(VersionRequest)
 	if err := dec(in); err != nil {
@@ -374,10 +342,6 @@ var EventStore_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListStreams",
 			Handler:    _EventStore_ListStreams_Handler,
-		},
-		{
-			MethodName: "Size",
-			Handler:    _EventStore_Size_Handler,
 		},
 		{
 			MethodName: "Version",

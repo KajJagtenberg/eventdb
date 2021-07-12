@@ -80,13 +80,6 @@ message ListStreamsReponse {
     repeated string streams = 1;
 }
 
-message SizeRequest {}
-
-message SizeResponse {
-    int64 size = 1;
-    string size_human = 2;
-}
-
 message UptimeRequest {}
 
 message UptimeResponse {
@@ -108,6 +101,5 @@ service EventStore {
     rpc EventCount(EventCountRequest) returns (EventCountResponse) {}
     rpc StreamCount(StreamCountRequest) returns (StreamCountResponse) {}
     rpc ListStreams(ListStreamsRequest) returns (ListStreamsReponse) {}
-    rpc Size(SizeRequest) returns (SizeResponse) {}
     rpc Version(VersionRequest) returns (VersionResponse) {}
 }

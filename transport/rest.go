@@ -208,14 +208,14 @@ func RunRestServer(eventstore storage.EventStore, log *logrus.Logger) *fiber.App
 	v1 := server.Group("/api/v1")
 	v1.Use(compress.New())
 	v1.Get("/version", GetVersionHandler())
-	v1.Get("/stream/all", GetGlobalStreamHandler(eventstore, log))
+	v1.Get("/stream", GetStreamListHandler(eventstore, log))
 	v1.Get("/stream/count", GetStreamCountHandler(eventstore, log))
+	v1.Get("/stream/all", GetGlobalStreamHandler(eventstore, log))
 	v1.Get("/stream/:id", GetStreamHandler(eventstore, log))
 	v1.Post("/stream/:id", AppendToStreamHandler(eventstore, log))
 	v1.Get("/event/count", GetEventCountHandler(eventstore, log))
 	v1.Get("/event/:id", GetEventHandler(eventstore, log))
 	v1.Get("/uptime", GetUptimeHandler())
-	v1.Get("/streams", GetStreamListHandler(eventstore, log))
 
 	go func() {
 		log.Printf("REST server listening on %s", httpPort)

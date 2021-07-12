@@ -13,8 +13,6 @@ type EventStore interface {
 
 	GetEvent(*api.GetEventRequest) (*api.Event, error)
 
-	Size(*api.SizeRequest) (*api.SizeResponse, error)
-
 	EventCount(*api.EventCountRequest) (*api.EventCountResponse, error)
 
 	StreamCount(*api.StreamCountRequest) (*api.StreamCountResponse, error)

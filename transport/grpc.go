@@ -43,10 +43,6 @@ func (s *EventStore) ListStreams(ctx context.Context, req *api.ListStreamsReques
 	return s.eventstore.ListStreams(req)
 }
 
-func (s *EventStore) Size(ctx context.Context, req *api.SizeRequest) (*api.SizeResponse, error) {
-	return s.eventstore.Size(req)
-}
-
 var (
 	start = time.Now()
 )

@@ -6,6 +6,9 @@ GET http://127.0.0.1:16543/api/v1/uptime
 
 ###
 
+GET http://127.0.0.1:16543/api/v1/stream
+
+###
 GET http://127.0.0.1:16543/api/v1/stream/all
 
 ###
@@ -27,3 +30,11 @@ Content-Type: application/json
         }
     ]
 }
+
+###
+
+GET http://127.0.0.1:16543/api/v1/event/count
+
+###
+
+GET http://127.0.0.1:16543/api/v1/stream/count

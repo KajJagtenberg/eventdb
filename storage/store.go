@@ -66,7 +66,7 @@ func (s *SQLEventStore) AppendToStream(req *api.AppendToStreamRequest) (*api.App
 
 	var version int
 
-	if err := s.db.Raw("SELECT COALESCE(MAX(version), -1) AS version FROM events WHERE stream = ?;", stream).Scan(&version).Error; err != nil {
+	if err := s.db.Table("events").Select("COALESCE(MAX(version), -1)").Where("stream = ?", stream).Scan(&version).Error; err != nil {
 		return nil, err
 	}
 
@@ -150,14 +150,10 @@ func (s *SQLEventStore) GetEvent(req *api.GetEventRequest) (*api.Event, error) {
 	}, nil
 }
 
-func (s *SQLEventStore) Size(*api.SizeRequest) (*api.SizeResponse, error) {
-	return nil, nil
-}
-
 func (s *SQLEventStore) EventCount(*api.EventCountRequest) (*api.EventCountResponse, error) {
 	var count int64
 
-	if err := s.db.Raw("SELECT COUNT(id) FROM events;").First(&count).Error; err != nil {
+	if err := s.db.Table("events").Select("id").Count(&count).Error; err != nil {
 		return nil, err
 	}
 
@@ -167,11 +163,33 @@ func (s *SQLEventStore) EventCount(*api.EventCountRequest) (*api.EventCountRespo
 }
 
 func (s *SQLEventStore) StreamCount(*api.StreamCountRequest) (*api.StreamCountResponse, error) {
-	return nil, nil
+	var count int64
+
+	if err := s.db.Table("events").Distinct("stream").Count(&count).Error; err != nil {
+		return nil, err
+	}
+
+	return &api.StreamCountResponse{
+		Count: count,
+	}, nil
 }
 
-func (s *SQLEventStore) ListStreams(*api.ListStreamsRequest) (*api.ListStreamsReponse, error) {
-	return nil, nil
+func (s *SQLEventStore) ListStreams(req *api.ListStreamsRequest) (*api.ListStreamsReponse, error) {
+	var streams []uuid.UUID
+
+	query := s.db.Table("events").Distinct("stream").Select("stream").Offset(int(req.Skip)).Limit(int(req.Limit)).Find(&streams)
+
+	if err := query.Error; err != nil {
+		return nil, err
+	}
+
+	res := &api.ListStreamsReponse{}
+
+	for _, stream := range streams {
+		res.Streams = append(res.Streams, stream.String())
+	}
+
+	return res, nil
 }
 
 func (s *SQLEventStore) Close() error {
