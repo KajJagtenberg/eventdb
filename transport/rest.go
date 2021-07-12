@@ -7,7 +7,7 @@ import (
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/constants"
 	"github.com/eventflowdb/eventflowdb/env"
-	"github.com/eventflowdb/eventflowdb/store"
+	"github.com/eventflowdb/eventflowdb/storage"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/sirupsen/logrus"
@@ -21,7 +21,7 @@ func GetVersionHandler() fiber.Handler {
 	}
 }
 
-func GetStreamHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
+func GetStreamHandler(eventstore storage.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetStreamRequest
 		req.Stream = c.Params("id")
@@ -51,7 +51,7 @@ func GetStreamHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Han
 	}
 }
 
-func GetGlobalStreamHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
+func GetGlobalStreamHandler(eventstore storage.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetGlobalStreamRequest
 		offset, err := strconv.ParseUint(c.Query("offset", "0"), 10, 64)
@@ -79,7 +79,7 @@ func GetGlobalStreamHandler(eventstore store.EventStore, log *logrus.Logger) fib
 	}
 }
 
-func AppendToStreamHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
+func AppendToStreamHandler(eventstore storage.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req struct {
 			Version int32            `json:"version"`
@@ -96,7 +96,7 @@ func AppendToStreamHandler(eventstore store.EventStore, log *logrus.Logger) fibe
 		})
 		if err != nil {
 			switch err {
-			case store.ErrEmptyEvents, store.ErrEmptyEventType, store.ErrConcurrentStreamModification, store.ErrWrongVersion, store.ErrZeroStream:
+			case storage.ErrEmptyEvents, storage.ErrEmptyEventType, storage.ErrConcurrentStreamModification, storage.ErrWrongVersion, storage.ErrZeroStream:
 				return fiber.NewError(fiber.StatusBadRequest, err.Error())
 			default:
 				log.Println(err)
@@ -108,7 +108,7 @@ func AppendToStreamHandler(eventstore store.EventStore, log *logrus.Logger) fibe
 	}
 }
 
-func GetStreamCountHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
+func GetStreamCountHandler(eventstore storage.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		res, err := eventstore.StreamCount(&api.StreamCountRequest{})
 
@@ -124,7 +124,7 @@ func GetStreamCountHandler(eventstore store.EventStore, log *logrus.Logger) fibe
 	}
 }
 
-func GetEventHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
+func GetEventHandler(eventstore storage.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.GetEventRequest
 		req.Id = c.Params("id")
@@ -142,7 +142,7 @@ func GetEventHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Hand
 	}
 }
 
-func GetEventCountHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
+func GetEventCountHandler(eventstore storage.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		res, err := eventstore.EventCount(&api.EventCountRequest{})
 
@@ -169,7 +169,7 @@ func GetUptimeHandler() fiber.Handler {
 	}
 }
 
-func GetStreamListHandler(eventstore store.EventStore, log *logrus.Logger) fiber.Handler {
+func GetStreamListHandler(eventstore storage.EventStore, log *logrus.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req api.ListStreamsRequest
 
@@ -198,7 +198,7 @@ func GetStreamListHandler(eventstore store.EventStore, log *logrus.Logger) fiber
 	}
 }
 
-func RunRestServer(eventstore store.EventStore, log *logrus.Logger) *fiber.App {
+func RunRestServer(eventstore storage.EventStore, log *logrus.Logger) *fiber.App {
 	httpPort := env.GetEnv("HTTP_PORT", "16543")
 
 	server := fiber.New(fiber.Config{

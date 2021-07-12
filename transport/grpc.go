@@ -9,7 +9,7 @@ import (
 	"github.com/eventflowdb/eventflowdb/api"
 	"github.com/eventflowdb/eventflowdb/constants"
 	"github.com/eventflowdb/eventflowdb/env"
-	"github.com/eventflowdb/eventflowdb/store"
+	"github.com/eventflowdb/eventflowdb/storage"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -17,7 +17,7 @@ import (
 
 type EventStore struct {
 	api.UnimplementedEventStoreServer
-	eventstore store.EventStore
+	eventstore storage.EventStore
 }
 
 func (s *EventStore) AppendStream(ctx context.Context, req *api.AppendToStreamRequest) (*api.AppendToStreamResponse, error) {
@@ -66,7 +66,7 @@ func (s *EventStore) Version(context.Context, *api.VersionRequest) (*api.Version
 	}, nil
 }
 
-func RunGRPCServer(eventstore store.EventStore, logger *logrus.Logger) *grpc.Server {
+func RunGRPCServer(eventstore storage.EventStore, logger *logrus.Logger) *grpc.Server {
 	grpcPort := env.GetEnv("GRPC_PORT", "6543")
 	tlsEnabled := env.GetEnv("TLS_ENABLED", "false") == "true"
 	certFile := env.GetEnv("TLS_CERT_FILE", "certs/crt.pem")

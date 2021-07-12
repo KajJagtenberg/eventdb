@@ -7,7 +7,7 @@ import (
 
 	"github.com/eventflowdb/eventflowdb/constants"
 	"github.com/eventflowdb/eventflowdb/env"
-	"github.com/eventflowdb/eventflowdb/store"
+	"github.com/eventflowdb/eventflowdb/storage"
 	"github.com/eventflowdb/eventflowdb/transport"
 	"github.com/joho/godotenv"
 	"github.com/sirupsen/logrus"
@@ -35,7 +35,7 @@ func server() {
 
 	log.Println("Connected to Postgres")
 
-	eventstore, err := store.NewSQLEventStore(db)
+	eventstore, err := storage.NewSQLEventStore(db)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package store
+package storage
 
 import (
 	"github.com/eventflowdb/eventflowdb/api"
