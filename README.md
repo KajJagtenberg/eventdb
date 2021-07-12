@@ -45,9 +45,10 @@ docker run -d -v eventflowdb:/data -p 6543:6543 -p 16543:16543 -p 176543 ghcr.io
 
 The following environment variables can be used to alter the configuration:
 
-- `GRPC_PORT`: The port on which the gRPC server listens: Defaults: **6543**
-- `HTTP_PORT`: The port on which the HTTP server listens: Defaults: **16543**
-- `PROM_PORT`: The port on which the Prometheus HTTP endpoint server listens: Defaults: **26543**
+- `GRPC_PORT`: The port on which the gRPC server listens. Defaults: **6543**
+- `HTTP_PORT`: The port on which the HTTP server listens. Defaults: **16543**
+- `PROM_PORT`: The port on which the Prometheus HTTP endpoint server listens. Defaults: **26543**
+- `DATABASE_URL`: The connection string for Postgres. Defaults: **postgresql://postgres:password@127.0.0.1:5432/eventflowdb"**
 
 ## Usage
 
