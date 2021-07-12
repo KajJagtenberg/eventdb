@@ -20,7 +20,7 @@ func TempStore() (EventStore, error) {
 		return nil, err
 	}
 
-	return NewSQLStore(db)
+	return NewSQLEventStore(db)
 }
 
 func TestAdd(t *testing.T) {

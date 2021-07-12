@@ -35,7 +35,7 @@ func server() {
 
 	log.Println("Connected to Postgres")
 
-	eventstore, err := store.NewSQLStore(db)
+	eventstore, err := store.NewSQLEventStore(db)
 	if err != nil {
 		log.Fatal(err)
 	}

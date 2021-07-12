@@ -8,11 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
-type SQLStore struct {
+type SQLEventStore struct {
 	db *gorm.DB
 }
 
-func (s *SQLStore) GetStream(req *api.GetStreamRequest) (*api.GetStreamResponse, error) {
+func (s *SQLEventStore) GetStream(req *api.GetStreamRequest) (*api.GetStreamResponse, error) {
 	res := &api.GetStreamResponse{}
 
 	stream, err := uuid.Parse(req.Stream)
@@ -33,7 +33,7 @@ func (s *SQLStore) GetStream(req *api.GetStreamRequest) (*api.GetStreamResponse,
 	return res, nil
 }
 
-func (s *SQLStore) GetGlobalStream(req *api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error) {
+func (s *SQLEventStore) GetGlobalStream(req *api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error) {
 	res := &api.GetGlobalStreamResponse{}
 
 	var events []Event
@@ -49,7 +49,7 @@ func (s *SQLStore) GetGlobalStream(req *api.GetGlobalStreamRequest) (*api.GetGlo
 	return res, nil
 }
 
-func (s *SQLStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendToStreamResponse, error) {
+func (s *SQLEventStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendToStreamResponse, error) {
 	res := &api.AppendToStreamResponse{}
 
 	if len(req.Events) == 0 {
@@ -127,7 +127,7 @@ func (s *SQLStore) AppendToStream(req *api.AppendToStreamRequest) (*api.AppendTo
 	return res, nil
 }
 
-func (s *SQLStore) GetEvent(req *api.GetEventRequest) (*api.Event, error) {
+func (s *SQLEventStore) GetEvent(req *api.GetEventRequest) (*api.Event, error) {
 	var event Event
 
 	if err := s.db.Where("id = ?", req.Id).First(&event).Error; err != nil {
@@ -147,32 +147,32 @@ func (s *SQLStore) GetEvent(req *api.GetEventRequest) (*api.Event, error) {
 	}, nil
 }
 
-func (s *SQLStore) Size(*api.SizeRequest) (*api.SizeResponse, error) {
+func (s *SQLEventStore) Size(*api.SizeRequest) (*api.SizeResponse, error) {
 	return nil, nil
 }
 
-func (s *SQLStore) EventCount(*api.EventCountRequest) (*api.EventCountResponse, error) {
+func (s *SQLEventStore) EventCount(*api.EventCountRequest) (*api.EventCountResponse, error) {
 	return nil, nil
 }
 
-func (s *SQLStore) StreamCount(*api.StreamCountRequest) (*api.StreamCountResponse, error) {
+func (s *SQLEventStore) StreamCount(*api.StreamCountRequest) (*api.StreamCountResponse, error) {
 	return nil, nil
 }
 
-func (s *SQLStore) ListStreams(*api.ListStreamsRequest) (*api.ListStreamsReponse, error) {
+func (s *SQLEventStore) ListStreams(*api.ListStreamsRequest) (*api.ListStreamsReponse, error) {
 	return nil, nil
 }
 
-func (s *SQLStore) Close() error {
+func (s *SQLEventStore) Close() error {
 	return nil
 }
 
-func NewSQLStore(db *gorm.DB) (*SQLStore, error) {
+func NewSQLEventStore(db *gorm.DB) (*SQLEventStore, error) {
 	if err := db.AutoMigrate(&Event{}); err != nil {
 		return nil, err
 	}
 
-	return &SQLStore{db}, nil
+	return &SQLEventStore{db}, nil
 }
 
 type Event struct {
