@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"log"
 	"time"
 
 	"github.com/eventflowdb/eventflowdb/api"
@@ -21,14 +20,8 @@ func (s *SQLEventStore) GetStream(req *api.GetStreamRequest) (*api.GetStreamResp
 		return nil, err
 	}
 
-	var events []Event
-
-	if err := s.db.Where("stream = ? AND version >= ?", stream, req.Version).Limit(int(req.Limit)).Select("id").Find(&events).Error; err != nil {
+	if err := s.db.Table("events").Where("stream = ? AND version >= ?", stream, req.Version).Order("version ASC").Limit(int(req.Limit)).Select("id").Find(&res.Events).Error; err != nil {
 		return nil, err
-	}
-
-	for _, event := range events {
-		res.Events = append(res.Events, event.ID.String())
 	}
 
 	return res, nil
@@ -37,16 +30,8 @@ func (s *SQLEventStore) GetStream(req *api.GetStreamRequest) (*api.GetStreamResp
 func (s *SQLEventStore) GetGlobalStream(req *api.GetGlobalStreamRequest) (*api.GetGlobalStreamResponse, error) {
 	res := &api.GetGlobalStreamResponse{}
 
-	var events []Event
-
-	if err := s.db.Where("timestamp > ?", req.Offset).Limit(int(req.Limit)).Select("id").Find(&events).Error; err != nil {
+	if err := s.db.Table("events").Where("timestamp > ?", req.Offset).Order("timestamp ASC").Limit(int(req.Limit)).Select("id").Find(&res.Events).Error; err != nil {
 		return nil, err
-	}
-
-	log.Println(events)
-
-	for _, event := range events {
-		res.Events = append(res.Events, event.ID.String())
 	}
 
 	return res, nil
