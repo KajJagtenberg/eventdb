@@ -50,12 +50,11 @@ message Event {
 }
 
 message EventData {
-    string id = 1;
-    string type = 2;
-    bytes data = 3;
-    bytes metadata = 4;
-    string causation_id = 5;
-    string correlation_id = 6;
+    string type = 1;
+    bytes data = 2;
+    bytes metadata = 3;
+    string causation_id = 4;
+    string correlation_id = 5;
 }
 
 message EventCountRequest {}
